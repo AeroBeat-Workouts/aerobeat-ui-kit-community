@@ -10,7 +10,7 @@
     // Phase 1 pins the shared UI logic contract explicitly for kit development.
     "aerobeat-ui-core": {
       "url": "git@github.com:AeroBeat-Workouts/aerobeat-ui-core.git",
-      "checkout": "v0.1.0",
+      "checkout": "v0.1.1",
       "subfolder": "/"
     },
     // GUT drives the repo-local test suite inside the hidden testbed/workbench.
