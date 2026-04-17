@@ -15,8 +15,10 @@ mono_crash.*.json
 .DS_Store
 Thumbs.db
 
-# AeroBeat Dependencies (Managed by setup_dev.py)
-.testbed/addons/
+# GodotEnv package/foundation workbench
+.testbed/addons/*
+!.testbed/addons/.editorconfig
+.testbed/.addons/
 
 # Beads / Dolt files (added by bd init)
 .dolt/
