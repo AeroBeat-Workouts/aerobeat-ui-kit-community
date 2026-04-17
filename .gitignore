@@ -17,3 +17,8 @@ Thumbs.db
 
 # AeroBeat Dependencies (Managed by setup_dev.py)
 .testbed/addons/
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
