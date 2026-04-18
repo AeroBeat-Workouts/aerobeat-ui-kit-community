@@ -25,7 +25,7 @@ jobs:
       - name: 🤖 Setup Godot
         uses: chickensoft-games/setup-godot@v2
         with:
-          version: 4.2.1
+          version: 4.6.2
           use-dotnet: false
 
       - name: 📦 Install GodotEnv
@@ -44,6 +44,6 @@ jobs:
       - name: 🧪 Run GUT tests
         run: |
           godot --headless --path .testbed --script addons/gut/gut_cmdln.gd \
-            -gdir=res://test \
+            -gdir=res://tests \\
             -ginclude_subdirs \
             -gexit
