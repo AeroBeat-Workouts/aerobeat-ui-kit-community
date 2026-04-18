@@ -34,5 +34,5 @@ godot --editor --path .testbed
 
 - `.testbed/addons.jsonc` is the only committed dev/test dependency contract.
 - The manifest pins `aerobeat-core` to `v0.1.0` and `aerobeat-ui-core` to `v0.1.1` for the Phase 1 retry validation chain.
-- `.testbed/test` is a tracked relative link into the repo root so the hidden workbench can run the repo-local GUT suite without a legacy setup script.
+- `.testbed/tests` is the repo-local GUT suite location, and `.testbed/scenes` is reserved for manual/workbench scene content when this repo needs it.
 - The current package shape is consumed from the repo root (`subfolder: "/"`) for downstream installs. That repo-root package boundary is now explicit release contract state for this initial Phase 1 tag.
