@@ -1,13 +1,7 @@
 {
   "$schema": "https://chickensoft.games/schemas/addons.schema.json",
   "addons": {
-    // Phase 1 pins the foundational core contract explicitly for UI-kit work.
-    "aerobeat-core": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-core.git",
-      "checkout": "v0.1.0",
-      "subfolder": "/"
-    },
-    // Phase 1 pins the shared UI logic contract explicitly for kit development.
+    // The hidden testbed stays focused on shared UI-kit development.
     "aerobeat-ui-core": {
       "url": "git@github.com:AeroBeat-Workouts/aerobeat-ui-core.git",
       "checkout": "v0.1.1",

@@ -1,10 +1,14 @@
 # aerobeat-ui-kit-community
 
-Shared AeroBeat community UI kit addon for themed visual components built on top of the UI-core contract.
+Shared AeroBeat community UI kit addon for reusable visual components and presentation patterns built on top of the `aerobeat-ui-core` contract.
 
-## GodotEnv development flow
+This repo is the default community-facing visual layer for AeroBeat v1 UI work. Current priority is desktop/PC shell support. Mobile, web, and XR shells are future/deprioritized surfaces and should not be described here as equal present-tense targets.
 
-This repo uses the AeroBeat Phase 1 GodotEnv package/foundation convention.
+Gameplay input ownership lives outside this repo. `aerobeat-ui-kit-community` is for shared UI/menu visuals and interaction presentation, while gameplay-facing input contracts remain the responsibility of the dedicated input/gameplay layers.
+
+## Hidden testbed development flow
+
+This repo keeps a hidden Godot testbed for addon validation and workbench testing.
 
 - Canonical dev/test manifest: `.testbed/addons.jsonc`
 - Installed dev/test addons: `.testbed/addons/`
@@ -20,7 +24,7 @@ cd .testbed
 godotenv addons install
 ```
 
-That restores this repo's current Phase 1-era dev/test manifest into `.testbed/addons/`. The live lane model treats `aerobeat-ui-core` as the canonical shared dependency surface; the old `aerobeat-core` pin is transition-era bootstrap drift.
+That restores the repo's UI-kit-focused dev/test manifest into `.testbed/addons/`. `aerobeat-ui-core` is the only shared AeroBeat addon dependency declared here; adjacent core packages should only be added if this repo directly consumes them.
 
 ### Open the testbed
 
@@ -33,7 +37,6 @@ godot --editor --path .testbed
 ### Validation notes
 
 - `.testbed/addons.jsonc` is the only committed dev/test dependency contract.
-- The current manifest still pins the transition-era `aerobeat-core` package key plus `aerobeat-ui-core` for the historical Phase 1 validation chain.
-- Canonical shared dependency language for this repo is `aerobeat-ui-core`; add adjacent lane cores only when this UI kit actually consumes them.
+- The hidden testbed manifest is intentionally scoped to shared UI-kit validation and must not pin unrelated gameplay/core foundations by default.
 - `.testbed/tests` is the repo-local GUT suite location, and `.testbed/scenes` is reserved for manual/workbench scene content when this repo needs it.
-- The current package shape is consumed from the repo root (`subfolder: "/"`) for downstream installs. That repo-root package boundary is now explicit release contract state for this initial Phase 1 tag.
+- The current package shape is consumed from the repo root (`subfolder: "/"`) for downstream installs.

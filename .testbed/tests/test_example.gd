@@ -1,33 +1,39 @@
 extends GutTest
 
-# ------------------------------------------------------------------------------
-# Example Unit Test
-# ------------------------------------------------------------------------------
-# This script demonstrates the basic structure of a GUT test file.
-# Run this via the GUT panel in the Editor or via Command Line.
+const ADDONS_MANIFEST_PATH := "res://addons.jsonc"
 
-func before_all():
-	# Runs once before all tests in this script.
-	# Use this to setup global resources or load heavy assets.
-	gut.p("Starting Example Tests...")
+func test_hidden_testbed_manifest_stays_ui_kit_focused() -> void:
+	var manifest_text := FileAccess.get_file_as_string(ADDONS_MANIFEST_PATH)
 
-func before_each():
-	# Runs before each test function.
-	# Use this to reset state between tests.
-	pass
+	assert_ne(manifest_text, "", "Expected the hidden testbed manifest to be readable")
+	assert_string_contains(manifest_text, '"aerobeat-ui-core"', "Expected the hidden testbed to pin aerobeat-ui-core for shared UI-kit validation")
+	assert_false(manifest_text.contains('"aerobeat-core"'), "Hidden testbed must not pin aerobeat-core for this UI-kit-focused repo")
 
-func after_each():
-	# Runs after each test function.
-	# Use this to clean up nodes (queue_free).
-	pass
+	var addon_keys := _extract_addon_keys(manifest_text)
+	assert_eq(addon_keys, ["aerobeat-ui-core", "gut"], "Hidden testbed should only declare ui-kit-scoped dependencies")
 
-func after_all():
-	# Runs once after all tests in this script.
-	gut.p("Finished Example Tests.")
+func _extract_addon_keys(manifest_text: String) -> Array[String]:
+	var keys: Array[String] = []
+	var in_addons_block := false
 
-func test_sanity_check():
-	assert_eq(1, 1, "Math should still work")
+	for raw_line in manifest_text.split("\n"):
+		var line := raw_line.strip_edges()
+		if line.begins_with("//") or line == "":
+			continue
+		if line.begins_with('"addons"'):
+			in_addons_block = true
+			continue
+		if not in_addons_block:
+			continue
+		if line == "}":
+			break
+		if not (line.begins_with('"') and line.ends_with("{")):
+			continue
 
-func test_string_equality():
-	var project_name = "AeroBeat"
-	assert_eq(project_name, "AeroBeat", "Strings should match")
+		var closing_quote_index := line.find('"', 1)
+		if closing_quote_index == -1:
+			continue
+
+		keys.append(line.substr(1, closing_quote_index - 1))
+
+	return keys
