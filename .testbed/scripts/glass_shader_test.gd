@@ -6,6 +6,11 @@ const PREVIEW_CORNER_RADIUS_MAX := 52.0
 const PREVIEW_INNER_RADIUS_INSET := 10
 const FRAME_ALPHA_BOOST := 0.18
 
+const BACKGROUND_MODE_IMAGE := 0
+const BACKGROUND_MODE_DEBUG := 1
+const BACKGROUND_MODE_HYBRID := 2
+const DEFAULT_BACKGROUND_MODE := BACKGROUND_MODE_HYBRID
+
 const FLOAT_CONTROLS := [
 	{
 		"name": "blur",
@@ -108,15 +113,18 @@ const COLOR_CONTROLS := [
 @onready var glass_fill: ColorRect = %GlassFill
 @onready var preview_frame: Panel = %PreviewFrame
 @onready var preview_inner_border: Panel = %PreviewInnerBorder
+@onready var preview_backdrop_debug: Control = %PreviewBackdropDebug
 
 var _shader_material: ShaderMaterial
 var _frame_style: StyleBoxFlat
 var _inner_border_style: StyleBoxFlat
+var _background_texture: Texture2D
+var _background_mode := DEFAULT_BACKGROUND_MODE
 
 
 func _ready() -> void:
-	if background.texture == null:
-		background.texture = _load_background_texture()
+	_background_texture = _load_background_texture()
+	background.texture = _background_texture
 
 	_shader_material = glass_fill.material as ShaderMaterial
 	if _shader_material == null:
@@ -128,6 +136,7 @@ func _ready() -> void:
 
 	_configure_preview_button()
 	_build_controls()
+	_apply_background_mode(DEFAULT_BACKGROUND_MODE)
 	_sync_preview_shell()
 
 
@@ -167,15 +176,47 @@ func _build_controls() -> void:
 	for child in controls_list.get_children():
 		child.queue_free()
 
+	controls_list.add_child(_make_background_mode_control())
+
+	var mode_note := Label.new()
+	mode_note.text = "Use Debug Pattern or Hybrid Overlay to make blur and refraction obvious."
+	mode_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	mode_note.modulate = Color(1.0, 1.0, 1.0, 0.68)
+	controls_list.add_child(mode_note)
+
+	var spacer := Control.new()
+	spacer.custom_minimum_size = Vector2(0.0, 8.0)
+	controls_list.add_child(spacer)
+
 	for config in FLOAT_CONTROLS:
 		controls_list.add_child(_make_float_control(config))
 
 	for config in COLOR_CONTROLS:
 		controls_list.add_child(_make_color_control(config))
 
-	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(0.0, 8.0)
-	controls_list.add_child(spacer)
+	var tail_spacer := Control.new()
+	tail_spacer.custom_minimum_size = Vector2(0.0, 8.0)
+	controls_list.add_child(tail_spacer)
+
+
+func _make_background_mode_control() -> Control:
+	var wrapper := VBoxContainer.new()
+	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var label := Label.new()
+	label.text = "preview_background"
+	wrapper.add_child(label)
+
+	var selector := OptionButton.new()
+	selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	selector.add_item("AeroBeat image", BACKGROUND_MODE_IMAGE)
+	selector.add_item("Debug pattern", BACKGROUND_MODE_DEBUG)
+	selector.add_item("Hybrid overlay", BACKGROUND_MODE_HYBRID)
+	selector.selected = DEFAULT_BACKGROUND_MODE
+	selector.item_selected.connect(_on_background_mode_selected.bind(selector))
+	wrapper.add_child(selector)
+
+	return wrapper
 
 
 func _make_float_control(config: Dictionary) -> Control:
@@ -229,6 +270,27 @@ func _make_color_control(config: Dictionary) -> Control:
 	_shader_material.set_shader_parameter(str(config["name"]), picker.color)
 
 	return wrapper
+
+
+func _on_background_mode_selected(index: int, selector: OptionButton) -> void:
+	_apply_background_mode(selector.get_item_id(index))
+
+
+func _apply_background_mode(mode: int) -> void:
+	_background_mode = mode
+	match mode:
+		BACKGROUND_MODE_DEBUG:
+			background.visible = false
+			preview_backdrop_debug.visible = true
+			preview_backdrop_debug.modulate = Color(1.0, 1.0, 1.0, 1.0)
+		BACKGROUND_MODE_HYBRID:
+			background.visible = true
+			preview_backdrop_debug.visible = true
+			preview_backdrop_debug.modulate = Color(1.0, 1.0, 1.0, 0.74)
+		_:
+			background.visible = true
+			preview_backdrop_debug.visible = false
+			preview_backdrop_debug.modulate = Color(1.0, 1.0, 1.0, 1.0)
 
 
 func _on_float_value_changed(value: float, parameter_name: String, slider: HSlider) -> void:

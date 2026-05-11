@@ -1,7 +1,8 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/glass_shader_test.gd" id="1_script"]
 [ext_resource type="Shader" path="res://assets/shaders/glass-shader.gdshader" id="2_shader"]
+[ext_resource type="Script" path="res://scripts/glass_debug_backdrop.gd" id="3_script"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_glass"]
 resource_local_to_scene = true
@@ -156,6 +157,18 @@ grow_vertical = 2
 custom_minimum_size = Vector2(760, 560)
 layout_mode = 2
 
+[node name="PreviewBackdropDebug" type="Control" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_script")
+
 [node name="PreviewButton" type="Button" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(520, 320)
@@ -185,7 +198,6 @@ grow_vertical = 2
 mouse_filter = 2
 material = SubResource("ShaderMaterial_glass")
 color = Color(1, 1, 1, 1)
-z_index = -2
 
 [node name="PreviewFrame" type="Panel" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton"]
 unique_name_in_owner = true
@@ -256,7 +268,7 @@ modulate = Color(1, 1, 1, 0.78)
 theme_override_font_sizes/font_size = 14
 
 [node name="Spacer" type="Control" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
-custom_minimum_size = Vector2(0, 18)
+custom_minimum_size = Vector2(0, 26)
 layout_mode = 2
 
 [node name="Headline" type="Label" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
@@ -267,9 +279,11 @@ theme_override_font_sizes/font_size = 40
 
 [node name="Body" type="Label" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
 layout_mode = 2
-text = "Community UI Kit\nLiquid glass plate test"
+text = "Switch to Debug Pattern or Hybrid Overlay\nto inspect blur, warp, and strength live."
 modulate = Color(1, 1, 1, 0.82)
 theme_override_font_sizes/font_size = 18
+
+autowrap_mode = 3
 
 [node name="BottomSpacer" type="Control" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
 layout_mode = 2
@@ -277,6 +291,7 @@ size_flags_vertical = 3
 
 [node name="HintLabel" type="Label" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
 layout_mode = 2
-text = "Tune the shader live from the left rail"
+text = "The glass should visibly distort the blocks and lines behind it."
 modulate = Color(1, 1, 1, 0.66)
 theme_override_font_sizes/font_size = 15
+autowrap_mode = 3

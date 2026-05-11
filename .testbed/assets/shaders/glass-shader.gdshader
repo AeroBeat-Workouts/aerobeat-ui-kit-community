@@ -53,11 +53,14 @@ void fragment() {
 	float max_dist = min(half_size.x, half_size.y) * 0.5;
 	float w = clamp(-sdf / max_dist, 0.0, 1.0);
 
-	vec2 uv_dir = length(centered) > 0.001 ? normalize(centered) : vec2(0.0, 1.0);
+	vec2 centered_ratio = centered / max(half_size, vec2(1.0));
+	vec2 uv_dir = length(centered_ratio) > 0.001 ? normalize(centered_ratio) : vec2(0.0, 1.0);
+	vec2 axis_distance = abs(centered_ratio);
 
-	float exp_x = exp(-strength_x * pow(w + offset_x, 2.0));
-	float exp_y = exp(-strength_y * pow(w + offset_y, 2.0));
-	vec2 warp_offset = uv_dir * vec2(exp_x, exp_y) * warp_intensity / 10.0;
+	float exp_x = exp(-strength_x * pow(axis_distance.x + offset_x, 2.0));
+	float exp_y = exp(-strength_y * pow(axis_distance.y + offset_y, 2.0));
+	vec2 axis_profile = vec2(exp_x, exp_y) * w;
+	vec2 warp_offset = uv_dir * axis_profile * warp_intensity / 10.0;
 	vec2 warped_uv = SCREEN_UV - warp_offset;
 
 	float edge_proximity = 1.0 - w;
