@@ -441,61 +441,61 @@ The implementation will use a `Control`-based scene sized for a 16:9 test viewpo
 
 ### Task 20: Write a repo-root doc for creating new 2D/3D GUI elements with this shader
 
-**Bead ID:** `Pending`  
+**Bead ID:** `aerobeat-ui-kit-community-0q1`  
 **SubAgent:** `primary` (for `coder` workflow role)  
 **Role:** `coder`  
 **References:** `REF-01`, `REF-05`  
-**Prompt:** Pending until execution setup.
+**Prompt:** In `/home/derrick/Documents/projects/aerobeat/aerobeat-ui-kit-community`, claim bead `aerobeat-ui-kit-community-0q1` with `bd update aerobeat-ui-kit-community-0q1 --status in_progress --json`. Create a new repo-root `docs/` folder entry that explains how to use the glass shader in this repo to create new 2D and 3D GUI elements from scratch. The guide should be practical and truthful to the implemented testbed: explain the flat button + child shader ColorRect pattern for 2D UI, how to use the debug background modes to verify real glass/refraction behavior, what files in this repo are the source of truth, and how someone could adapt the look for 3D-facing GUI/panel work in Godot while reusing the same shader concepts. Include step-by-step setup, recommended defaults, gotchas we discovered in this task, and how to test blur/warp/strength_x/strength_y/corner_radius. Close the bead with a clear reason when done.
 
 **Folders Created/Deleted/Modified:**
 - `docs/`
 
 **Files Created/Deleted/Modified:**
-- `docs/<new shader usage guide>.md`
+- `docs/glass-shader-usage.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** User requested a new repo-root docs folder entry that explains how to use this shader to build fresh 2D/3D GUI elements from scratch.
+**Results:** Wrote the new repo-root guide at `docs/glass-shader-usage.md`. The doc covers source-of-truth files, quick start, the actual 2D pattern implemented in this repo, live tuning workflow, preview background modes, parameter guidance, gotchas discovered during the implementation/debugging cycle, recommended defaults, and clearly-labeled 3D adaptation guidance rather than overclaiming validated 3D support.
 
 ---
 
 ### Task 21: QA the new shader usage doc for accuracy against the implemented testbed
 
-**Bead ID:** `Pending`  
+**Bead ID:** `aerobeat-ui-kit-community-w8r`  
 **SubAgent:** `primary` (for `qa` workflow role)  
 **Role:** `qa`  
 **References:** `REF-01`, `REF-05`  
-**Prompt:** Pending until execution setup.
+**Prompt:** In `/home/derrick/Documents/projects/aerobeat/aerobeat-ui-kit-community`, claim bead `aerobeat-ui-kit-community-w8r` with `bd update aerobeat-ui-kit-community-w8r --status in_progress --json`. QA the new shader usage doc against the implemented testbed. Confirm the paths, setup steps, control explanations, and gotchas match the actual repo files and learned behavior from the completed glass-shader work. Close the bead with a precise pass/fail reason.
 
 **Folders Created/Deleted/Modified:**
 - `docs/`
 
 **Files Created/Deleted/Modified:**
-- `docs/<new shader usage guide>.md`
+- `docs/glass-shader-usage.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Not started.
+**Results:** QA passed. The doc paths match the repo, the setup/node descriptions match the actual testbed scene and scripts, the quick-start and parameter guidance match current behavior and defaults, and the 3D section is clearly framed as adaptation guidance rather than validated repo support.
 
 ---
 
 ### Task 22: Audit the shader usage doc and confirm it is truthful for this repo
 
-**Bead ID:** `Pending`  
+**Bead ID:** `aerobeat-ui-kit-community-qas`  
 **SubAgent:** `primary` (for `auditor` workflow role)  
 **Role:** `auditor`  
 **References:** `REF-01`, `REF-05`  
-**Prompt:** Pending until execution setup.
+**Prompt:** In `/home/derrick/Documents/projects/aerobeat/aerobeat-ui-kit-community`, claim bead `aerobeat-ui-kit-community-qas` with `bd update aerobeat-ui-kit-community-qas --status in_progress --json`. Audit the new shader usage doc independently. Confirm it is truthful to this repo’s actual implementation and does not overclaim unsupported 3D behavior beyond the documented adaptation guidance. Close the bead only if the doc is accurate and safe.
 
 **Folders Created/Deleted/Modified:**
 - `docs/`
 
 **Files Created/Deleted/Modified:**
-- `docs/<new shader usage guide>.md`
+- `docs/glass-shader-usage.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Not started.
+**Results:** Audit passed. The doc is truthful to the repo’s current implementation, correctly documents the implemented 2D workflow and verification method, and does not overstate 3D support. Only minor future improvement noted was optionally documenting a few secondary controls more exhaustively.
 
 ---
 
