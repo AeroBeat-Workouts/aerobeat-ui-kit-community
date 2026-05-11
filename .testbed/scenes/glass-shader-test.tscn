@@ -1,8 +1,16 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene format=3 uid="uid://dla1q2cmackis"]
 
-[ext_resource type="Script" path="res://scripts/glass_shader_test.gd" id="1_script"]
-[ext_resource type="Shader" path="res://assets/shaders/glass-shader.gdshader" id="2_shader"]
-[ext_resource type="Script" path="res://scripts/glass_debug_backdrop.gd" id="3_script"]
+[ext_resource type="Script" uid="uid://dwqhyh64irs78" path="res://scripts/glass_shader_test.gd" id="1_script"]
+[ext_resource type="Shader" uid="uid://cpkp0irsnrqm7" path="res://assets/shaders/glass-shader.gdshader" id="2_shader"]
+[ext_resource type="Script" uid="uid://bxhdc78obwfuk" path="res://scripts/glass_debug_backdrop.gd" id="3_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_controls_panel"]
+resource_local_to_scene = true
+bg_color = Color(0.08, 0.09, 0.11, 0.9)
+border_width_right = 1
+border_color = Color(1, 1, 1, 0.08)
+shadow_color = Color(0, 0, 0, 0.22)
+shadow_size = 18
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_glass"]
 resource_local_to_scene = true
@@ -19,16 +27,6 @@ shader_parameter/tint = Color(0.92, 0.96, 1, 0.22)
 shader_parameter/edge_highlight = Color(1, 1, 1, 0.62)
 shader_parameter/edge_width = 2.4
 shader_parameter/chromatic_strength = 2.2
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_controls_panel"]
-resource_local_to_scene = true
-bg_color = Color(0.08, 0.09, 0.11, 0.9)
-border_width_right = 1
-border_color = Color(1, 1, 1, 0.08)
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-shadow_color = Color(0, 0, 0, 0.22)
-shadow_size = 18
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_glass_frame"]
 resource_local_to_scene = true
@@ -71,7 +69,7 @@ corner_radius_top_right = 14
 corner_radius_bottom_right = 14
 corner_radius_bottom_left = 14
 
-[node name="GlassShaderTest" type="Control"]
+[node name="GlassShaderTest" type="Control" unique_id=1992261569]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -80,7 +78,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" type="TextureRect" parent="." unique_id=1693282215]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -91,61 +89,63 @@ grow_vertical = 2
 mouse_filter = 2
 stretch_mode = 6
 
-[node name="SplitRoot" type="HSplitContainer" parent="."]
+[node name="SplitRoot" type="HSplitContainer" parent="." unique_id=636436502]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+split_offsets = PackedInt32Array(320)
 split_offset = 320
 
-[node name="ControlsPanel" type="PanelContainer" parent="SplitRoot"]
+[node name="ControlsPanel" type="PanelContainer" parent="SplitRoot" unique_id=1609552228]
 custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_controls_panel")
 
-[node name="Margin" type="MarginContainer" parent="SplitRoot/ControlsPanel"]
+[node name="Margin" type="MarginContainer" parent="SplitRoot/ControlsPanel" unique_id=899458257]
 layout_mode = 2
 theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="ControlsColumn" type="VBoxContainer" parent="SplitRoot/ControlsPanel/Margin"]
+[node name="ControlsColumn" type="VBoxContainer" parent="SplitRoot/ControlsPanel/Margin" unique_id=240556238]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Title" type="Label" parent="SplitRoot/ControlsPanel/Margin/ControlsColumn"]
+[node name="Title" type="Label" parent="SplitRoot/ControlsPanel/Margin/ControlsColumn" unique_id=741457127]
 layout_mode = 2
-text = "Liquid Glass"
 theme_override_font_sizes/font_size = 28
+text = "Liquid Glass"
 
-[node name="Subtitle" type="Label" parent="SplitRoot/ControlsPanel/Margin/ControlsColumn"]
+[node name="Subtitle" type="Label" parent="SplitRoot/ControlsPanel/Margin/ControlsColumn" unique_id=1371681484]
+modulate = Color(1, 1, 1, 0.72)
 layout_mode = 2
 text = "AeroBeat shader testbed"
-modulate = Color(1, 1, 1, 0.72)
 
-[node name="Divider" type="HSeparator" parent="SplitRoot/ControlsPanel/Margin/ControlsColumn"]
+[node name="Divider" type="HSeparator" parent="SplitRoot/ControlsPanel/Margin/ControlsColumn" unique_id=1263943013]
 layout_mode = 2
 
-[node name="ControlsScroll" type="ScrollContainer" parent="SplitRoot/ControlsPanel/Margin/ControlsColumn"]
+[node name="ControlsScroll" type="ScrollContainer" parent="SplitRoot/ControlsPanel/Margin/ControlsColumn" unique_id=1404272346]
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="ControlsList" type="VBoxContainer" parent="SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll"]
+[node name="ControlsList" type="VBoxContainer" parent="SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll" unique_id=136160045]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 10
 
-[node name="PreviewArea" type="Control" parent="SplitRoot"]
+[node name="PreviewArea" type="Control" parent="SplitRoot" unique_id=1326523947]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="PreviewCenter" type="CenterContainer" parent="SplitRoot/PreviewArea"]
+[node name="PreviewCenter" type="CenterContainer" parent="SplitRoot/PreviewArea" unique_id=1935052162]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -153,11 +153,11 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="PreviewStack" type="Control" parent="SplitRoot/PreviewArea/PreviewCenter"]
+[node name="PreviewStack" type="Control" parent="SplitRoot/PreviewArea/PreviewCenter" unique_id=61832895]
 custom_minimum_size = Vector2(760, 560)
 layout_mode = 2
 
-[node name="PreviewBackdropDebug" type="Control" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack"]
+[node name="PreviewBackdropDebug" type="Control" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack" unique_id=2120313954]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -169,7 +169,7 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("3_script")
 
-[node name="PreviewButton" type="Button" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack"]
+[node name="PreviewButton" type="Button" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack" unique_id=1820420113]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(520, 320)
 layout_mode = 1
@@ -184,11 +184,11 @@ offset_right = 260.0
 offset_bottom = 160.0
 grow_horizontal = 2
 grow_vertical = 2
-text = ""
 flat = true
 
-[node name="GlassFill" type="ColorRect" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton"]
+[node name="GlassFill" type="ColorRect" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton" unique_id=969185869]
 unique_name_in_owner = true
+material = SubResource("ShaderMaterial_glass")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -196,10 +196,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-material = SubResource("ShaderMaterial_glass")
-color = Color(1, 1, 1, 1)
 
-[node name="PreviewFrame" type="Panel" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton"]
+[node name="PreviewFrame" type="Panel" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton" unique_id=1686433558]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -210,7 +208,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_glass_frame")
 
-[node name="InnerBorderInset" type="MarginContainer" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton"]
+[node name="InnerBorderInset" type="MarginContainer" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton" unique_id=742294739]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -223,13 +221,13 @@ theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="PreviewInnerBorder" type="Panel" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/InnerBorderInset"]
+[node name="PreviewInnerBorder" type="Panel" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/InnerBorderInset" unique_id=757000426]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_glass_inner_border")
 
-[node name="ContentMargin" type="MarginContainer" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton"]
+[node name="ContentMargin" type="MarginContainer" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton" unique_id=1377203334]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -242,56 +240,56 @@ theme_override_constants/margin_top = 32
 theme_override_constants/margin_right = 36
 theme_override_constants/margin_bottom = 32
 
-[node name="ContentColumn" type="VBoxContainer" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin"]
+[node name="ContentColumn" type="VBoxContainer" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin" unique_id=1470034764]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 12
 
-[node name="Badge" type="PanelContainer" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
+[node name="Badge" type="PanelContainer" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn" unique_id=1535479258]
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_horizontal = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_badge")
 
-[node name="BadgePadding" type="MarginContainer" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/Badge"]
+[node name="BadgePadding" type="MarginContainer" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/Badge" unique_id=347061414]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 6
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 6
 
-[node name="BadgeLabel" type="Label" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/Badge/BadgePadding"]
-layout_mode = 2
-text = "Shader Preview"
+[node name="BadgeLabel" type="Label" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/Badge/BadgePadding" unique_id=1434319110]
 modulate = Color(1, 1, 1, 0.78)
+layout_mode = 2
 theme_override_font_sizes/font_size = 14
+text = "Shader Preview"
 
-[node name="Spacer" type="Control" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
+[node name="Spacer" type="Control" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn" unique_id=1621560033]
 custom_minimum_size = Vector2(0, 26)
 layout_mode = 2
 
-[node name="Headline" type="Label" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
+[node name="Headline" type="Label" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn" unique_id=1452705645]
 layout_mode = 2
+theme_override_font_sizes/font_size = 40
 text = "AeroBeat"
 vertical_alignment = 1
-theme_override_font_sizes/font_size = 40
 
-[node name="Body" type="Label" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
-layout_mode = 2
-text = "Switch to Debug Pattern or Hybrid Overlay\nto inspect blur, warp, and strength live."
+[node name="Body" type="Label" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn" unique_id=89605355]
 modulate = Color(1, 1, 1, 0.82)
+layout_mode = 2
 theme_override_font_sizes/font_size = 18
-
+text = "Switch to Debug Pattern or Hybrid Overlay
+to inspect blur, warp, and strength live."
 autowrap_mode = 3
 
-[node name="BottomSpacer" type="Control" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
+[node name="BottomSpacer" type="Control" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn" unique_id=685313681]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="HintLabel" type="Label" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
-layout_mode = 2
-text = "The glass should visibly distort the blocks and lines behind it."
+[node name="HintLabel" type="Label" parent="SplitRoot/PreviewArea/PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn" unique_id=1611797441]
 modulate = Color(1, 1, 1, 0.66)
+layout_mode = 2
 theme_override_font_sizes/font_size = 15
+text = "The glass should visibly distort the blocks and lines behind it."
 autowrap_mode = 3
