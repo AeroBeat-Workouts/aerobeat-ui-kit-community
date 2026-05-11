@@ -6,11 +6,24 @@ This repo includes a Godot testbed for a screen-sampling “glass” UI treatmen
 
 Use these files as the canonical reference before copying the effect elsewhere:
 
-- `.testbed/scenes/glass-shader-test.tscn` — the working test scene and node hierarchy
+### 2D testbed
+
+- `.testbed/scenes/glass-shader-test.tscn` — the working 2D test scene and node hierarchy
 - `.testbed/scripts/glass_shader_test.gd` — live tuning UI, background mode switching, and shell/frame sync logic
-- `.testbed/scripts/glass_debug_backdrop.gd` — the debug backdrop used to make blur and refraction obvious
-- `.testbed/assets/shaders/glass-shader.gdshader` — the shader itself
-- `.testbed/project.godot` — opens the hidden testbed project and currently launches the glass test scene
+- `.testbed/scripts/glass_debug_backdrop.gd` — the 2D debug backdrop used to make blur and refraction obvious
+- `.testbed/assets/shaders/glass-shader.gdshader` — the 2D canvas-item glass shader
+
+### 3D testbed
+
+- `.testbed/scenes/glass-shader-3d-test.tscn` — the new 3D panel scene with a perspective camera and rotation controls
+- `.testbed/scripts/glass_shader_3d_test.gd` — rotation controller and on-screen QA instructions
+- `.testbed/scripts/glass_3d_debug_backdrop.gd` — procedural 3D backdrop with high-contrast bands, grid lines, spheres, and diagonals
+- `.testbed/assets/shaders/glass-panel-3d.gdshader` — the new spatial glass shader used on the panel face
+- `.testbed/scripts/re_qa_capture_3d.gd` — optional capture harness for automated screenshot evidence
+
+### Project entry
+
+- `.testbed/project.godot` — opens the hidden testbed project; change `run/main_scene` if you want the 3D example to be the default launch target
 
 ## Quick start
 
@@ -306,7 +319,21 @@ Then test in this order:
 
 ## Practical adaptation guidance for 3D-facing UI and panels
 
-This repo does **not** contain a validated finished 3D implementation. The guidance below is adaptation advice based on the same ideas, not a claim that 3D panel support here is complete.
+This repo now includes a **real 3D example scene** for glass-panel exploration, but it is still a focused testbed rather than a full productized 3D UI framework. Treat it as the truthful starting point for 3D work in this repo.
+
+### What the 3D example actually does
+
+The new 3D path uses a perspective camera, a real `Node3D` scene, and a mesh-backed panel instead of faking depth with a 2D control.
+
+Structure:
+
+- `PanelPivot` rotates a real 3D panel in space
+- `GlassBody` is a thin `BoxMesh` that gives the panel actual thickness and catches rim light
+- `GlassFace` is a front `QuadMesh` using `.testbed/assets/shaders/glass-panel-3d.gdshader`
+- the 3D shader samples `hint_screen_texture` in a spatial shader, masks to a rounded rectangle, adds edge/fresnel response, and refracts the already-rendered world behind the panel
+- `DebugBackdrop` builds a 3D environment with colored bands, grid lines, spheres, and diagonal bars so blur/refraction remain obvious while the panel rotates
+
+That means this repo now demonstrates a real 3D-oriented glass panel, not just a 2D shader shown from a flattering angle.
 
 ### What transfers well
 
