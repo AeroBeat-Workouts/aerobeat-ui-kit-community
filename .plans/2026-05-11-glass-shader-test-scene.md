@@ -375,6 +375,130 @@ The implementation will use a `Control`-based scene sized for a 16:9 test viewpo
 
 ---
 
+### Task 17: Repair corner-radius consistency between the shader plate and the UI frame/highlight
+
+**Bead ID:** `aerobeat-ui-kit-community-ogc`  
+**SubAgent:** `primary` (for `coder` workflow role)  
+**Role:** `coder`  
+**References:** `REF-01`, `REF-03`, `REF-05`  
+**Prompt:** In `/home/derrick/Documents/projects/aerobeat/aerobeat-ui-kit-community`, claim bead `aerobeat-ui-kit-community-ogc` with `bd update aerobeat-ui-kit-community-ogc --status in_progress --json`. Repair the corner-radius mismatch between the shader-backed glass plate and the surrounding UI frame/highlight. Derrick observed that at `corner_radius = 1`, the shader plate becomes much rounder than the outer frame/highlight and inner border, so the shell no longer tracks the same effective radius system. Investigate the shader-side radius math versus the script-side radius mapping, then adjust the implementation so low, mid, and especially max corner-radius values remain visually aligned across the glass fill, outer frame/highlight, and inner border. Keep the rest of the tester behavior intact. Close the bead with a clear reason when done.
+
+**Folders Created/Deleted/Modified:**
+- `.testbed/scenes/`
+- `.testbed/scripts/`
+- `.testbed/assets/shaders/` if needed
+
+**Files Created/Deleted/Modified:**
+- `.testbed/scenes/glass-shader-test.tscn`
+- `.testbed/scripts/glass_shader_test.gd`
+- `.testbed/assets/shaders/glass-shader.gdshader` if needed
+
+**Status:** ✅ Complete
+
+**Results:** Corner-radius parity repair landed and the bead was closed. Root cause was that the shader used size-derived radius math (`corner_radius * min(width, height) * 0.5`) while the script-side shell was capped by a fixed pixel lerp (`18px` to `52px`). The fix removed that arbitrary shell mapping and now derives the outer frame radius from `preview_button.size` and the inner border radius from `preview_inner_border.size` using the same effective size-based corner-radius math as the shader. Resize-driven resync was also added so the shell stays aligned after layout.
+
+---
+
+### Task 18: QA corner-radius consistency at low/mid/high values
+
+**Bead ID:** `aerobeat-ui-kit-community-3z3`  
+**SubAgent:** `primary` (for `qa` workflow role)  
+**Role:** `qa`  
+**References:** `REF-03`, `REF-05`  
+**Prompt:** In `/home/derrick/Documents/projects/aerobeat/aerobeat-ui-kit-community`, claim bead `aerobeat-ui-kit-community-3z3` with `bd update aerobeat-ui-kit-community-3z3 --status in_progress --json`. Run the tester in Godot and verify that the glass plate, outer frame/highlight, and inner border remain visually aligned at low, mid, and high `corner_radius` values, especially near `corner_radius = 1`. Capture concrete evidence and close the bead with a precise pass/fail reason.
+
+**Folders Created/Deleted/Modified:**
+- `.testbed/`
+
+**Files Created/Deleted/Modified:**
+- QA evidence artifacts if produced
+
+**Status:** ✅ Complete
+
+**Results:** QA passed. Across `corner_radius = 0.10`, `0.50`, `0.85`, and `1.00`, the shader fill, outer frame/highlight, and inner border remain visually aligned, and at `corner_radius = 1.00` the frame/highlight no longer lags behind the shader plate. Evidence was captured under `/home/derrick/.openclaw/workspace/.temp/re-qa-glass-radius-parity-2026-05-11/`, including crop images and `report.csv`.
+
+---
+
+### Task 19: Audit radius-parity truthfulness for the frame/highlight vs shader plate
+
+**Bead ID:** `aerobeat-ui-kit-community-psi`  
+**SubAgent:** `primary` (for `auditor` workflow role)  
+**Role:** `auditor`  
+**References:** `REF-01`, `REF-03`, `REF-05`  
+**Prompt:** In `/home/derrick/Documents/projects/aerobeat/aerobeat-ui-kit-community`, claim bead `aerobeat-ui-kit-community-psi` with `bd update aerobeat-ui-kit-community-psi --status in_progress --json`. Audit the repaired corner-radius behavior independently. Confirm whether the shader plate, frame/highlight, and inner border now truthfully track the same effective radius behavior across the range, particularly at maximum corner radius. Close the bead only if the remaining mismatch is actually resolved.
+
+**Folders Created/Deleted/Modified:**
+- `TBD`
+
+**Files Created/Deleted/Modified:**
+- `TBD`
+
+**Status:** ✅ Complete
+
+**Results:** Final audit passed. The shader plate and outer frame/highlight now match exactly across the tested radius values, and the inner border tracks the same normalized behavior against its own inset geometry. The prior max-radius mismatch at `corner_radius = 1.00` is resolved.
+
+---
+
+### Task 20: Write a repo-root doc for creating new 2D/3D GUI elements with this shader
+
+**Bead ID:** `Pending`  
+**SubAgent:** `primary` (for `coder` workflow role)  
+**Role:** `coder`  
+**References:** `REF-01`, `REF-05`  
+**Prompt:** Pending until execution setup.
+
+**Folders Created/Deleted/Modified:**
+- `docs/`
+
+**Files Created/Deleted/Modified:**
+- `docs/<new shader usage guide>.md`
+
+**Status:** ⏳ Pending
+
+**Results:** User requested a new repo-root docs folder entry that explains how to use this shader to build fresh 2D/3D GUI elements from scratch.
+
+---
+
+### Task 21: QA the new shader usage doc for accuracy against the implemented testbed
+
+**Bead ID:** `Pending`  
+**SubAgent:** `primary` (for `qa` workflow role)  
+**Role:** `qa`  
+**References:** `REF-01`, `REF-05`  
+**Prompt:** Pending until execution setup.
+
+**Folders Created/Deleted/Modified:**
+- `docs/`
+
+**Files Created/Deleted/Modified:**
+- `docs/<new shader usage guide>.md`
+
+**Status:** ⏳ Pending
+
+**Results:** Not started.
+
+---
+
+### Task 22: Audit the shader usage doc and confirm it is truthful for this repo
+
+**Bead ID:** `Pending`  
+**SubAgent:** `primary` (for `auditor` workflow role)  
+**Role:** `auditor`  
+**References:** `REF-01`, `REF-05`  
+**Prompt:** Pending until execution setup.
+
+**Folders Created/Deleted/Modified:**
+- `docs/`
+
+**Files Created/Deleted/Modified:**
+- `docs/<new shader usage guide>.md`
+
+**Status:** ⏳ Pending
+
+**Results:** Not started.
+
+---
+
 ## Final Results
 
 **Status:** ✅ Complete

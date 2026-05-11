@@ -1,9 +1,6 @@
 extends Control
 
 const BACKGROUND_IMAGE_PATH := "res://assets/images/perfect-hue-may-08-2026-hd.png"
-const PREVIEW_CORNER_RADIUS_MIN := 18.0
-const PREVIEW_CORNER_RADIUS_MAX := 52.0
-const PREVIEW_INNER_RADIUS_INSET := 10
 const FRAME_ALPHA_BOOST := 0.18
 
 const BACKGROUND_MODE_IMAGE := 0
@@ -137,7 +134,9 @@ func _ready() -> void:
 	_configure_preview_button()
 	_build_controls()
 	_apply_background_mode(DEFAULT_BACKGROUND_MODE)
-	_sync_preview_shell()
+	preview_button.resized.connect(_sync_preview_shell)
+	preview_inner_border.resized.connect(_sync_preview_shell)
+	call_deferred("_sync_preview_shell")
 
 
 func _notification(what: int) -> void:
@@ -315,11 +314,11 @@ func _sync_preview_shell() -> void:
 	var tint: Color = _shader_material.get_shader_parameter("tint")
 	var edge_highlight: Color = _shader_material.get_shader_parameter("edge_highlight")
 
-	var corner_px := int(round(lerpf(PREVIEW_CORNER_RADIUS_MIN, PREVIEW_CORNER_RADIUS_MAX, clampf(corner_radius, 0.0, 1.0))))
-	var inner_corner_px := maxi(0, corner_px - PREVIEW_INNER_RADIUS_INSET)
+	var frame_corner_px := _shader_corner_radius_to_pixels(preview_button.size, corner_radius)
+	var inner_corner_px := _shader_corner_radius_to_pixels(preview_inner_border.size, corner_radius)
 	var border_width := maxi(1, int(round(maxf(1.0, edge_width * 1.35))))
 
-	_set_all_corner_radii(_frame_style, corner_px)
+	_set_all_corner_radii(_frame_style, frame_corner_px)
 	_set_all_corner_radii(_inner_border_style, inner_corner_px)
 
 	_frame_style.border_width_left = border_width
@@ -333,6 +332,12 @@ func _sync_preview_shell() -> void:
 	_frame_style.shadow_color = Color(edge_highlight.r, edge_highlight.g, edge_highlight.b, clampf(edge_highlight.a * 0.18, 0.04, 0.18))
 
 	_inner_border_style.border_color = Color(1.0, 1.0, 1.0, clampf(0.08 + tint.a * 0.55, 0.08, 0.24))
+
+
+func _shader_corner_radius_to_pixels(control_size: Vector2, corner_radius: float) -> int:
+	var clamped_radius := clampf(corner_radius, 0.0, 1.0)
+	var max_corner_px := minf(control_size.x, control_size.y) * 0.5
+	return int(round(clamped_radius * max_corner_px))
 
 
 func _set_all_corner_radii(stylebox: StyleBoxFlat, radius: int) -> void:
