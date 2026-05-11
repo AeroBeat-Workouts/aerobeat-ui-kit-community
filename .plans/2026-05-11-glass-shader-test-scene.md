@@ -240,24 +240,24 @@ The implementation will use a `Control`-based scene sized for a 16:9 test viewpo
 **Files Created/Deleted/Modified:**
 - `TBD`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Not started.
+**Results:** Final audit passed on the simplified version. Verified that only the shader-backed glass fill, the outer bevel/frame, and the inner outlined rectangle remain in the visible preview stack. The darker outer shadow rectangle and lighter outer shadow rectangle are gone, and the plate still reads clearly enough after the reduction.
 
 ---
 
 ## Final Results
 
-**Status:** ⚠️ Partial
+**Status:** ✅ Complete
 
-**What We Built:** Draft plan only; execution has not started.
+**What We Built:** Added a Godot `.testbed` glass shader evaluation scene for `aerobeat-ui-kit-community` at `.testbed/scenes/glass-shader-test.tscn`, using the requested liquid glass shader, AeroBeat background image, and a left-side live-tuning control rail. After an initial parity miss and a successful rework/reduction cycle, the final version now preserves a clean two-layer look: the inner outlined glass rectangle and the outer bevel/frame, with the two extra outer shadow/backdrop rectangles removed per Derrick’s latest request.
 
-**Reference Check:** The request is mapped to `REF-01` through `REF-05`; implementation and verification are still pending.
+**Reference Check:** `REF-01` through `REF-05` satisfied. The scene is visually close enough to the shader tester reference while intentionally using the AeroBeat background and omitting the bottom-right demo buttons.
 
 **Commits:**
-- None yet.
+- `caa927e` - Add glass shader UI testbed scene
 
-**Lessons Learned:** The repo already has a `.testbed/` plus repo-local Beads, so it’s a good fit for the usual coder → QA → auditor loop.
+**Lessons Learned:** The initial four-rectangle stack was useful for making the glass plate read clearly, but once the core silhouette was established it was safe to reduce the composition to the cleaner two-layer version Derrick preferred. Runtime/visual QA screenshots were important for catching the difference between "technically present" and "visibly reads right".
 
 ---
 
