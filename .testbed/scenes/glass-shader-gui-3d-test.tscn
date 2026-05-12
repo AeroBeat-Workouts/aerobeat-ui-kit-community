@@ -107,6 +107,11 @@ material_override = SubResource("StandardMaterial3D_shell")
 position = Vector3(0, 0, 0.051)
 mesh = SubResource("QuadMesh_panel")
 
+[node name="PanelUiOverlay" type="MeshInstance3D" parent="PanelPivot" unique_name_in_owner=true]
+position = Vector3(0, 0, 0.053)
+mesh = SubResource("QuadMesh_panel")
+cast_shadow = 0
+
 [node name="PanelViewport" type="SubViewport" parent="PanelPivot" unique_name_in_owner=true]
 size = Vector2i(1600, 900)
 

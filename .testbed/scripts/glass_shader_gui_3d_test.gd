@@ -2,6 +2,7 @@ extends Node3D
 
 const SOURCE_2D_SCENE_PATH := "res://scenes/glass-shader-panel-source.tscn"
 const HYBRID_SHADER_PATH := "res://assets/shaders/glass-panel-hybrid-3d.gdshader"
+const UI_OVERLAY_SHADER_PATH := "res://assets/shaders/glass-panel-ui-overlay-3d.gdshader"
 const PanelSourceScript = preload("res://scripts/glass_shader_panel_source.gd")
 
 const AUTO_YAW_AMPLITUDE_DEG := 26.0
@@ -128,7 +129,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
-		"default": 0.18,
+		"default": 0.14,
 	},
 	{
 		"name": "fresnel_power",
@@ -136,7 +137,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.5,
 		"max": 8.0,
 		"step": 0.1,
-		"default": 4.6,
+		"default": 5.0,
 	},
 	{
 		"name": "fresnel_strength",
@@ -144,7 +145,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 2.0,
 		"step": 0.01,
-		"default": 0.10,
+		"default": 0.08,
 	},
 	{
 		"name": "face_highlight",
@@ -152,7 +153,23 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 0.4,
 		"step": 0.01,
-		"default": 0.04,
+		"default": 0.06,
+	},
+	{
+		"name": "face_veil_strength",
+		"label": "face_veil_strength",
+		"min": 0.0,
+		"max": 1.0,
+		"step": 0.01,
+		"default": 0.34,
+	},
+	{
+		"name": "perimeter_frost_boost",
+		"label": "perimeter_frost_boost",
+		"min": 0.0,
+		"max": 0.5,
+		"step": 0.01,
+		"default": 0.18,
 	},
 	{
 		"name": "ui_alpha_gain",
@@ -168,7 +185,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.2,
 		"max": 2.0,
 		"step": 0.01,
-		"default": 1.04,
+		"default": 1.01,
 	},
 	{
 		"name": "ui_embed_strength",
@@ -176,7 +193,39 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 0.3,
 		"step": 0.01,
-		"default": 0.08,
+		"default": 0.04,
+	},
+	{
+		"name": "ui_overlay_alpha",
+		"label": "ui_overlay_alpha",
+		"min": 0.0,
+		"max": 2.0,
+		"step": 0.01,
+		"default": 1.08,
+	},
+	{
+		"name": "ui_overlay_brightness",
+		"label": "ui_overlay_brightness",
+		"min": 0.2,
+		"max": 2.0,
+		"step": 0.01,
+		"default": 1.06,
+	},
+	{
+		"name": "ui_overlay_shadow_strength",
+		"label": "ui_overlay_shadow_strength",
+		"min": 0.0,
+		"max": 0.25,
+		"step": 0.01,
+		"default": 0.015,
+	},
+	{
+		"name": "ui_overlay_tint_mix",
+		"label": "ui_overlay_tint_mix",
+		"min": 0.0,
+		"max": 0.3,
+		"step": 0.01,
+		"default": 0.02,
 	},
 ]
 
@@ -190,6 +239,11 @@ const HYBRID_COLOR_CONTROLS := [
 		"name": "edge_color",
 		"label": "edge_color",
 		"default": Color(1.0, 1.0, 1.0, 0.22),
+	},
+	{
+		"name": "ui_overlay_tint",
+		"label": "ui_overlay_tint",
+		"default": Color(0.97, 0.985, 1.0, 1.0),
 	},
 ]
 
@@ -207,12 +261,14 @@ const PARAMETER_ALIASES := {
 @onready var panel_viewport: SubViewport = get_node_or_null("PanelPivot/PanelViewport") as SubViewport
 @onready var mask_viewport: SubViewport = get_node_or_null("PanelPivot/MaskViewport") as SubViewport
 @onready var panel_display: MeshInstance3D = get_node_or_null("PanelPivot/PanelDisplay") as MeshInstance3D
+@onready var panel_ui_overlay: MeshInstance3D = get_node_or_null("PanelPivot/PanelUiOverlay") as MeshInstance3D
 @onready var controls_list: VBoxContainer = get_node_or_null("CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll/ControlsList") as VBoxContainer
 @onready var status_label: RichTextLabel = get_node_or_null("CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/StatusPanel/StatusPadding/StatusLabel") as RichTextLabel
 
 var _panel_ui: Control
 var _mask_ui: Control
 var _panel_material: ShaderMaterial
+var _panel_ui_overlay_material: ShaderMaterial
 var _manual_pitch_deg := 0.0
 var _manual_yaw_deg := 0.0
 var _base_rotation := Vector3.ZERO
@@ -222,7 +278,7 @@ var _color_pickers: Dictionary = {}
 
 
 func _ready() -> void:
-	if panel_pivot == null or panel_viewport == null or mask_viewport == null or panel_display == null:
+	if panel_pivot == null or panel_viewport == null or mask_viewport == null or panel_display == null or panel_ui_overlay == null:
 		push_error("3D GUI glass test scene is missing one or more required nodes.")
 		return
 
@@ -231,7 +287,7 @@ func _ready() -> void:
 	_configure_subviewport(mask_viewport)
 	_mount_source_2d_scenes()
 	_configure_panel_sources_for_hybrid()
-	_apply_panel_material()
+	_apply_panel_materials()
 	_build_controls()
 	call_deferred("_sync_controls_from_panel")
 	call_deferred("_sync_authored_card_rect")
@@ -309,7 +365,9 @@ func set_panel_shader_parameter(parameter_name: String, value: Variant) -> void:
 		return
 
 	var resolved: Dictionary = _resolve_parameter_alias(parameter_name, value)
-	_panel_material.set_shader_parameter(resolved["name"], resolved["value"])
+	if not _is_overlay_parameter(parameter_name):
+		_panel_material.set_shader_parameter(resolved["name"], resolved["value"])
+	_apply_overlay_shader_parameter(parameter_name, value)
 	if is_instance_valid(_mask_ui) and _mask_ui.has_method("set_shader_parameter"):
 		var mask_parameter_name := parameter_name
 		if parameter_name == "edge_color":
@@ -324,6 +382,9 @@ func set_panel_shader_parameter(parameter_name: String, value: Variant) -> void:
 
 
 func get_panel_shader_parameter(parameter_name: String) -> Variant:
+	if _is_overlay_parameter(parameter_name):
+		return _get_overlay_shader_parameter(parameter_name)
+
 	if _panel_material == null:
 		return null
 
@@ -335,6 +396,26 @@ func get_panel_shader_parameter(parameter_name: String) -> Variant:
 		return resolved_value
 
 	return _panel_material.get_shader_parameter(parameter_name)
+
+
+func _apply_overlay_shader_parameter(parameter_name: String, value: Variant) -> void:
+	if _panel_ui_overlay_material == null:
+		return
+	if not _is_overlay_parameter(parameter_name):
+		return
+	_panel_ui_overlay_material.set_shader_parameter(parameter_name, value)
+
+
+func _get_overlay_shader_parameter(parameter_name: String) -> Variant:
+	if _panel_ui_overlay_material == null:
+		return null
+	if not _is_overlay_parameter(parameter_name):
+		return null
+	return _panel_ui_overlay_material.get_shader_parameter(parameter_name)
+
+
+func _is_overlay_parameter(parameter_name: String) -> bool:
+	return parameter_name.begins_with("ui_overlay_")
 
 
 func _configure_subviewport(viewport: SubViewport) -> void:
@@ -385,25 +466,36 @@ func _configure_panel_sources_for_hybrid() -> void:
 			_mask_ui.call("set_background_mode", PanelSourceScript.BACKGROUND_MODE_NONE)
 
 
-func _apply_panel_material() -> void:
+func _apply_panel_materials() -> void:
 	var shader: Shader = load(HYBRID_SHADER_PATH)
 	if shader == null:
 		push_error("Failed to load hybrid 3D glass shader: %s" % HYBRID_SHADER_PATH)
 		return
+	var overlay_shader: Shader = load(UI_OVERLAY_SHADER_PATH)
+	if overlay_shader == null:
+		push_error("Failed to load hybrid 3D UI overlay shader: %s" % UI_OVERLAY_SHADER_PATH)
+		return
 
 	_panel_material = ShaderMaterial.new()
 	_panel_material.shader = shader
+	_panel_ui_overlay_material = ShaderMaterial.new()
+	_panel_ui_overlay_material.shader = overlay_shader
 	for config in HYBRID_FLOAT_CONTROLS:
 		set_panel_shader_parameter(str(config["name"]), config["default"])
 	for config in HYBRID_COLOR_CONTROLS:
 		set_panel_shader_parameter(str(config["name"]), config["default"])
 
 	_panel_material.set_shader_parameter("flip_ui_vertical", false)
-	_panel_material.set_shader_parameter("ui_shadow_strength", 0.035)
+	_panel_material.set_shader_parameter("ui_shadow_strength", 0.02)
 	_panel_material.set_shader_parameter("ui_texture", panel_viewport.get_texture())
 	_panel_material.set_shader_parameter("mask_texture", mask_viewport.get_texture())
+	_panel_ui_overlay_material.set_shader_parameter("flip_ui_vertical", false)
+	_panel_ui_overlay_material.set_shader_parameter("ui_texture", panel_viewport.get_texture())
+	_panel_ui_overlay_material.set_shader_parameter("mask_texture", mask_viewport.get_texture())
 	_copy_source_shader_defaults_to_hybrid_material()
+	_sync_authored_card_rect()
 	panel_display.material_override = _panel_material
+	panel_ui_overlay.material_override = _panel_ui_overlay_material
 
 
 func _copy_source_shader_defaults_to_hybrid_material() -> void:
@@ -593,7 +685,10 @@ func _sync_authored_card_rect() -> void:
 		return
 
 	var rect: Rect2 = source.call("get_preview_rect_normalized")
-	_panel_material.set_shader_parameter("glass_rect", Vector4(rect.position.x, rect.position.y, rect.size.x, rect.size.y))
+	var glass_rect := Vector4(rect.position.x, rect.position.y, rect.size.x, rect.size.y)
+	_panel_material.set_shader_parameter("glass_rect", glass_rect)
+	if _panel_ui_overlay_material != null:
+		_panel_ui_overlay_material.set_shader_parameter("glass_rect", glass_rect)
 
 
 func _apply_panel_rotation() -> void:
@@ -630,7 +725,7 @@ func _refresh_status() -> void:
 		"Pitch: %.1f°" % panel_pivot.rotation_degrees.x,
 		"Yaw: %.1f°" % panel_pivot.rotation_degrees.y,
 		"",
-		"This parity pass keeps the shared 2D source scene, but splits it into a content viewport and an authored mask viewport. The 3D shader now uses that mask to constrain blur/refraction/tint/highlight to the actual card region and reuses the 2D warp profile as its base distortion field."
+		"This parity pass keeps the shared 2D source scene, but now separates the milky glass body from a crisp UI overlay. The body shader uses the authored mask to keep the face flatter and creamier, while the front overlay preserves text clarity and closer 2D-style UI color."
 	]
 	status_label.text = "\n".join(lines)
 
