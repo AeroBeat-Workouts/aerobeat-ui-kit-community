@@ -48,6 +48,14 @@ corner_radius_top_right = 32
 corner_radius_bottom_right = 32
 corner_radius_bottom_left = 32
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hybrid_mask"]
+resource_local_to_scene = true
+bg_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 42
+corner_radius_top_right = 42
+corner_radius_bottom_right = 42
+corner_radius_bottom_left = 42
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_badge"]
 resource_local_to_scene = true
 bg_color = Color(1, 1, 1, 0.08)
@@ -120,6 +128,17 @@ offset_bottom = 160.0
 grow_horizontal = 2
 grow_vertical = 2
 flat = true
+
+[node name="HybridMaskPanel" type="Panel" parent="PreviewCenter/PreviewStack/PreviewButton" unique_name_in_owner=true]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hybrid_mask")
 
 [node name="GlassFill" type="ColorRect" parent="PreviewCenter/PreviewStack/PreviewButton" unique_name_in_owner=true]
 material = SubResource("ShaderMaterial_glass")

@@ -19,44 +19,76 @@ const HYBRID_FLOAT_CONTROLS := [
 		"default": 4.2,
 	},
 	{
-		"name": "refraction_strength",
-		"label": "refraction_strength",
+		"name": "warp_intensity",
+		"label": "warp_intensity",
 		"min": 0.0,
-		"max": 0.12,
-		"step": 0.001,
-		"default": 0.028,
+		"max": 1.0,
+		"step": 0.01,
+		"default": 0.45,
 	},
 	{
-		"name": "curvature",
-		"label": "curvature",
+		"name": "strength_x",
+		"label": "strength_x",
 		"min": 0.0,
-		"max": 3.0,
+		"max": 50.0,
+		"step": 0.1,
+		"default": 14.0,
+	},
+	{
+		"name": "strength_y",
+		"label": "strength_y",
+		"min": 0.0,
+		"max": 50.0,
+		"step": 0.1,
+		"default": 14.0,
+	},
+	{
+		"name": "offset_x",
+		"label": "offset_x",
+		"min": -1.0,
+		"max": 1.0,
 		"step": 0.01,
-		"default": 1.2,
+		"default": 0.03,
+	},
+	{
+		"name": "offset_y",
+		"label": "offset_y",
+		"min": -1.0,
+		"max": 1.0,
+		"step": 0.01,
+		"default": 0.0,
 	},
 	{
 		"name": "corner_radius",
 		"label": "corner_radius",
 		"min": 0.0,
-		"max": 0.45,
-		"step": 0.001,
-		"default": 0.18,
+		"max": 1.0,
+		"step": 0.01,
+		"default": 0.24,
+	},
+	{
+		"name": "edge_smoothness",
+		"label": "edge_smoothness",
+		"min": 0.5,
+		"max": 3.0,
+		"step": 0.01,
+		"default": 1.1,
 	},
 	{
 		"name": "edge_width",
 		"label": "edge_width",
 		"min": 0.0,
-		"max": 0.2,
-		"step": 0.001,
-		"default": 0.06,
+		"max": 10.0,
+		"step": 0.1,
+		"default": 2.4,
 	},
 	{
-		"name": "chromatic_aberration",
-		"label": "chromatic_aberration",
+		"name": "chromatic_strength",
+		"label": "chromatic_strength",
 		"min": 0.0,
-		"max": 4.0,
+		"max": 5.0,
 		"step": 0.1,
-		"default": 1.7,
+		"default": 2.2,
 	},
 	{
 		"name": "tint_strength",
@@ -65,6 +97,14 @@ const HYBRID_FLOAT_CONTROLS := [
 		"max": 1.0,
 		"step": 0.01,
 		"default": 0.28,
+	},
+	{
+		"name": "world_rim_refraction",
+		"label": "world_rim_refraction",
+		"min": 0.0,
+		"max": 1.0,
+		"step": 0.01,
+		"default": 0.55,
 	},
 	{
 		"name": "fresnel_power",
@@ -88,7 +128,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 0.4,
 		"step": 0.01,
-		"default": 0.08,
+		"default": 0.10,
 	},
 	{
 		"name": "ui_alpha_gain",
@@ -112,19 +152,19 @@ const HYBRID_COLOR_CONTROLS := [
 	{
 		"name": "tint",
 		"label": "tint",
-		"default": Color(0.9, 0.95, 1.0, 0.34),
+		"default": Color(0.92, 0.96, 1.0, 0.22),
 	},
 	{
 		"name": "edge_color",
 		"label": "edge_color",
-		"default": Color(1.0, 1.0, 1.0, 0.72),
+		"default": Color(1.0, 1.0, 1.0, 0.62),
 	},
 ]
 
 const PARAMETER_ALIASES := {
-	"warp_intensity": {"target": "refraction_strength", "scale": 0.0622222222},
-	"chromatic_strength": {"target": "chromatic_aberration", "scale": 0.7727272727},
 	"edge_highlight": {"target": "edge_color"},
+	"edge_smoothness": {"target": "edge_softness", "scale": 0.01},
+	"edge_width": {"target": "edge_width", "scale": 0.0075},
 }
 
 @export var auto_rotate := true
@@ -133,11 +173,13 @@ const PARAMETER_ALIASES := {
 
 @onready var panel_pivot: Node3D = get_node_or_null("PanelPivot") as Node3D
 @onready var panel_viewport: SubViewport = get_node_or_null("PanelPivot/PanelViewport") as SubViewport
+@onready var mask_viewport: SubViewport = get_node_or_null("PanelPivot/MaskViewport") as SubViewport
 @onready var panel_display: MeshInstance3D = get_node_or_null("PanelPivot/PanelDisplay") as MeshInstance3D
 @onready var controls_list: VBoxContainer = get_node_or_null("CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll/ControlsList") as VBoxContainer
 @onready var status_label: RichTextLabel = get_node_or_null("CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/StatusPanel/StatusPadding/StatusLabel") as RichTextLabel
 
 var _panel_ui: Control
+var _mask_ui: Control
 var _panel_material: ShaderMaterial
 var _manual_pitch_deg := 0.0
 var _manual_yaw_deg := 0.0
@@ -148,17 +190,19 @@ var _color_pickers: Dictionary = {}
 
 
 func _ready() -> void:
-	if panel_pivot == null or panel_viewport == null or panel_display == null:
+	if panel_pivot == null or panel_viewport == null or mask_viewport == null or panel_display == null:
 		push_error("3D GUI glass test scene is missing one or more required nodes.")
 		return
 
 	_base_rotation = panel_pivot.rotation_degrees
-	_configure_panel_viewport()
-	_mount_source_2d_scene()
-	_configure_panel_source_for_hybrid()
+	_configure_subviewport(panel_viewport)
+	_configure_subviewport(mask_viewport)
+	_mount_source_2d_scenes()
+	_configure_panel_sources_for_hybrid()
 	_apply_panel_material()
 	_build_controls()
 	call_deferred("_sync_controls_from_panel")
+	call_deferred("_sync_authored_card_rect")
 	_apply_panel_rotation()
 	_refresh_status()
 
@@ -234,6 +278,14 @@ func set_panel_shader_parameter(parameter_name: String, value: Variant) -> void:
 
 	var resolved: Dictionary = _resolve_parameter_alias(parameter_name, value)
 	_panel_material.set_shader_parameter(resolved["name"], resolved["value"])
+	if is_instance_valid(_mask_ui) and _mask_ui.has_method("set_shader_parameter"):
+		var mask_parameter_name := parameter_name
+		if parameter_name == "edge_color":
+			mask_parameter_name = "edge_highlight"
+		if mask_parameter_name in ["corner_radius", "edge_smoothness", "edge_width", "tint", "edge_highlight"]:
+			_mask_ui.call("set_shader_parameter", mask_parameter_name, value)
+	if parameter_name in ["corner_radius", "edge_smoothness", "edge_width"]:
+		_sync_authored_card_rect()
 	_sync_single_control_from_panel(parameter_name)
 	_sync_single_control_from_panel(str(resolved["name"]))
 	_refresh_status()
@@ -253,42 +305,52 @@ func get_panel_shader_parameter(parameter_name: String) -> Variant:
 	return _panel_material.get_shader_parameter(parameter_name)
 
 
-func _configure_panel_viewport() -> void:
-	panel_viewport.disable_3d = true
-	panel_viewport.transparent_bg = true
-	panel_viewport.gui_disable_input = true
-	panel_viewport.handle_input_locally = false
-	panel_viewport.msaa_2d = Viewport.MSAA_4X
-	panel_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-	panel_viewport.size = Vector2i(1600, 900)
+func _configure_subviewport(viewport: SubViewport) -> void:
+	viewport.disable_3d = true
+	viewport.transparent_bg = true
+	viewport.gui_disable_input = true
+	viewport.handle_input_locally = false
+	viewport.msaa_2d = Viewport.MSAA_4X
+	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	viewport.size = Vector2i(1600, 900)
 
 
-func _mount_source_2d_scene() -> void:
-	for child in panel_viewport.get_children():
+func _mount_source_2d_scenes() -> void:
+	_panel_ui = _instantiate_source_scene(panel_viewport)
+	_mask_ui = _instantiate_source_scene(mask_viewport)
+
+
+func _instantiate_source_scene(target_viewport: SubViewport) -> Control:
+	for child in target_viewport.get_children():
 		child.queue_free()
 
 	var packed: PackedScene = load(SOURCE_2D_SCENE_PATH)
 	if packed == null:
 		push_error("Failed to load source 2D glass shader scene: %s" % SOURCE_2D_SCENE_PATH)
-		return
+		return null
 
-	_panel_ui = packed.instantiate() as Control
-	if _panel_ui == null:
+	var instance := packed.instantiate() as Control
+	if instance == null:
 		push_error("Source 2D glass shader scene did not instantiate as a Control root.")
-		return
+		return null
 
-	panel_viewport.add_child(_panel_ui)
-	_panel_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	target_viewport.add_child(instance)
+	instance.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	return instance
 
 
-func _configure_panel_source_for_hybrid() -> void:
-	if not is_instance_valid(_panel_ui):
-		return
+func _configure_panel_sources_for_hybrid() -> void:
+	if is_instance_valid(_panel_ui):
+		if _panel_ui.has_method("set_presentation_mode"):
+			_panel_ui.call("set_presentation_mode", PanelSourceScript.PRESENTATION_MODE_HYBRID_WORLD_SPACE)
+		if _panel_ui.has_method("set_background_mode"):
+			_panel_ui.call("set_background_mode", PanelSourceScript.BACKGROUND_MODE_NONE)
 
-	if _panel_ui.has_method("set_presentation_mode"):
-		_panel_ui.call("set_presentation_mode", PanelSourceScript.PRESENTATION_MODE_HYBRID_WORLD_SPACE)
-	if _panel_ui.has_method("set_background_mode"):
-		_panel_ui.call("set_background_mode", PanelSourceScript.BACKGROUND_MODE_NONE)
+	if is_instance_valid(_mask_ui):
+		if _mask_ui.has_method("set_presentation_mode"):
+			_mask_ui.call("set_presentation_mode", PanelSourceScript.PRESENTATION_MODE_HYBRID_MASK)
+		if _mask_ui.has_method("set_background_mode"):
+			_mask_ui.call("set_background_mode", PanelSourceScript.BACKGROUND_MODE_NONE)
 
 
 func _apply_panel_material() -> void:
@@ -300,15 +362,25 @@ func _apply_panel_material() -> void:
 	_panel_material = ShaderMaterial.new()
 	_panel_material.shader = shader
 	for config in HYBRID_FLOAT_CONTROLS:
-		_panel_material.set_shader_parameter(str(config["name"]), config["default"])
+		set_panel_shader_parameter(str(config["name"]), config["default"])
 	for config in HYBRID_COLOR_CONTROLS:
-		_panel_material.set_shader_parameter(str(config["name"]), config["default"])
+		set_panel_shader_parameter(str(config["name"]), config["default"])
 
-	_panel_material.set_shader_parameter("edge_softness", 0.012)
-	_panel_material.set_shader_parameter("ui_shadow_strength", 0.08)
 	_panel_material.set_shader_parameter("flip_ui_vertical", false)
+	_panel_material.set_shader_parameter("ui_shadow_strength", 0.06)
 	_panel_material.set_shader_parameter("ui_texture", panel_viewport.get_texture())
+	_panel_material.set_shader_parameter("mask_texture", mask_viewport.get_texture())
+	_copy_source_shader_defaults_to_hybrid_material()
 	panel_display.material_override = _panel_material
+
+
+func _copy_source_shader_defaults_to_hybrid_material() -> void:
+	if not is_instance_valid(_panel_ui) or not _panel_ui.has_method("get_shader_parameters"):
+		return
+
+	var params: Dictionary = _panel_ui.call("get_shader_parameters")
+	for parameter_name in params.keys():
+		set_panel_shader_parameter(str(parameter_name), params[parameter_name])
 
 
 func _build_controls() -> void:
@@ -322,7 +394,7 @@ func _build_controls() -> void:
 	controls_list.add_child(_make_background_mode_control())
 
 	var mode_note := Label.new()
-	mode_note.text = "The SubViewport now supplies authored UI/chrome only. The panel mesh shader samples the real 3D screen behind it and composites the 2D UI texture on top. Use No background for the truthful path; the other modes are comparison aids."
+	mode_note.text = "The hybrid path now uses two authored SubViewports: one supplies content-only UI, the other supplies a rounded card mask. The 3D shader owns the actual blur/refraction/tint/highlight and applies them only inside that authored card region."
 	mode_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	mode_note.modulate = Color(1.0, 1.0, 1.0, 0.68)
 	controls_list.add_child(mode_note)
@@ -469,6 +541,17 @@ func _select_background_mode(mode: int) -> void:
 			return
 
 
+func _sync_authored_card_rect() -> void:
+	if _panel_material == null:
+		return
+	var source := _mask_ui if is_instance_valid(_mask_ui) else _panel_ui
+	if not is_instance_valid(source) or not source.has_method("get_preview_rect_normalized"):
+		return
+
+	var rect: Rect2 = source.call("get_preview_rect_normalized")
+	_panel_material.set_shader_parameter("glass_rect", Vector4(rect.position.x, rect.position.y, rect.size.x, rect.size.y))
+
+
 func _apply_panel_rotation() -> void:
 	if panel_pivot == null:
 		return
@@ -494,7 +577,7 @@ func _refresh_status() -> void:
 		return
 
 	var lines := [
-		"[b]Hybrid 3D Glass Panel / World-Aware Shader[/b]",
+		"[b]Hybrid 3D Glass Panel / Mask-Aware World Shader[/b]",
 		"[color=#cbd5e1]Space[/color] auto rotation: %s" % ("ON" if auto_rotate else "OFF"),
 		"[color=#cbd5e1]WASD / Arrows[/color] pitch and yaw the wrapper",
 		"[color=#cbd5e1]R[/color] reset wrapper rotation",
@@ -503,7 +586,7 @@ func _refresh_status() -> void:
 		"Pitch: %.1f°" % panel_pivot.rotation_degrees.x,
 		"Yaw: %.1f°" % panel_pivot.rotation_degrees.y,
 		"",
-		"This replacement path keeps UI authored in the shared 2D panel scene, disables the old canvas-item GlassFill inside the SubViewport, and lets the 3D panel shader own the actual refraction, tint, edge highlight, and world-behind-glass distortion."
+		"This parity pass keeps the shared 2D source scene, but splits it into a content viewport and an authored mask viewport. The 3D shader now uses that mask to constrain blur/refraction/tint/highlight to the actual card region and reuses the 2D warp profile as its base distortion field."
 	]
 	status_label.text = "\n".join(lines)
 

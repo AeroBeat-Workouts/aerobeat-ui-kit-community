@@ -61,10 +61,10 @@ shadow_color = Color(0, 0, 0, 0.28)
 shadow_size = 18
 
 [sub_resource type="BoxMesh" id="BoxMesh_shell"]
-size = Vector3(3.34, 1.96, 0.12)
+size = Vector3(3.08, 1.96, 0.12)
 
 [sub_resource type="QuadMesh" id="QuadMesh_panel"]
-size = Vector2(3.2, 1.8)
+size = Vector2(2.93, 1.8)
 
 [node name="GlassShaderGui3DTest" type="Node3D"]
 script = ExtResource("1")
@@ -99,6 +99,7 @@ script = ExtResource("2")
 position = Vector3(0.75, 0, -0.35)
 
 [node name="PanelShell" type="MeshInstance3D" parent="PanelPivot"]
+visible = false
 mesh = SubResource("BoxMesh_shell")
 material_override = SubResource("StandardMaterial3D_shell")
 
@@ -107,6 +108,9 @@ position = Vector3(0, 0, 0.051)
 mesh = SubResource("QuadMesh_panel")
 
 [node name="PanelViewport" type="SubViewport" parent="PanelPivot" unique_name_in_owner=true]
+size = Vector2i(1600, 900)
+
+[node name="MaskViewport" type="SubViewport" parent="PanelPivot" unique_name_in_owner=true]
 size = Vector2i(1600, 900)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]

@@ -11,6 +11,7 @@ const DEFAULT_BACKGROUND_MODE := BACKGROUND_MODE_HYBRID
 
 const PRESENTATION_MODE_2D := 0
 const PRESENTATION_MODE_HYBRID_WORLD_SPACE := 1
+const PRESENTATION_MODE_HYBRID_MASK := 2
 
 const FLOAT_CONTROLS := [
 	{
@@ -110,14 +111,17 @@ const COLOR_CONTROLS := [
 
 @onready var background: TextureRect = get_node_or_null("Background") as TextureRect
 @onready var preview_button: Button = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton") as Button
+@onready var hybrid_mask_panel: Panel = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/HybridMaskPanel") as Panel
 @onready var glass_fill: ColorRect = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/GlassFill") as ColorRect
 @onready var preview_frame: Panel = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/PreviewFrame") as Panel
 @onready var preview_inner_border: Panel = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/InnerBorderInset/PreviewInnerBorder") as Panel
+@onready var content_margin: MarginContainer = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/ContentMargin") as MarginContainer
 @onready var preview_backdrop_debug: Control = get_node_or_null("PreviewCenter/PreviewStack/PreviewBackdropDebug") as Control
 
 var _shader_material: ShaderMaterial
 var _frame_style: StyleBoxFlat
 var _inner_border_style: StyleBoxFlat
+var _mask_style: StyleBoxFlat
 var _background_texture: Texture2D
 var _background_mode := DEFAULT_BACKGROUND_MODE
 var _presentation_mode := PRESENTATION_MODE_2D
@@ -134,10 +138,10 @@ func _ready() -> void:
 
 	_frame_style = preview_frame.get_theme_stylebox("panel") as StyleBoxFlat
 	_inner_border_style = preview_inner_border.get_theme_stylebox("panel") as StyleBoxFlat
+	_mask_style = hybrid_mask_panel.get_theme_stylebox("panel") as StyleBoxFlat
 
 	_configure_preview_button()
-	_apply_background_mode(_background_mode)
-	_apply_presentation_mode()
+	_apply_visual_state()
 	preview_button.resized.connect(_sync_preview_shell)
 	preview_inner_border.resized.connect(_sync_preview_shell)
 	call_deferred("_sync_preview_shell")
@@ -178,7 +182,7 @@ func _configure_preview_button() -> void:
 func set_background_mode(mode: int) -> void:
 	_background_mode = clampi(mode, BACKGROUND_MODE_IMAGE, BACKGROUND_MODE_NONE)
 	if is_node_ready():
-		_apply_background_mode(_background_mode)
+		_apply_visual_state()
 
 
 func get_background_mode() -> int:
@@ -186,13 +190,21 @@ func get_background_mode() -> int:
 
 
 func set_presentation_mode(mode: int) -> void:
-	_presentation_mode = clampi(mode, PRESENTATION_MODE_2D, PRESENTATION_MODE_HYBRID_WORLD_SPACE)
+	_presentation_mode = clampi(mode, PRESENTATION_MODE_2D, PRESENTATION_MODE_HYBRID_MASK)
 	if is_node_ready():
-		_apply_presentation_mode()
+		_apply_visual_state()
 
 
 func get_presentation_mode() -> int:
 	return _presentation_mode
+
+
+func get_preview_rect_normalized() -> Rect2:
+	if preview_button == null or size.x <= 0.0 or size.y <= 0.0:
+		return Rect2(0.0, 0.0, 1.0, 1.0)
+
+	var rect := preview_button.get_global_rect()
+	return Rect2(rect.position / size, rect.size / size)
 
 
 func set_shader_parameter(parameter_name: String, value: Variant) -> void:
@@ -231,31 +243,42 @@ func reset_shader_parameters_to_defaults() -> void:
 		set_shader_parameter(str(config["name"]), config["default"])
 
 
-func _apply_background_mode(mode: int) -> void:
-	_background_mode = clampi(mode, BACKGROUND_MODE_IMAGE, BACKGROUND_MODE_NONE)
-	match _background_mode:
-		BACKGROUND_MODE_DEBUG:
-			background.visible = false
-			preview_backdrop_debug.visible = true
-			preview_backdrop_debug.modulate = Color(1.0, 1.0, 1.0, 1.0)
-		BACKGROUND_MODE_HYBRID:
-			background.visible = true
-			preview_backdrop_debug.visible = true
-			preview_backdrop_debug.modulate = Color(1.0, 1.0, 1.0, 0.74)
-		BACKGROUND_MODE_NONE:
-			background.visible = false
-			preview_backdrop_debug.visible = false
-			preview_backdrop_debug.modulate = Color(1.0, 1.0, 1.0, 1.0)
-		_:
-			background.visible = true
-			preview_backdrop_debug.visible = false
-			preview_backdrop_debug.modulate = Color(1.0, 1.0, 1.0, 1.0)
+func _apply_visual_state() -> void:
+	var is_mask_mode := _presentation_mode == PRESENTATION_MODE_HYBRID_MASK
+	var is_hybrid_world := _presentation_mode == PRESENTATION_MODE_HYBRID_WORLD_SPACE
 
+	if is_mask_mode:
+		background.visible = false
+		preview_backdrop_debug.visible = false
+		preview_backdrop_debug.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	else:
+		match _background_mode:
+			BACKGROUND_MODE_DEBUG:
+				background.visible = false
+				preview_backdrop_debug.visible = true
+				preview_backdrop_debug.modulate = Color(1.0, 1.0, 1.0, 1.0)
+			BACKGROUND_MODE_HYBRID:
+				background.visible = true
+				preview_backdrop_debug.visible = true
+				preview_backdrop_debug.modulate = Color(1.0, 1.0, 1.0, 0.74)
+			BACKGROUND_MODE_NONE:
+				background.visible = false
+				preview_backdrop_debug.visible = false
+				preview_backdrop_debug.modulate = Color(1.0, 1.0, 1.0, 1.0)
+			_:
+				background.visible = true
+				preview_backdrop_debug.visible = false
+				preview_backdrop_debug.modulate = Color(1.0, 1.0, 1.0, 1.0)
 
-func _apply_presentation_mode() -> void:
-	if glass_fill == null:
-		return
 	glass_fill.visible = _presentation_mode == PRESENTATION_MODE_2D
+	preview_frame.visible = _presentation_mode == PRESENTATION_MODE_2D
+	preview_inner_border.visible = _presentation_mode == PRESENTATION_MODE_2D
+	content_margin.visible = not is_mask_mode
+	hybrid_mask_panel.visible = is_mask_mode
+
+	if is_hybrid_world:
+		preview_frame.visible = false
+		preview_inner_border.visible = false
 
 
 func _sync_preview_shell() -> void:
@@ -273,6 +296,7 @@ func _sync_preview_shell() -> void:
 
 	_set_all_corner_radii(_frame_style, frame_corner_px)
 	_set_all_corner_radii(_inner_border_style, inner_corner_px)
+	_set_all_corner_radii(_mask_style, frame_corner_px)
 
 	_frame_style.border_width_left = border_width
 	_frame_style.border_width_top = border_width
@@ -285,6 +309,13 @@ func _sync_preview_shell() -> void:
 	_frame_style.shadow_color = Color(edge_highlight.r, edge_highlight.g, edge_highlight.b, clampf(edge_highlight.a * 0.18, 0.04, 0.18))
 
 	_inner_border_style.border_color = Color(1.0, 1.0, 1.0, clampf(0.08 + tint.a * 0.55, 0.08, 0.24))
+	_mask_style.bg_color = Color(1.0, 1.0, 1.0, 1.0)
+	_mask_style.border_width_left = 0
+	_mask_style.border_width_top = 0
+	_mask_style.border_width_right = 0
+	_mask_style.border_width_bottom = 0
+	_mask_style.shadow_size = 0
+	_mask_style.shadow_color = Color(0.0, 0.0, 0.0, 0.0)
 
 
 func _shader_corner_radius_to_pixels(control_size: Vector2, corner_radius: float) -> int:
