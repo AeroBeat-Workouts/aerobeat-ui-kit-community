@@ -88,7 +88,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 5.0,
 		"step": 0.1,
-		"default": 2.2,
+		"default": 1.3,
 	},
 	{
 		"name": "tint_strength",
@@ -96,7 +96,31 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
-		"default": 0.28,
+		"default": 0.60,
+	},
+	{
+		"name": "body_frost_strength",
+		"label": "body_frost_strength",
+		"min": 0.0,
+		"max": 1.0,
+		"step": 0.01,
+		"default": 0.78,
+	},
+	{
+		"name": "background_subdue",
+		"label": "background_subdue",
+		"min": 0.0,
+		"max": 1.0,
+		"step": 0.01,
+		"default": 0.62,
+	},
+	{
+		"name": "interior_chroma",
+		"label": "interior_chroma",
+		"min": 0.0,
+		"max": 1.0,
+		"step": 0.01,
+		"default": 0.16,
 	},
 	{
 		"name": "world_rim_refraction",
@@ -104,7 +128,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
-		"default": 0.55,
+		"default": 0.18,
 	},
 	{
 		"name": "fresnel_power",
@@ -112,7 +136,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.5,
 		"max": 8.0,
 		"step": 0.1,
-		"default": 4.0,
+		"default": 4.6,
 	},
 	{
 		"name": "fresnel_strength",
@@ -120,7 +144,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 2.0,
 		"step": 0.01,
-		"default": 0.42,
+		"default": 0.10,
 	},
 	{
 		"name": "face_highlight",
@@ -128,7 +152,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 0.4,
 		"step": 0.01,
-		"default": 0.10,
+		"default": 0.04,
 	},
 	{
 		"name": "ui_alpha_gain",
@@ -144,7 +168,15 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.2,
 		"max": 2.0,
 		"step": 0.01,
-		"default": 1.0,
+		"default": 1.04,
+	},
+	{
+		"name": "ui_embed_strength",
+		"label": "ui_embed_strength",
+		"min": 0.0,
+		"max": 0.3,
+		"step": 0.01,
+		"default": 0.08,
 	},
 ]
 
@@ -152,12 +184,12 @@ const HYBRID_COLOR_CONTROLS := [
 	{
 		"name": "tint",
 		"label": "tint",
-		"default": Color(0.92, 0.96, 1.0, 0.22),
+		"default": Color(0.95, 0.975, 1.0, 0.40),
 	},
 	{
 		"name": "edge_color",
 		"label": "edge_color",
-		"default": Color(1.0, 1.0, 1.0, 0.62),
+		"default": Color(1.0, 1.0, 1.0, 0.22),
 	},
 ]
 
@@ -367,7 +399,7 @@ func _apply_panel_material() -> void:
 		set_panel_shader_parameter(str(config["name"]), config["default"])
 
 	_panel_material.set_shader_parameter("flip_ui_vertical", false)
-	_panel_material.set_shader_parameter("ui_shadow_strength", 0.06)
+	_panel_material.set_shader_parameter("ui_shadow_strength", 0.035)
 	_panel_material.set_shader_parameter("ui_texture", panel_viewport.get_texture())
 	_panel_material.set_shader_parameter("mask_texture", mask_viewport.get_texture())
 	_copy_source_shader_defaults_to_hybrid_material()
@@ -379,8 +411,20 @@ func _copy_source_shader_defaults_to_hybrid_material() -> void:
 		return
 
 	var params: Dictionary = _panel_ui.call("get_shader_parameters")
+	var passthrough_parameters := {
+		"blur": true,
+		"warp_intensity": true,
+		"strength_x": true,
+		"strength_y": true,
+		"offset_x": true,
+		"offset_y": true,
+		"corner_radius": true,
+		"edge_smoothness": true,
+		"edge_width": true,
+	}
 	for parameter_name in params.keys():
-		set_panel_shader_parameter(str(parameter_name), params[parameter_name])
+		if passthrough_parameters.has(parameter_name):
+			set_panel_shader_parameter(str(parameter_name), params[parameter_name])
 
 
 func _build_controls() -> void:
