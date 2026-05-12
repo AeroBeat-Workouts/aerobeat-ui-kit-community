@@ -9,6 +9,9 @@ const BACKGROUND_MODE_HYBRID := 2
 const BACKGROUND_MODE_NONE := 3
 const DEFAULT_BACKGROUND_MODE := BACKGROUND_MODE_HYBRID
 
+const PRESENTATION_MODE_2D := 0
+const PRESENTATION_MODE_HYBRID_WORLD_SPACE := 1
+
 const FLOAT_CONTROLS := [
 	{
 		"name": "blur",
@@ -117,6 +120,7 @@ var _frame_style: StyleBoxFlat
 var _inner_border_style: StyleBoxFlat
 var _background_texture: Texture2D
 var _background_mode := DEFAULT_BACKGROUND_MODE
+var _presentation_mode := PRESENTATION_MODE_2D
 
 
 func _ready() -> void:
@@ -133,6 +137,7 @@ func _ready() -> void:
 
 	_configure_preview_button()
 	_apply_background_mode(_background_mode)
+	_apply_presentation_mode()
 	preview_button.resized.connect(_sync_preview_shell)
 	preview_inner_border.resized.connect(_sync_preview_shell)
 	call_deferred("_sync_preview_shell")
@@ -171,11 +176,23 @@ func _configure_preview_button() -> void:
 
 
 func set_background_mode(mode: int) -> void:
-	_apply_background_mode(mode)
+	_background_mode = clampi(mode, BACKGROUND_MODE_IMAGE, BACKGROUND_MODE_NONE)
+	if is_node_ready():
+		_apply_background_mode(_background_mode)
 
 
 func get_background_mode() -> int:
 	return _background_mode
+
+
+func set_presentation_mode(mode: int) -> void:
+	_presentation_mode = clampi(mode, PRESENTATION_MODE_2D, PRESENTATION_MODE_HYBRID_WORLD_SPACE)
+	if is_node_ready():
+		_apply_presentation_mode()
+
+
+func get_presentation_mode() -> int:
+	return _presentation_mode
 
 
 func set_shader_parameter(parameter_name: String, value: Variant) -> void:
@@ -233,6 +250,12 @@ func _apply_background_mode(mode: int) -> void:
 			background.visible = true
 			preview_backdrop_debug.visible = false
 			preview_backdrop_debug.modulate = Color(1.0, 1.0, 1.0, 1.0)
+
+
+func _apply_presentation_mode() -> void:
+	if glass_fill == null:
+		return
+	glass_fill.visible = _presentation_mode == PRESENTATION_MODE_2D
 
 
 func _sync_preview_shell() -> void:

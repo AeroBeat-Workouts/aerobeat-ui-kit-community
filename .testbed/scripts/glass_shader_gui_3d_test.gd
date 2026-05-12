@@ -1,12 +1,131 @@
 extends Node3D
 
 const SOURCE_2D_SCENE_PATH := "res://scenes/glass-shader-panel-source.tscn"
+const HYBRID_SHADER_PATH := "res://assets/shaders/glass-panel-hybrid-3d.gdshader"
 const PanelSourceScript = preload("res://scripts/glass_shader_panel_source.gd")
 
 const AUTO_YAW_AMPLITUDE_DEG := 26.0
 const AUTO_PITCH_AMPLITUDE_DEG := 10.0
 const MAX_MANUAL_PITCH_DEG := 35.0
 const MAX_MANUAL_YAW_DEG := 45.0
+
+const HYBRID_FLOAT_CONTROLS := [
+	{
+		"name": "blur",
+		"label": "blur",
+		"min": 0.0,
+		"max": 8.0,
+		"step": 0.1,
+		"default": 4.2,
+	},
+	{
+		"name": "refraction_strength",
+		"label": "refraction_strength",
+		"min": 0.0,
+		"max": 0.12,
+		"step": 0.001,
+		"default": 0.028,
+	},
+	{
+		"name": "curvature",
+		"label": "curvature",
+		"min": 0.0,
+		"max": 3.0,
+		"step": 0.01,
+		"default": 1.2,
+	},
+	{
+		"name": "corner_radius",
+		"label": "corner_radius",
+		"min": 0.0,
+		"max": 0.45,
+		"step": 0.001,
+		"default": 0.18,
+	},
+	{
+		"name": "edge_width",
+		"label": "edge_width",
+		"min": 0.0,
+		"max": 0.2,
+		"step": 0.001,
+		"default": 0.06,
+	},
+	{
+		"name": "chromatic_aberration",
+		"label": "chromatic_aberration",
+		"min": 0.0,
+		"max": 4.0,
+		"step": 0.1,
+		"default": 1.7,
+	},
+	{
+		"name": "tint_strength",
+		"label": "tint_strength",
+		"min": 0.0,
+		"max": 1.0,
+		"step": 0.01,
+		"default": 0.28,
+	},
+	{
+		"name": "fresnel_power",
+		"label": "fresnel_power",
+		"min": 0.5,
+		"max": 8.0,
+		"step": 0.1,
+		"default": 4.0,
+	},
+	{
+		"name": "fresnel_strength",
+		"label": "fresnel_strength",
+		"min": 0.0,
+		"max": 2.0,
+		"step": 0.01,
+		"default": 0.42,
+	},
+	{
+		"name": "face_highlight",
+		"label": "face_highlight",
+		"min": 0.0,
+		"max": 0.4,
+		"step": 0.01,
+		"default": 0.08,
+	},
+	{
+		"name": "ui_alpha_gain",
+		"label": "ui_alpha_gain",
+		"min": 0.0,
+		"max": 2.0,
+		"step": 0.01,
+		"default": 1.0,
+	},
+	{
+		"name": "ui_brightness",
+		"label": "ui_brightness",
+		"min": 0.2,
+		"max": 2.0,
+		"step": 0.01,
+		"default": 1.0,
+	},
+]
+
+const HYBRID_COLOR_CONTROLS := [
+	{
+		"name": "tint",
+		"label": "tint",
+		"default": Color(0.9, 0.95, 1.0, 0.34),
+	},
+	{
+		"name": "edge_color",
+		"label": "edge_color",
+		"default": Color(1.0, 1.0, 1.0, 0.72),
+	},
+]
+
+const PARAMETER_ALIASES := {
+	"warp_intensity": {"target": "refraction_strength", "scale": 0.0622222222},
+	"chromatic_strength": {"target": "chromatic_aberration", "scale": 0.7727272727},
+	"edge_highlight": {"target": "edge_color"},
+}
 
 @export var auto_rotate := true
 @export_range(0.0, 90.0, 0.1) var auto_rotate_speed_deg := 36.0
@@ -19,6 +138,7 @@ const MAX_MANUAL_YAW_DEG := 45.0
 @onready var status_label: RichTextLabel = get_node_or_null("CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/StatusPanel/StatusPadding/StatusLabel") as RichTextLabel
 
 var _panel_ui: Control
+var _panel_material: ShaderMaterial
 var _manual_pitch_deg := 0.0
 var _manual_yaw_deg := 0.0
 var _base_rotation := Vector3.ZERO
@@ -35,7 +155,8 @@ func _ready() -> void:
 	_base_rotation = panel_pivot.rotation_degrees
 	_configure_panel_viewport()
 	_mount_source_2d_scene()
-	_apply_panel_texture()
+	_configure_panel_source_for_hybrid()
+	_apply_panel_material()
 	_build_controls()
 	call_deferred("_sync_controls_from_panel")
 	_apply_panel_rotation()
@@ -104,20 +225,32 @@ func set_preview_background_mode(mode: int) -> void:
 func get_preview_background_mode() -> int:
 	if is_instance_valid(_panel_ui) and _panel_ui.has_method("get_background_mode"):
 		return _panel_ui.call("get_background_mode")
-	return PanelSourceScript.DEFAULT_BACKGROUND_MODE
+	return PanelSourceScript.BACKGROUND_MODE_NONE
 
 
 func set_panel_shader_parameter(parameter_name: String, value: Variant) -> void:
-	if is_instance_valid(_panel_ui) and _panel_ui.has_method("set_shader_parameter"):
-		_panel_ui.call("set_shader_parameter", parameter_name, value)
+	if _panel_material == null:
+		return
+
+	var resolved: Dictionary = _resolve_parameter_alias(parameter_name, value)
+	_panel_material.set_shader_parameter(resolved["name"], resolved["value"])
 	_sync_single_control_from_panel(parameter_name)
+	_sync_single_control_from_panel(str(resolved["name"]))
 	_refresh_status()
 
 
 func get_panel_shader_parameter(parameter_name: String) -> Variant:
-	if is_instance_valid(_panel_ui) and _panel_ui.has_method("get_shader_parameter"):
-		return _panel_ui.call("get_shader_parameter", parameter_name)
-	return null
+	if _panel_material == null:
+		return null
+
+	var alias: Variant = PARAMETER_ALIASES.get(parameter_name, null)
+	if alias is Dictionary:
+		var resolved_value: Variant = _panel_material.get_shader_parameter(str(alias["target"]))
+		if alias.has("scale") and resolved_value is float:
+			return float(resolved_value) / float(alias["scale"])
+		return resolved_value
+
+	return _panel_material.get_shader_parameter(parameter_name)
 
 
 func _configure_panel_viewport() -> void:
@@ -148,15 +281,34 @@ func _mount_source_2d_scene() -> void:
 	_panel_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 
-func _apply_panel_texture() -> void:
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	material.albedo_texture = panel_viewport.get_texture()
-	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	material.no_depth_test = false
-	panel_display.material_override = material
+func _configure_panel_source_for_hybrid() -> void:
+	if not is_instance_valid(_panel_ui):
+		return
+
+	if _panel_ui.has_method("set_presentation_mode"):
+		_panel_ui.call("set_presentation_mode", PanelSourceScript.PRESENTATION_MODE_HYBRID_WORLD_SPACE)
+	if _panel_ui.has_method("set_background_mode"):
+		_panel_ui.call("set_background_mode", PanelSourceScript.BACKGROUND_MODE_NONE)
+
+
+func _apply_panel_material() -> void:
+	var shader: Shader = load(HYBRID_SHADER_PATH)
+	if shader == null:
+		push_error("Failed to load hybrid 3D glass shader: %s" % HYBRID_SHADER_PATH)
+		return
+
+	_panel_material = ShaderMaterial.new()
+	_panel_material.shader = shader
+	for config in HYBRID_FLOAT_CONTROLS:
+		_panel_material.set_shader_parameter(str(config["name"]), config["default"])
+	for config in HYBRID_COLOR_CONTROLS:
+		_panel_material.set_shader_parameter(str(config["name"]), config["default"])
+
+	_panel_material.set_shader_parameter("edge_softness", 0.012)
+	_panel_material.set_shader_parameter("ui_shadow_strength", 0.08)
+	_panel_material.set_shader_parameter("flip_ui_vertical", false)
+	_panel_material.set_shader_parameter("ui_texture", panel_viewport.get_texture())
+	panel_display.material_override = _panel_material
 
 
 func _build_controls() -> void:
@@ -170,7 +322,7 @@ func _build_controls() -> void:
 	controls_list.add_child(_make_background_mode_control())
 
 	var mode_note := Label.new()
-	mode_note.text = "These wrapper controls drive the standalone 2D source scene inside the SubViewport, including a transparent no-background mode for pure panel compositing."
+	mode_note.text = "The SubViewport now supplies authored UI/chrome only. The panel mesh shader samples the real 3D screen behind it and composites the 2D UI texture on top. Use No background for the truthful path; the other modes are comparison aids."
 	mode_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	mode_note.modulate = Color(1.0, 1.0, 1.0, 0.68)
 	controls_list.add_child(mode_note)
@@ -179,10 +331,10 @@ func _build_controls() -> void:
 	spacer.custom_minimum_size = Vector2(0.0, 8.0)
 	controls_list.add_child(spacer)
 
-	for config in PanelSourceScript.FLOAT_CONTROLS:
+	for config in HYBRID_FLOAT_CONTROLS:
 		controls_list.add_child(_make_float_control(config))
 
-	for config in PanelSourceScript.COLOR_CONTROLS:
+	for config in HYBRID_COLOR_CONTROLS:
 		controls_list.add_child(_make_color_control(config))
 
 	var tail_spacer := Control.new()
@@ -195,7 +347,7 @@ func _make_background_mode_control() -> Control:
 	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	var label := Label.new()
-	label.text = "preview_background"
+	label.text = "source_preview_background"
 	wrapper.add_child(label)
 
 	var selector := OptionButton.new()
@@ -232,7 +384,7 @@ func _make_float_control(config: Dictionary) -> Control:
 	row.add_child(slider)
 
 	var value_label := Label.new()
-	value_label.custom_minimum_size = Vector2(48.0, 0.0)
+	value_label.custom_minimum_size = Vector2(56.0, 0.0)
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	value_label.text = _format_float(slider.value)
 	row.add_child(value_label)
@@ -278,9 +430,9 @@ func _on_color_value_changed(color: Color, parameter_name: String) -> void:
 
 func _sync_controls_from_panel() -> void:
 	_select_background_mode(get_preview_background_mode())
-	for config in PanelSourceScript.FLOAT_CONTROLS:
+	for config in HYBRID_FLOAT_CONTROLS:
 		_sync_single_control_from_panel(str(config["name"]))
-	for config in PanelSourceScript.COLOR_CONTROLS:
+	for config in HYBRID_COLOR_CONTROLS:
 		_sync_single_control_from_panel(str(config["name"]))
 
 
@@ -342,16 +494,16 @@ func _refresh_status() -> void:
 		return
 
 	var lines := [
-		"[b]3D GUI Panel / 2D Glass Shader Reuse[/b]",
+		"[b]Hybrid 3D Glass Panel / World-Aware Shader[/b]",
 		"[color=#cbd5e1]Space[/color] auto rotation: %s" % ("ON" if auto_rotate else "OFF"),
 		"[color=#cbd5e1]WASD / Arrows[/color] pitch and yaw the wrapper",
 		"[color=#cbd5e1]R[/color] reset wrapper rotation",
-		"[color=#cbd5e1]1 / 2 / 3 / 4[/color] panel background: %s" % _background_mode_name(get_preview_background_mode()),
+		"[color=#cbd5e1]1 / 2 / 3 / 4[/color] source viewport background: %s" % _background_mode_name(get_preview_background_mode()),
 		"",
 		"Pitch: %.1f°" % panel_pivot.rotation_degrees.x,
 		"Yaw: %.1f°" % panel_pivot.rotation_degrees.y,
 		"",
-		"This is still the 2D canvas_item glass shader rendered into a SubViewport and mapped onto a rotating 3D quad. It is intentionally not the native 3D glass shader path."
+		"This replacement path keeps UI authored in the shared 2D panel scene, disables the old canvas-item GlassFill inside the SubViewport, and lets the 3D panel shader own the actual refraction, tint, edge highlight, and world-behind-glass distortion."
 	]
 	status_label.text = "\n".join(lines)
 
@@ -370,5 +522,22 @@ func _background_mode_name(mode: int) -> String:
 			return "Unknown"
 
 
+func _resolve_parameter_alias(parameter_name: String, value: Variant) -> Dictionary:
+	var alias: Variant = PARAMETER_ALIASES.get(parameter_name, null)
+	if alias is Dictionary:
+		var resolved_value: Variant = value
+		if alias.has("scale") and value is float:
+			resolved_value = float(value) * float(alias["scale"])
+		return {
+			"name": str(alias["target"]),
+			"value": resolved_value,
+		}
+
+	return {
+		"name": parameter_name,
+		"value": value,
+	}
+
+
 func _format_float(value: float) -> String:
-	return "%0.2f" % value
+	return "%0.3f" % value if absf(value) < 1.0 else "%0.2f" % value

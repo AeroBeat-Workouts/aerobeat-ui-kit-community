@@ -103,7 +103,7 @@ mesh = SubResource("BoxMesh_shell")
 material_override = SubResource("StandardMaterial3D_shell")
 
 [node name="PanelDisplay" type="MeshInstance3D" parent="PanelPivot" unique_name_in_owner=true]
-position = Vector3(0, 0, 0.061)
+position = Vector3(0, 0, 0.051)
 mesh = SubResource("QuadMesh_panel")
 
 [node name="PanelViewport" type="SubViewport" parent="PanelPivot" unique_name_in_owner=true]
@@ -150,12 +150,12 @@ theme_override_constants/separation = 10
 [node name="Title" type="Label" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "Hybrid 3D GUI"
+text = "Hybrid World-Space Glass"
 
 [node name="Subtitle" type="Label" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn"]
 modulate = Color(1, 1, 1, 0.72)
 layout_mode = 2
-text = "Wrapper controls drive a 2D source scene"
+text = "2D-authored UI composited by a world-aware 3D shader"
 
 [node name="Divider" type="HSeparator" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn"]
 layout_mode = 2
