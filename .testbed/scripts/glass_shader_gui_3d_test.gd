@@ -492,31 +492,9 @@ func _apply_panel_materials() -> void:
 	_panel_ui_overlay_material.set_shader_parameter("flip_ui_vertical", false)
 	_panel_ui_overlay_material.set_shader_parameter("ui_texture", panel_viewport.get_texture())
 	_panel_ui_overlay_material.set_shader_parameter("mask_texture", mask_viewport.get_texture())
-	_copy_source_shader_defaults_to_hybrid_material()
 	_sync_authored_card_rect()
 	panel_display.material_override = _panel_material
 	panel_ui_overlay.material_override = _panel_ui_overlay_material
-
-
-func _copy_source_shader_defaults_to_hybrid_material() -> void:
-	if not is_instance_valid(_panel_ui) or not _panel_ui.has_method("get_shader_parameters"):
-		return
-
-	var params: Dictionary = _panel_ui.call("get_shader_parameters")
-	var passthrough_parameters := {
-		"blur": true,
-		"warp_intensity": true,
-		"strength_x": true,
-		"strength_y": true,
-		"offset_x": true,
-		"offset_y": true,
-		"corner_radius": true,
-		"edge_smoothness": true,
-		"edge_width": true,
-	}
-	for parameter_name in params.keys():
-		if passthrough_parameters.has(parameter_name):
-			set_panel_shader_parameter(str(parameter_name), params[parameter_name])
 
 
 func _build_controls() -> void:
