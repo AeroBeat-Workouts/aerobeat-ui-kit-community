@@ -172,6 +172,92 @@ The scene should preserve inspectability: it should clearly show that the origin
 
 ---
 
+### Task 7: Restore the left-side shader controls in `glass-shader-test.tscn`
+
+**Bead ID:** `aerobeat-ui-kit-community-i3x`  
+**SubAgent:** `primary` (for `coder` workflow role)  
+**Role:** `coder`  
+**References:** `REF-01`, `REF-02`, `REF-03`, `REF-07`  
+**Prompt:** In `/home/derrick/Documents/projects/aerobeat/aerobeat-ui-kit-community`, claim bead `aerobeat-ui-kit-community-i3x` with `bd update aerobeat-ui-kit-community-i3x --status in_progress --json`. Repair the regression where `glass-shader-test.tscn` no longer shows the shader controls on the left side. Restore the original 2D tester usability while preserving the shared-source refactor, and also add a no-background mode to the hybrid 3D GUI path so the subviewport panel can be viewed without its own internal backdrop. Keep the fixes truthful and clearly distinct from the native 3D shader path. Close the bead with a clear reason when done.
+
+**Folders Created/Deleted/Modified:**
+- `.testbed/scenes/`
+- `.testbed/scripts/`
+
+**Files Created/Deleted/Modified:**
+- `.testbed/scenes/glass-shader-test.tscn`
+- `.testbed/scripts/glass_shader_test.gd`
+- `.testbed/scripts/glass_shader_panel_source.gd` if needed
+
+**Status:** ✅ Complete
+
+**Results:** Restored the practical usability of `glass-shader-test.tscn` by clipping the shared preview host so the mounted source scene stays confined to the right pane, which keeps the left-side controls visible again. Also added `No background` as shared background mode `3`, exposed it in both the standalone 2D tester and the hybrid 3D wrapper, and wired keyboard `4` in the hybrid wrapper to select it.
+
+---
+
+### Task 8: Add a no-background mode to `glass-shader-gui-3d-test.tscn`
+
+**Bead ID:** `Pending`  
+**SubAgent:** `primary` (for `coder` workflow role)  
+**Role:** `coder`  
+**References:** `REF-01`, `REF-02`, `REF-04`, `REF-07`  
+**Prompt:** Pending until plan approval.
+
+**Folders Created/Deleted/Modified:**
+- `.testbed/scenes/`
+- `.testbed/scripts/`
+
+**Files Created/Deleted/Modified:**
+- `.testbed/scenes/glass-shader-gui-3d-test.tscn`
+- `.testbed/scripts/glass_shader_gui_3d_test.gd`
+- `.testbed/scripts/glass_shader_panel_source.gd` if needed
+
+**Status:** ⏳ Pending
+
+**Results:** Derrick wants an option to display the subviewport source panel with no internal background so we can see whether the subviewport panel’s glass rendering meaningfully shows the 3D world/wallpaper behind it in `glass-shader-gui-3d-test.tscn`.
+
+---
+
+### Task 9: QA the regression fix and no-background hybrid option
+
+**Bead ID:** `aerobeat-ui-kit-community-0ap`  
+**SubAgent:** `primary` (for `qa` workflow role)  
+**Role:** `qa`  
+**References:** `REF-01`, `REF-02`, `REF-04`, `REF-07`  
+**Prompt:** In `/home/derrick/Documents/projects/aerobeat/aerobeat-ui-kit-community`, claim bead `aerobeat-ui-kit-community-0ap` with `bd update aerobeat-ui-kit-community-0ap --status in_progress --json`. QA the restored 2D controls and the new no-background hybrid option. Verify that `glass-shader-test.tscn` again shows the left-side shader controls, that the hybrid scene offers a mode where the subviewport panel has no internal background, and that this mode usefully reveals whether the 2D shader effect shows the 3D world behind the panel. Capture evidence and close the bead with a precise pass/fail reason.
+
+**Folders Created/Deleted/Modified:**
+- `.testbed/`
+
+**Files Created/Deleted/Modified:**
+- QA evidence artifacts if produced
+
+**Status:** ⏳ Pending
+
+**Results:** Not started.
+
+---
+
+### Task 10: Audit the restored 2D controls and no-background 3D GUI-panel mode
+
+**Bead ID:** `aerobeat-ui-kit-community-duq`  
+**SubAgent:** `primary` (for `auditor` workflow role)  
+**Role:** `auditor`  
+**References:** `REF-01`, `REF-02`, `REF-04`, `REF-07`  
+**Prompt:** In `/home/derrick/Documents/projects/aerobeat/aerobeat-ui-kit-community`, claim bead `aerobeat-ui-kit-community-duq` with `bd update aerobeat-ui-kit-community-duq --status in_progress --json`. Audit the restored 2D controls and the no-background hybrid mode independently. Confirm the 2D tester regression is actually fixed, and confirm the no-background hybrid mode truthfully reveals whether the subviewport path shows the 3D world behind the panel or not. Close the bead only if the result is accurate and complete.
+
+**Folders Created/Deleted/Modified:**
+- `TBD`
+
+**Files Created/Deleted/Modified:**
+- `TBD`
+
+**Status:** ⏳ Pending
+
+**Results:** Not started.
+
+---
+
 ## Final Results
 
 **Status:** ✅ Complete

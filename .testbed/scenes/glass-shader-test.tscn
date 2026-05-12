@@ -84,6 +84,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="PanelSourceHost" type="Control" parent="SplitRoot/PreviewArea/PreviewCenter" unique_name_in_owner=true]
+clip_contents = true
 custom_minimum_size = Vector2(760, 560)
 layout_mode = 2
 size_flags_horizontal = 4

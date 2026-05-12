@@ -66,6 +66,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				set_preview_background_mode(PanelSourceScript.BACKGROUND_MODE_DEBUG)
 			KEY_3:
 				set_preview_background_mode(PanelSourceScript.BACKGROUND_MODE_HYBRID)
+			KEY_4:
+				set_preview_background_mode(PanelSourceScript.BACKGROUND_MODE_NONE)
 			_:
 				return
 		_refresh_status()
@@ -168,7 +170,7 @@ func _build_controls() -> void:
 	controls_list.add_child(_make_background_mode_control())
 
 	var mode_note := Label.new()
-	mode_note.text = "These wrapper controls drive the standalone 2D source scene inside the SubViewport."
+	mode_note.text = "These wrapper controls drive the standalone 2D source scene inside the SubViewport, including a transparent no-background mode for pure panel compositing."
 	mode_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	mode_note.modulate = Color(1.0, 1.0, 1.0, 0.68)
 	controls_list.add_child(mode_note)
@@ -201,6 +203,7 @@ func _make_background_mode_control() -> Control:
 	selector.add_item("AeroBeat image", PanelSourceScript.BACKGROUND_MODE_IMAGE)
 	selector.add_item("Debug pattern", PanelSourceScript.BACKGROUND_MODE_DEBUG)
 	selector.add_item("Hybrid overlay", PanelSourceScript.BACKGROUND_MODE_HYBRID)
+	selector.add_item("No background", PanelSourceScript.BACKGROUND_MODE_NONE)
 	selector.item_selected.connect(_on_background_mode_selected.bind(selector))
 	wrapper.add_child(selector)
 	_background_mode_selector = selector
@@ -343,7 +346,7 @@ func _refresh_status() -> void:
 		"[color=#cbd5e1]Space[/color] auto rotation: %s" % ("ON" if auto_rotate else "OFF"),
 		"[color=#cbd5e1]WASD / Arrows[/color] pitch and yaw the wrapper",
 		"[color=#cbd5e1]R[/color] reset wrapper rotation",
-		"[color=#cbd5e1]1 / 2 / 3[/color] panel background: %s" % _background_mode_name(get_preview_background_mode()),
+		"[color=#cbd5e1]1 / 2 / 3 / 4[/color] panel background: %s" % _background_mode_name(get_preview_background_mode()),
 		"",
 		"Pitch: %.1f°" % panel_pivot.rotation_degrees.x,
 		"Yaw: %.1f°" % panel_pivot.rotation_degrees.y,
@@ -361,6 +364,8 @@ func _background_mode_name(mode: int) -> String:
 			return "Debug pattern"
 		PanelSourceScript.BACKGROUND_MODE_HYBRID:
 			return "Hybrid overlay"
+		PanelSourceScript.BACKGROUND_MODE_NONE:
+			return "No background"
 		_:
 			return "Unknown"
 

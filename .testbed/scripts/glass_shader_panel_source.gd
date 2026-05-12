@@ -6,6 +6,7 @@ const FRAME_ALPHA_BOOST := 0.18
 const BACKGROUND_MODE_IMAGE := 0
 const BACKGROUND_MODE_DEBUG := 1
 const BACKGROUND_MODE_HYBRID := 2
+const BACKGROUND_MODE_NONE := 3
 const DEFAULT_BACKGROUND_MODE := BACKGROUND_MODE_HYBRID
 
 const FLOAT_CONTROLS := [
@@ -214,7 +215,7 @@ func reset_shader_parameters_to_defaults() -> void:
 
 
 func _apply_background_mode(mode: int) -> void:
-	_background_mode = clampi(mode, BACKGROUND_MODE_IMAGE, BACKGROUND_MODE_HYBRID)
+	_background_mode = clampi(mode, BACKGROUND_MODE_IMAGE, BACKGROUND_MODE_NONE)
 	match _background_mode:
 		BACKGROUND_MODE_DEBUG:
 			background.visible = false
@@ -224,6 +225,10 @@ func _apply_background_mode(mode: int) -> void:
 			background.visible = true
 			preview_backdrop_debug.visible = true
 			preview_backdrop_debug.modulate = Color(1.0, 1.0, 1.0, 0.74)
+		BACKGROUND_MODE_NONE:
+			background.visible = false
+			preview_backdrop_debug.visible = false
+			preview_backdrop_debug.modulate = Color(1.0, 1.0, 1.0, 1.0)
 		_:
 			background.visible = true
 			preview_backdrop_debug.visible = false

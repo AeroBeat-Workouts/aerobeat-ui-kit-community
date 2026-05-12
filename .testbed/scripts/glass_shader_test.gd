@@ -72,7 +72,7 @@ func _build_controls() -> void:
 	controls_list.add_child(_make_background_mode_control())
 
 	var mode_note := Label.new()
-	mode_note.text = "Use Debug Pattern or Hybrid Overlay to make blur and refraction obvious."
+	mode_note.text = "Use Debug Pattern, Hybrid Overlay, or No Background to inspect blur and refraction in different contexts."
 	mode_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	mode_note.modulate = Color(1.0, 1.0, 1.0, 0.68)
 	controls_list.add_child(mode_note)
@@ -105,6 +105,7 @@ func _make_background_mode_control() -> Control:
 	selector.add_item("AeroBeat image", PanelSourceScript.BACKGROUND_MODE_IMAGE)
 	selector.add_item("Debug pattern", PanelSourceScript.BACKGROUND_MODE_DEBUG)
 	selector.add_item("Hybrid overlay", PanelSourceScript.BACKGROUND_MODE_HYBRID)
+	selector.add_item("No background", PanelSourceScript.BACKGROUND_MODE_NONE)
 	selector.item_selected.connect(_on_background_mode_selected.bind(selector))
 	wrapper.add_child(selector)
 	_background_mode_selector = selector
