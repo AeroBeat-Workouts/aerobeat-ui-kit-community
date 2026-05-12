@@ -272,7 +272,15 @@ func _make_color_control(config: Dictionary) -> Control:
 
 
 func _on_background_mode_selected(index: int, selector: OptionButton) -> void:
-	_apply_background_mode(selector.get_item_id(index))
+	set_background_mode(selector.get_item_id(index))
+
+
+func set_background_mode(mode: int) -> void:
+	_apply_background_mode(mode)
+
+
+func get_background_mode() -> int:
+	return _background_mode
 
 
 func _apply_background_mode(mode: int) -> void:
