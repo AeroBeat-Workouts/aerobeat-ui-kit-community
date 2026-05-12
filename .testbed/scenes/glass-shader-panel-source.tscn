@@ -1,0 +1,226 @@
+[gd_scene format=3 uid="uid://dr44hkv4e5aaa"]
+
+[ext_resource type="Script" path="res://scripts/glass_shader_panel_source.gd" id="1_script"]
+[ext_resource type="Shader" path="res://assets/shaders/glass-shader.gdshader" id="2_shader"]
+[ext_resource type="Script" path="res://scripts/glass_debug_backdrop.gd" id="3_script"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_glass"]
+resource_local_to_scene = true
+shader = ExtResource("2_shader")
+shader_parameter/blur = 4.2
+shader_parameter/warp_intensity = 0.45
+shader_parameter/strength_x = 14.0
+shader_parameter/strength_y = 14.0
+shader_parameter/offset_x = 0.03
+shader_parameter/offset_y = 0.0
+shader_parameter/corner_radius = 0.24
+shader_parameter/edge_smoothness = 1.1
+shader_parameter/tint = Color(0.92, 0.96, 1, 0.22)
+shader_parameter/edge_highlight = Color(1, 1, 1, 0.62)
+shader_parameter/edge_width = 2.4
+shader_parameter/chromatic_strength = 2.2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_glass_frame"]
+resource_local_to_scene = true
+bg_color = Color(1, 1, 1, 0.04)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 0.42)
+corner_radius_top_left = 42
+corner_radius_top_right = 42
+corner_radius_bottom_right = 42
+corner_radius_bottom_left = 42
+shadow_color = Color(1, 1, 1, 0.08)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_glass_inner_border"]
+resource_local_to_scene = true
+bg_color = Color(1, 1, 1, 0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.18)
+corner_radius_top_left = 32
+corner_radius_top_right = 32
+corner_radius_bottom_right = 32
+corner_radius_bottom_left = 32
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_badge"]
+resource_local_to_scene = true
+bg_color = Color(1, 1, 1, 0.08)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.14)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[node name="GlassShaderPanelSource" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="TextureRect" parent="." unique_name_in_owner=true]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+stretch_mode = 6
+
+[node name="PreviewCenter" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PreviewStack" type="Control" parent="PreviewCenter"]
+custom_minimum_size = Vector2(760, 560)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="PreviewBackdropDebug" type="Control" parent="PreviewCenter/PreviewStack" unique_name_in_owner=true]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_script")
+
+[node name="PreviewButton" type="Button" parent="PreviewCenter/PreviewStack" unique_name_in_owner=true]
+custom_minimum_size = Vector2(520, 320)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -260.0
+offset_top = -160.0
+offset_right = 260.0
+offset_bottom = 160.0
+grow_horizontal = 2
+grow_vertical = 2
+flat = true
+
+[node name="GlassFill" type="ColorRect" parent="PreviewCenter/PreviewStack/PreviewButton" unique_name_in_owner=true]
+material = SubResource("ShaderMaterial_glass")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PreviewFrame" type="Panel" parent="PreviewCenter/PreviewStack/PreviewButton" unique_name_in_owner=true]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_glass_frame")
+
+[node name="InnerBorderInset" type="MarginContainer" parent="PreviewCenter/PreviewStack/PreviewButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="PreviewInnerBorder" type="Panel" parent="PreviewCenter/PreviewStack/PreviewButton/InnerBorderInset" unique_name_in_owner=true]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_glass_inner_border")
+
+[node name="ContentMargin" type="MarginContainer" parent="PreviewCenter/PreviewStack/PreviewButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 36
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 36
+theme_override_constants/margin_bottom = 32
+
+[node name="ContentColumn" type="VBoxContainer" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="Badge" type="PanelContainer" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_badge")
+
+[node name="BadgePadding" type="MarginContainer" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/Badge"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 6
+
+[node name="BadgeLabel" type="Label" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/Badge/BadgePadding"]
+modulate = Color(1, 1, 1, 0.78)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Shader Preview"
+
+[node name="Spacer" type="Control" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+
+[node name="Headline" type="Label" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "AeroBeat"
+vertical_alignment = 1
+
+[node name="Body" type="Label" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
+modulate = Color(1, 1, 1, 0.82)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Switch to Debug Pattern or Hybrid Overlay\nto inspect blur, warp, and strength live."
+autowrap_mode = 3
+
+[node name="BottomSpacer" type="Control" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HintLabel" type="Label" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
+modulate = Color(1, 1, 1, 0.66)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "The glass should visibly distort the blocks and lines behind it."
+autowrap_mode = 3

@@ -1,179 +1,73 @@
 extends Control
 
-const BACKGROUND_IMAGE_PATH := "res://assets/images/perfect-hue-may-08-2026-hd.png"
-const FRAME_ALPHA_BOOST := 0.18
+const SOURCE_SCENE_PATH := "res://scenes/glass-shader-panel-source.tscn"
+const PanelSourceScript = preload("res://scripts/glass_shader_panel_source.gd")
 
-const BACKGROUND_MODE_IMAGE := 0
-const BACKGROUND_MODE_DEBUG := 1
-const BACKGROUND_MODE_HYBRID := 2
-const DEFAULT_BACKGROUND_MODE := BACKGROUND_MODE_HYBRID
+@onready var controls_list: VBoxContainer = get_node_or_null("SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll/ControlsList") as VBoxContainer
+@onready var panel_source_host: Control = get_node_or_null("SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost") as Control
 
-const FLOAT_CONTROLS := [
-	{
-		"name": "blur",
-		"label": "blur",
-		"min": 0.0,
-		"max": 8.0,
-		"step": 0.1,
-		"default": 4.2,
-	},
-	{
-		"name": "warp_intensity",
-		"label": "warp_intensity",
-		"min": 0.0,
-		"max": 1.0,
-		"step": 0.01,
-		"default": 0.45,
-	},
-	{
-		"name": "strength_x",
-		"label": "strength_x",
-		"min": 0.0,
-		"max": 50.0,
-		"step": 0.1,
-		"default": 14.0,
-	},
-	{
-		"name": "strength_y",
-		"label": "strength_y",
-		"min": 0.0,
-		"max": 50.0,
-		"step": 0.1,
-		"default": 14.0,
-	},
-	{
-		"name": "offset_x",
-		"label": "offset_x",
-		"min": -1.0,
-		"max": 1.0,
-		"step": 0.01,
-		"default": 0.03,
-	},
-	{
-		"name": "offset_y",
-		"label": "offset_y",
-		"min": -1.0,
-		"max": 1.0,
-		"step": 0.01,
-		"default": 0.0,
-	},
-	{
-		"name": "corner_radius",
-		"label": "corner_radius",
-		"min": 0.0,
-		"max": 1.0,
-		"step": 0.01,
-		"default": 0.24,
-	},
-	{
-		"name": "edge_smoothness",
-		"label": "edge_smoothness",
-		"min": 0.5,
-		"max": 3.0,
-		"step": 0.01,
-		"default": 1.1,
-	},
-	{
-		"name": "edge_width",
-		"label": "edge_width",
-		"min": 0.0,
-		"max": 10.0,
-		"step": 0.1,
-		"default": 2.4,
-	},
-	{
-		"name": "chromatic_strength",
-		"label": "chromatic_strength",
-		"min": 0.0,
-		"max": 5.0,
-		"step": 0.1,
-		"default": 2.2,
-	},
-]
-
-const COLOR_CONTROLS := [
-	{
-		"name": "tint",
-		"label": "tint",
-		"default": Color(0.92, 0.96, 1.0, 0.22),
-	},
-	{
-		"name": "edge_highlight",
-		"label": "edge_highlight",
-		"default": Color(1.0, 1.0, 1.0, 0.62),
-	},
-]
-
-@onready var background: TextureRect = %Background
-@onready var controls_list: VBoxContainer = %ControlsList
-@onready var preview_button: Button = %PreviewButton
-@onready var glass_fill: ColorRect = %GlassFill
-@onready var preview_frame: Panel = %PreviewFrame
-@onready var preview_inner_border: Panel = %PreviewInnerBorder
-@onready var preview_backdrop_debug: Control = %PreviewBackdropDebug
-
-var _shader_material: ShaderMaterial
-var _frame_style: StyleBoxFlat
-var _inner_border_style: StyleBoxFlat
-var _background_texture: Texture2D
-var _background_mode := DEFAULT_BACKGROUND_MODE
+var _panel_source: Control
+var _background_mode_selector: OptionButton
+var _float_sliders: Dictionary = {}
+var _color_pickers: Dictionary = {}
 
 
 func _ready() -> void:
-	_background_texture = _load_background_texture()
-	background.texture = _background_texture
+	_mount_panel_source()
+	_build_controls()
+	call_deferred("_sync_controls_from_panel")
 
-	_shader_material = glass_fill.material as ShaderMaterial
-	if _shader_material == null:
-		push_error("Glass fill is missing its ShaderMaterial.")
+
+func set_background_mode(mode: int) -> void:
+	if is_instance_valid(_panel_source) and _panel_source.has_method("set_background_mode"):
+		_panel_source.call("set_background_mode", mode)
+	if is_instance_valid(_background_mode_selector):
+		_select_background_mode(mode)
+
+
+func get_background_mode() -> int:
+	if is_instance_valid(_panel_source) and _panel_source.has_method("get_background_mode"):
+		return _panel_source.call("get_background_mode")
+	return PanelSourceScript.DEFAULT_BACKGROUND_MODE
+
+
+func set_shader_parameter(parameter_name: String, value: Variant) -> void:
+	if is_instance_valid(_panel_source) and _panel_source.has_method("set_shader_parameter"):
+		_panel_source.call("set_shader_parameter", parameter_name, value)
+	_sync_single_control_from_panel(parameter_name)
+
+
+func get_shader_parameter(parameter_name: String) -> Variant:
+	if is_instance_valid(_panel_source) and _panel_source.has_method("get_shader_parameter"):
+		return _panel_source.call("get_shader_parameter", parameter_name)
+	return null
+
+
+func _mount_panel_source() -> void:
+	for child in panel_source_host.get_children():
+		child.queue_free()
+
+	var packed: PackedScene = load(SOURCE_SCENE_PATH)
+	if packed == null:
+		push_error("Failed to load panel source scene: %s" % SOURCE_SCENE_PATH)
 		return
 
-	_frame_style = preview_frame.get_theme_stylebox("panel") as StyleBoxFlat
-	_inner_border_style = preview_inner_border.get_theme_stylebox("panel") as StyleBoxFlat
+	_panel_source = packed.instantiate() as Control
+	if _panel_source == null:
+		push_error("Panel source scene did not instantiate as a Control root.")
+		return
 
-	_configure_preview_button()
-	_build_controls()
-	_apply_background_mode(DEFAULT_BACKGROUND_MODE)
-	preview_button.resized.connect(_sync_preview_shell)
-	preview_inner_border.resized.connect(_sync_preview_shell)
-	call_deferred("_sync_preview_shell")
-
-
-func _notification(what: int) -> void:
-	if what == NOTIFICATION_THEME_CHANGED and is_instance_valid(preview_button):
-		_configure_preview_button()
-
-
-func _load_background_texture() -> Texture2D:
-	var image := Image.load_from_file(ProjectSettings.globalize_path(BACKGROUND_IMAGE_PATH))
-	if image == null or image.is_empty():
-		push_error("Unable to load background image at %s" % BACKGROUND_IMAGE_PATH)
-		return null
-	return ImageTexture.create_from_image(image)
-
-
-func _configure_preview_button() -> void:
-	preview_button.flat = true
-	preview_button.focus_mode = Control.FOCUS_NONE
-	preview_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	preview_button.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.96))
-	preview_button.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0, 0.96))
-	preview_button.add_theme_color_override("font_pressed_color", Color(1.0, 1.0, 1.0, 0.96))
-	preview_button.add_theme_color_override("font_focus_color", Color(1.0, 1.0, 1.0, 0.96))
-	preview_button.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.28))
-	preview_button.add_theme_constant_override("outline_size", 2)
-
-	var empty := StyleBoxEmpty.new()
-	preview_button.add_theme_stylebox_override("normal", empty)
-	preview_button.add_theme_stylebox_override("hover", empty)
-	preview_button.add_theme_stylebox_override("pressed", empty)
-	preview_button.add_theme_stylebox_override("focus", empty)
-	preview_button.add_theme_stylebox_override("disabled", empty)
+	panel_source_host.add_child(_panel_source)
+	_panel_source.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 
 func _build_controls() -> void:
 	for child in controls_list.get_children():
 		child.queue_free()
+
+	_float_sliders.clear()
+	_color_pickers.clear()
+	_background_mode_selector = null
 
 	controls_list.add_child(_make_background_mode_control())
 
@@ -187,10 +81,10 @@ func _build_controls() -> void:
 	spacer.custom_minimum_size = Vector2(0.0, 8.0)
 	controls_list.add_child(spacer)
 
-	for config in FLOAT_CONTROLS:
+	for config in PanelSourceScript.FLOAT_CONTROLS:
 		controls_list.add_child(_make_float_control(config))
 
-	for config in COLOR_CONTROLS:
+	for config in PanelSourceScript.COLOR_CONTROLS:
 		controls_list.add_child(_make_color_control(config))
 
 	var tail_spacer := Control.new()
@@ -208,13 +102,12 @@ func _make_background_mode_control() -> Control:
 
 	var selector := OptionButton.new()
 	selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	selector.add_item("AeroBeat image", BACKGROUND_MODE_IMAGE)
-	selector.add_item("Debug pattern", BACKGROUND_MODE_DEBUG)
-	selector.add_item("Hybrid overlay", BACKGROUND_MODE_HYBRID)
-	selector.selected = DEFAULT_BACKGROUND_MODE
+	selector.add_item("AeroBeat image", PanelSourceScript.BACKGROUND_MODE_IMAGE)
+	selector.add_item("Debug pattern", PanelSourceScript.BACKGROUND_MODE_DEBUG)
+	selector.add_item("Hybrid overlay", PanelSourceScript.BACKGROUND_MODE_HYBRID)
 	selector.item_selected.connect(_on_background_mode_selected.bind(selector))
 	wrapper.add_child(selector)
-
+	_background_mode_selector = selector
 	return wrapper
 
 
@@ -246,8 +139,7 @@ func _make_float_control(config: Dictionary) -> Control:
 	row.add_child(value_label)
 
 	slider.set_meta("value_label", value_label)
-	_shader_material.set_shader_parameter(str(config["name"]), slider.value)
-
+	_float_sliders[str(config["name"])] = slider
 	return wrapper
 
 
@@ -266,8 +158,7 @@ func _make_color_control(config: Dictionary) -> Control:
 	picker.color_changed.connect(_on_color_value_changed.bind(str(config["name"])))
 	wrapper.add_child(picker)
 
-	_shader_material.set_shader_parameter(str(config["name"]), picker.color)
-
+	_color_pickers[str(config["name"])] = picker
 	return wrapper
 
 
@@ -275,86 +166,56 @@ func _on_background_mode_selected(index: int, selector: OptionButton) -> void:
 	set_background_mode(selector.get_item_id(index))
 
 
-func set_background_mode(mode: int) -> void:
-	_apply_background_mode(mode)
-
-
-func get_background_mode() -> int:
-	return _background_mode
-
-
-func _apply_background_mode(mode: int) -> void:
-	_background_mode = mode
-	match mode:
-		BACKGROUND_MODE_DEBUG:
-			background.visible = false
-			preview_backdrop_debug.visible = true
-			preview_backdrop_debug.modulate = Color(1.0, 1.0, 1.0, 1.0)
-		BACKGROUND_MODE_HYBRID:
-			background.visible = true
-			preview_backdrop_debug.visible = true
-			preview_backdrop_debug.modulate = Color(1.0, 1.0, 1.0, 0.74)
-		_:
-			background.visible = true
-			preview_backdrop_debug.visible = false
-			preview_backdrop_debug.modulate = Color(1.0, 1.0, 1.0, 1.0)
-
-
 func _on_float_value_changed(value: float, parameter_name: String, slider: HSlider) -> void:
-	_shader_material.set_shader_parameter(parameter_name, value)
+	set_shader_parameter(parameter_name, value)
 	var value_label: Label = slider.get_meta("value_label") as Label
 	if value_label:
 		value_label.text = _format_float(value)
-	_sync_preview_shell()
 
 
 func _on_color_value_changed(color: Color, parameter_name: String) -> void:
-	_shader_material.set_shader_parameter(parameter_name, color)
-	_sync_preview_shell()
+	set_shader_parameter(parameter_name, color)
 
 
-func _sync_preview_shell() -> void:
-	if _shader_material == null:
+func _sync_controls_from_panel() -> void:
+	_select_background_mode(get_background_mode())
+	for config in PanelSourceScript.FLOAT_CONTROLS:
+		_sync_single_control_from_panel(str(config["name"]))
+	for config in PanelSourceScript.COLOR_CONTROLS:
+		_sync_single_control_from_panel(str(config["name"]))
+
+
+func _sync_single_control_from_panel(parameter_name: String) -> void:
+	var value: Variant = get_shader_parameter(parameter_name)
+	if value == null:
 		return
 
-	var corner_radius := float(_shader_material.get_shader_parameter("corner_radius"))
-	var edge_width := float(_shader_material.get_shader_parameter("edge_width"))
-	var tint: Color = _shader_material.get_shader_parameter("tint")
-	var edge_highlight: Color = _shader_material.get_shader_parameter("edge_highlight")
-
-	var frame_corner_px := _shader_corner_radius_to_pixels(preview_button.size, corner_radius)
-	var inner_corner_px := _shader_corner_radius_to_pixels(preview_inner_border.size, corner_radius)
-	var border_width := maxi(1, int(round(maxf(1.0, edge_width * 1.35))))
-
-	_set_all_corner_radii(_frame_style, frame_corner_px)
-	_set_all_corner_radii(_inner_border_style, inner_corner_px)
-
-	_frame_style.border_width_left = border_width
-	_frame_style.border_width_top = border_width
-	_frame_style.border_width_right = border_width
-	_frame_style.border_width_bottom = border_width
-	_frame_style.bg_color = Color(tint.r, tint.g, tint.b, clampf(tint.a * 0.28, 0.03, 0.12))
-	_frame_style.border_color = edge_highlight.lightened(0.05)
-	_frame_style.border_color.a = clampf(edge_highlight.a + FRAME_ALPHA_BOOST, 0.28, 0.92)
-	_frame_style.shadow_size = maxi(6, int(round(5.0 + edge_width * 2.0)))
-	_frame_style.shadow_color = Color(edge_highlight.r, edge_highlight.g, edge_highlight.b, clampf(edge_highlight.a * 0.18, 0.04, 0.18))
-
-	_inner_border_style.border_color = Color(1.0, 1.0, 1.0, clampf(0.08 + tint.a * 0.55, 0.08, 0.24))
-
-
-func _shader_corner_radius_to_pixels(control_size: Vector2, corner_radius: float) -> int:
-	var clamped_radius := clampf(corner_radius, 0.0, 1.0)
-	var max_corner_px := minf(control_size.x, control_size.y) * 0.5
-	return int(round(clamped_radius * max_corner_px))
-
-
-func _set_all_corner_radii(stylebox: StyleBoxFlat, radius: int) -> void:
-	if stylebox == null:
+	if _float_sliders.has(parameter_name):
+		var slider: HSlider = _float_sliders[parameter_name] as HSlider
+		if slider and not is_equal_approx(slider.value, float(value)):
+			slider.set_block_signals(true)
+			slider.value = float(value)
+			slider.set_block_signals(false)
+			var value_label: Label = slider.get_meta("value_label") as Label
+			if value_label:
+				value_label.text = _format_float(slider.value)
 		return
-	stylebox.corner_radius_top_left = radius
-	stylebox.corner_radius_top_right = radius
-	stylebox.corner_radius_bottom_right = radius
-	stylebox.corner_radius_bottom_left = radius
+
+	if _color_pickers.has(parameter_name):
+		var picker: ColorPickerButton = _color_pickers[parameter_name] as ColorPickerButton
+		if picker and picker.color != value:
+			picker.set_block_signals(true)
+			picker.color = value
+			picker.set_block_signals(false)
+
+
+func _select_background_mode(mode: int) -> void:
+	if not is_instance_valid(_background_mode_selector):
+		return
+	for index in range(_background_mode_selector.item_count):
+		if _background_mode_selector.get_item_id(index) == mode:
+			_background_mode_selector.select(index)
+			return
 
 
 func _format_float(value: float) -> String:

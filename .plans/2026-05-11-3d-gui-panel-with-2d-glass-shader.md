@@ -16,11 +16,17 @@ Create a new test scene that uses the original 2D glass shader effect together w
 
 This work belongs in `aerobeat-ui-kit-community`, so the plan and Beads live here. The goal is not to replace the new native 3D shader scene, but to add a second example scene that answers a different question: what does the original 2D glass shader look like when routed through Godot’s 3D GUI panel system?
 
-The truthful implementation path is likely a `SubViewport`-backed UI surface or equivalent Godot 3D GUI workflow, where the original 2D shader remains the glass effect source and the resulting UI is presented as a real 3D panel in space. Derrick clarified the exact hybrid target: this new scene should use the rotation/3D presentation style of the full native 3D scene, while keeping the background image and tuning/options style of the 2D scene. That gives us a direct A/B between:
+The truthful implementation path is a `SubViewport`-backed UI surface, where the original 2D shader remains the glass effect source and the resulting UI is presented as a real 3D panel in space. Derrick sharpened the hybrid target further: the scene should keep the native 3D scene’s rotation/presentation behavior, but also gain a left-side control panel in the hybrid scene itself, using the AeroBeat image / Hybrid background options from the 2D scene. Those controls should drive the shader/material values of the separate 2D subviewport source scene so the 3D panel can be fine-tuned live.
+
+To keep this inspectable, the hybrid path should be split into two layers:
+- a dedicated standalone 2D source scene used as the `SubViewport` content, so the unobstructed 2D panel can be inspected on its own
+- the 3D hybrid wrapper scene, which shows a left-side control panel plus the 3D panel in space and forwards control changes into the subviewport scene
+
+That gives us a direct A/B between:
 - original 2D shader on a 3D GUI panel system
 - new dedicated 3D shader on a real 3D panel
 
-The scene should preserve inspectability: it should clearly show that the original 2D shader is still being used, still provide the useful 2D-style tuning/verification controls where practical, and still include the real 3D rotation option so the panel can be inspected in space.
+The scene should preserve inspectability: it should clearly show that the original 2D shader is still being used, provide useful 2D-style tuning/verification controls, expose the background mode switching in the hybrid wrapper, and still include the real 3D rotation option so the panel can be inspected in space.
 
 ---
 
@@ -100,6 +106,69 @@ The scene should preserve inspectability: it should clearly show that the origin
 **Status:** ✅ Complete
 
 **Results:** Final audit passed. Verified that the original 2D shader path is still the actual effect source, the panel is presented as a rotating 3D GUI panel through a SubViewport-backed workflow, the 2D scene’s background/options feel is preserved, and the result remains clearly distinct from the native 3D shader path.
+
+---
+
+### Task 4: Refactor the hybrid path into a dedicated 2D source scene plus a left-side control panel in the 3D wrapper
+
+**Bead ID:** `aerobeat-ui-kit-community-ys6`  
+**SubAgent:** `primary` (for `coder` workflow role)  
+**Role:** `coder`  
+**References:** `REF-01`, `REF-02`, `REF-03`, `REF-04`, `REF-06`, `REF-07`  
+**Prompt:** In `/home/derrick/Documents/projects/aerobeat/aerobeat-ui-kit-community`, claim bead `aerobeat-ui-kit-community-ys6` with `bd update aerobeat-ui-kit-community-ys6 --status in_progress --json`. Refactor the hybrid path so it uses a dedicated standalone 2D source scene as the SubViewport content, and add a left-side control panel directly in the 3D wrapper scene. The wrapper should expose the AeroBeat image / Hybrid background options and forward tuning changes into the shader/material values of the 2D source scene so the 3D panel updates live. Keep the hybrid path truthful and clearly distinct from the native 3D shader path. Close the bead with a clear reason when done.
+
+**Folders Created/Deleted/Modified:**
+- `.testbed/scenes/`
+- `.testbed/scripts/`
+
+**Files Created/Deleted/Modified:**
+- hybrid 3D GUI panel scene
+- new dedicated 2D subviewport source scene
+- supporting scripts/resources
+
+**Status:** ⏳ Pending
+
+**Results:** Derrick requested that the hybrid scene itself gain a left-side tuning panel using the AeroBeat image / Hybrid options, that a separate standalone 2D glass-panel scene be created as the subviewport source so the unobstructed 2D panel can be inspected directly, and that the hybrid scene forward those control values into the shader/material used by the subviewport content.
+
+---
+
+### Task 5: QA the refactored hybrid scene and standalone 2D source scene
+
+**Bead ID:** `aerobeat-ui-kit-community-4b7`  
+**SubAgent:** `primary` (for `qa` workflow role)  
+**Role:** `qa`  
+**References:** `REF-01`, `REF-02`, `REF-07`  
+**Prompt:** In `/home/derrick/Documents/projects/aerobeat/aerobeat-ui-kit-community`, claim bead `aerobeat-ui-kit-community-4b7` with `bd update aerobeat-ui-kit-community-4b7 --status in_progress --json`. QA the refactored hybrid scene and the standalone 2D source scene. Verify the unobstructed 2D scene renders correctly on its own, the hybrid scene’s left-side controls drive the 2D source shader/material values live, the AeroBeat/Hybrid background options work, and the 3D presentation/rotation behavior still works. Capture evidence and close the bead with a precise pass/fail reason.
+
+**Folders Created/Deleted/Modified:**
+- `.testbed/`
+
+**Files Created/Deleted/Modified:**
+- QA evidence artifacts if produced
+
+**Status:** ⏳ Pending
+
+**Results:** Not started.
+
+---
+
+### Task 6: Audit the refactored hybrid path for truthfulness and control forwarding correctness
+
+**Bead ID:** `aerobeat-ui-kit-community-tca`  
+**SubAgent:** `primary` (for `auditor` workflow role)  
+**Role:** `auditor`  
+**References:** `REF-01`, `REF-04`, `REF-07`  
+**Prompt:** In `/home/derrick/Documents/projects/aerobeat/aerobeat-ui-kit-community`, claim bead `aerobeat-ui-kit-community-tca` with `bd update aerobeat-ui-kit-community-tca --status in_progress --json`. Audit the refactored hybrid path independently. Confirm that the standalone 2D source scene is the actual subviewport content, that the wrapper controls really forward values into that source scene, that the background options behave correctly, and that the scene remains clearly distinct from the native 3D shader path. Close the bead only if the result is accurate and complete.
+
+**Folders Created/Deleted/Modified:**
+- `TBD`
+
+**Files Created/Deleted/Modified:**
+- `TBD`
+
+**Status:** ⏳ Pending
+
+**Results:** Not started.
 
 ---
 

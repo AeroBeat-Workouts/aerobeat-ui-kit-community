@@ -31,7 +31,18 @@ clearcoat_enabled = true
 clearcoat = 0.2
 clearcoat_roughness = 0.18
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hud_panel"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_controls_panel"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.04, 0.05, 0.08, 0.9)
+border_width_right = 1
+border_color = Color(1, 1, 1, 0.08)
+shadow_color = Color(0, 0, 0, 0.3)
+shadow_size = 18
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_info_panel"]
 content_margin_left = 0.0
 content_margin_top = 0.0
 content_margin_right = 0.0
@@ -85,7 +96,7 @@ far = 100.0
 script = ExtResource("2")
 
 [node name="PanelPivot" type="Node3D" parent="." unique_name_in_owner=true]
-position = Vector3(0, 0, -0.35)
+position = Vector3(0.75, 0, -0.35)
 
 [node name="PanelShell" type="MeshInstance3D" parent="PanelPivot"]
 mesh = SubResource("BoxMesh_shell")
@@ -100,31 +111,87 @@ size = Vector2i(1600, 900)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="HudMargin" type="MarginContainer" parent="CanvasLayer"]
-anchors_preset = 1
-anchor_right = 0.0
-anchor_bottom = 0.0
-offset_left = 24.0
-offset_top = 24.0
-offset_right = 500.0
-offset_bottom = 360.0
+[node name="OverlayRoot" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
 
-[node name="HudPanel" type="PanelContainer" parent="CanvasLayer/HudMargin"]
+[node name="SplitRoot" type="HSplitContainer" parent="CanvasLayer/OverlayRoot"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+split_offsets = PackedInt32Array(340)
+split_offset = 340
+
+[node name="ControlsPanel" type="PanelContainer" parent="CanvasLayer/OverlayRoot/SplitRoot"]
+custom_minimum_size = Vector2(340, 0)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_hud_panel")
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_controls_panel")
 
-[node name="HudPadding" type="MarginContainer" parent="CanvasLayer/HudMargin/HudPanel"]
+[node name="Margin" type="MarginContainer" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 14
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 14
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
 
-[node name="HudLabel" type="RichTextLabel" parent="CanvasLayer/HudMargin/HudPanel/HudPadding" unique_name_in_owner=true]
-custom_minimum_size = Vector2(444, 0)
+[node name="ControlsColumn" type="VBoxContainer" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Hybrid 3D GUI"
+
+[node name="Subtitle" type="Label" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn"]
+modulate = Color(1, 1, 1, 0.72)
+layout_mode = 2
+text = "Wrapper controls drive a 2D source scene"
+
+[node name="Divider" type="HSeparator" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn"]
+layout_mode = 2
+
+[node name="ControlsScroll" type="ScrollContainer" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ControlsList" type="VBoxContainer" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll" unique_name_in_owner=true]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="StatusPanel" type="PanelContainer" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_info_panel")
+
+[node name="StatusPadding" type="MarginContainer" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/StatusPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="StatusLabel" type="RichTextLabel" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/StatusPanel/StatusPadding" unique_name_in_owner=true]
+custom_minimum_size = Vector2(0, 180)
 layout_mode = 2
 bbcode_enabled = true
 fit_content = true
 scroll_active = false
 autowrap_mode = 3
 text = "3D GUI Panel / 2D Glass Shader Reuse"
+
+[node name="PreviewSide" type="Control" parent="CanvasLayer/OverlayRoot/SplitRoot"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2

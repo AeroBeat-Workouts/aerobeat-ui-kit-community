@@ -1,9 +1,7 @@
 extends Node3D
 
-const SOURCE_2D_SCENE_PATH := "res://scenes/glass-shader-test.tscn"
-const BACKGROUND_MODE_IMAGE := 0
-const BACKGROUND_MODE_DEBUG := 1
-const BACKGROUND_MODE_HYBRID := 2
+const SOURCE_2D_SCENE_PATH := "res://scenes/glass-shader-panel-source.tscn"
+const PanelSourceScript = preload("res://scripts/glass_shader_panel_source.gd")
 
 const AUTO_YAW_AMPLITUDE_DEG := 26.0
 const AUTO_PITCH_AMPLITUDE_DEG := 10.0
@@ -17,13 +15,16 @@ const MAX_MANUAL_YAW_DEG := 45.0
 @onready var panel_pivot: Node3D = get_node_or_null("PanelPivot") as Node3D
 @onready var panel_viewport: SubViewport = get_node_or_null("PanelPivot/PanelViewport") as SubViewport
 @onready var panel_display: MeshInstance3D = get_node_or_null("PanelPivot/PanelDisplay") as MeshInstance3D
-@onready var hud_label: RichTextLabel = get_node_or_null("CanvasLayer/HudMargin/HudPanel/HudPadding/HudLabel") as RichTextLabel
+@onready var controls_list: VBoxContainer = get_node_or_null("CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll/ControlsList") as VBoxContainer
+@onready var status_label: RichTextLabel = get_node_or_null("CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/StatusPanel/StatusPadding/StatusLabel") as RichTextLabel
 
 var _panel_ui: Control
 var _manual_pitch_deg := 0.0
 var _manual_yaw_deg := 0.0
 var _base_rotation := Vector3.ZERO
-var _background_mode := BACKGROUND_MODE_HYBRID
+var _background_mode_selector: OptionButton
+var _float_sliders: Dictionary = {}
+var _color_pickers: Dictionary = {}
 
 
 func _ready() -> void:
@@ -35,8 +36,10 @@ func _ready() -> void:
 	_configure_panel_viewport()
 	_mount_source_2d_scene()
 	_apply_panel_texture()
+	_build_controls()
+	call_deferred("_sync_controls_from_panel")
 	_apply_panel_rotation()
-	_refresh_hud()
+	_refresh_status()
 
 
 func _process(delta: float) -> void:
@@ -47,7 +50,7 @@ func _process(delta: float) -> void:
 		_manual_pitch_deg = clampf(_manual_pitch_deg + pitch_input * manual_rotate_speed_deg * delta, -MAX_MANUAL_PITCH_DEG, MAX_MANUAL_PITCH_DEG)
 
 	_apply_panel_rotation()
-	_refresh_hud()
+	_refresh_status()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -58,45 +61,61 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_R:
 				reset_manual_rotation()
 			KEY_1:
-				set_preview_background_mode(BACKGROUND_MODE_IMAGE)
+				set_preview_background_mode(PanelSourceScript.BACKGROUND_MODE_IMAGE)
 			KEY_2:
-				set_preview_background_mode(BACKGROUND_MODE_DEBUG)
+				set_preview_background_mode(PanelSourceScript.BACKGROUND_MODE_DEBUG)
 			KEY_3:
-				set_preview_background_mode(BACKGROUND_MODE_HYBRID)
+				set_preview_background_mode(PanelSourceScript.BACKGROUND_MODE_HYBRID)
 			_:
 				return
-		_refresh_hud()
+		_refresh_status()
 
 
 func set_auto_rotate_enabled(value: bool) -> void:
 	auto_rotate = value
 	_apply_panel_rotation()
-	_refresh_hud()
+	_refresh_status()
 
 
 func set_manual_rotation(pitch_deg: float, yaw_deg: float) -> void:
 	_manual_pitch_deg = clampf(pitch_deg, -MAX_MANUAL_PITCH_DEG, MAX_MANUAL_PITCH_DEG)
 	_manual_yaw_deg = clampf(yaw_deg, -MAX_MANUAL_YAW_DEG, MAX_MANUAL_YAW_DEG)
 	_apply_panel_rotation()
-	_refresh_hud()
+	_refresh_status()
 
 
 func reset_manual_rotation() -> void:
 	_manual_pitch_deg = 0.0
 	_manual_yaw_deg = 0.0
 	_apply_panel_rotation()
-	_refresh_hud()
+	_refresh_status()
 
 
 func set_preview_background_mode(mode: int) -> void:
-	_background_mode = clampi(mode, BACKGROUND_MODE_IMAGE, BACKGROUND_MODE_HYBRID)
 	if is_instance_valid(_panel_ui) and _panel_ui.has_method("set_background_mode"):
-		_panel_ui.call("set_background_mode", _background_mode)
-	_refresh_hud()
+		_panel_ui.call("set_background_mode", mode)
+	if is_instance_valid(_background_mode_selector):
+		_select_background_mode(get_preview_background_mode())
+	_refresh_status()
 
 
 func get_preview_background_mode() -> int:
-	return _background_mode
+	if is_instance_valid(_panel_ui) and _panel_ui.has_method("get_background_mode"):
+		return _panel_ui.call("get_background_mode")
+	return PanelSourceScript.DEFAULT_BACKGROUND_MODE
+
+
+func set_panel_shader_parameter(parameter_name: String, value: Variant) -> void:
+	if is_instance_valid(_panel_ui) and _panel_ui.has_method("set_shader_parameter"):
+		_panel_ui.call("set_shader_parameter", parameter_name, value)
+	_sync_single_control_from_panel(parameter_name)
+	_refresh_status()
+
+
+func get_panel_shader_parameter(parameter_name: String) -> Variant:
+	if is_instance_valid(_panel_ui) and _panel_ui.has_method("get_shader_parameter"):
+		return _panel_ui.call("get_shader_parameter", parameter_name)
+	return null
 
 
 func _configure_panel_viewport() -> void:
@@ -125,7 +144,6 @@ func _mount_source_2d_scene() -> void:
 
 	panel_viewport.add_child(_panel_ui)
 	_panel_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	set_preview_background_mode(_background_mode)
 
 
 func _apply_panel_texture() -> void:
@@ -137,6 +155,163 @@ func _apply_panel_texture() -> void:
 	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	material.no_depth_test = false
 	panel_display.material_override = material
+
+
+func _build_controls() -> void:
+	for child in controls_list.get_children():
+		child.queue_free()
+
+	_float_sliders.clear()
+	_color_pickers.clear()
+	_background_mode_selector = null
+
+	controls_list.add_child(_make_background_mode_control())
+
+	var mode_note := Label.new()
+	mode_note.text = "These wrapper controls drive the standalone 2D source scene inside the SubViewport."
+	mode_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	mode_note.modulate = Color(1.0, 1.0, 1.0, 0.68)
+	controls_list.add_child(mode_note)
+
+	var spacer := Control.new()
+	spacer.custom_minimum_size = Vector2(0.0, 8.0)
+	controls_list.add_child(spacer)
+
+	for config in PanelSourceScript.FLOAT_CONTROLS:
+		controls_list.add_child(_make_float_control(config))
+
+	for config in PanelSourceScript.COLOR_CONTROLS:
+		controls_list.add_child(_make_color_control(config))
+
+	var tail_spacer := Control.new()
+	tail_spacer.custom_minimum_size = Vector2(0.0, 8.0)
+	controls_list.add_child(tail_spacer)
+
+
+func _make_background_mode_control() -> Control:
+	var wrapper := VBoxContainer.new()
+	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var label := Label.new()
+	label.text = "preview_background"
+	wrapper.add_child(label)
+
+	var selector := OptionButton.new()
+	selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	selector.add_item("AeroBeat image", PanelSourceScript.BACKGROUND_MODE_IMAGE)
+	selector.add_item("Debug pattern", PanelSourceScript.BACKGROUND_MODE_DEBUG)
+	selector.add_item("Hybrid overlay", PanelSourceScript.BACKGROUND_MODE_HYBRID)
+	selector.item_selected.connect(_on_background_mode_selected.bind(selector))
+	wrapper.add_child(selector)
+	_background_mode_selector = selector
+	return wrapper
+
+
+func _make_float_control(config: Dictionary) -> Control:
+	var wrapper := VBoxContainer.new()
+	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var label := Label.new()
+	label.text = str(config["label"])
+	wrapper.add_child(label)
+
+	var row := HBoxContainer.new()
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	wrapper.add_child(row)
+
+	var slider := HSlider.new()
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.min_value = float(config["min"])
+	slider.max_value = float(config["max"])
+	slider.step = float(config["step"])
+	slider.value = float(config["default"])
+	slider.value_changed.connect(_on_float_value_changed.bind(str(config["name"]), slider))
+	row.add_child(slider)
+
+	var value_label := Label.new()
+	value_label.custom_minimum_size = Vector2(48.0, 0.0)
+	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	value_label.text = _format_float(slider.value)
+	row.add_child(value_label)
+
+	slider.set_meta("value_label", value_label)
+	_float_sliders[str(config["name"])] = slider
+	return wrapper
+
+
+func _make_color_control(config: Dictionary) -> Control:
+	var wrapper := VBoxContainer.new()
+	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var label := Label.new()
+	label.text = str(config["label"])
+	wrapper.add_child(label)
+
+	var picker := ColorPickerButton.new()
+	picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	picker.custom_minimum_size = Vector2(0.0, 28.0)
+	picker.color = config["default"]
+	picker.color_changed.connect(_on_color_value_changed.bind(str(config["name"])))
+	wrapper.add_child(picker)
+
+	_color_pickers[str(config["name"])] = picker
+	return wrapper
+
+
+func _on_background_mode_selected(index: int, selector: OptionButton) -> void:
+	set_preview_background_mode(selector.get_item_id(index))
+
+
+func _on_float_value_changed(value: float, parameter_name: String, slider: HSlider) -> void:
+	set_panel_shader_parameter(parameter_name, value)
+	var value_label: Label = slider.get_meta("value_label") as Label
+	if value_label:
+		value_label.text = _format_float(value)
+
+
+func _on_color_value_changed(color: Color, parameter_name: String) -> void:
+	set_panel_shader_parameter(parameter_name, color)
+
+
+func _sync_controls_from_panel() -> void:
+	_select_background_mode(get_preview_background_mode())
+	for config in PanelSourceScript.FLOAT_CONTROLS:
+		_sync_single_control_from_panel(str(config["name"]))
+	for config in PanelSourceScript.COLOR_CONTROLS:
+		_sync_single_control_from_panel(str(config["name"]))
+
+
+func _sync_single_control_from_panel(parameter_name: String) -> void:
+	var value: Variant = get_panel_shader_parameter(parameter_name)
+	if value == null:
+		return
+
+	if _float_sliders.has(parameter_name):
+		var slider: HSlider = _float_sliders[parameter_name] as HSlider
+		if slider and not is_equal_approx(slider.value, float(value)):
+			slider.set_block_signals(true)
+			slider.value = float(value)
+			slider.set_block_signals(false)
+			var value_label: Label = slider.get_meta("value_label") as Label
+			if value_label:
+				value_label.text = _format_float(slider.value)
+		return
+
+	if _color_pickers.has(parameter_name):
+		var picker: ColorPickerButton = _color_pickers[parameter_name] as ColorPickerButton
+		if picker and picker.color != value:
+			picker.set_block_signals(true)
+			picker.color = value
+			picker.set_block_signals(false)
+
+
+func _select_background_mode(mode: int) -> void:
+	if not is_instance_valid(_background_mode_selector):
+		return
+	for index in range(_background_mode_selector.item_count):
+		if _background_mode_selector.get_item_id(index) == mode:
+			_background_mode_selector.select(index)
+			return
 
 
 func _apply_panel_rotation() -> void:
@@ -159,32 +334,36 @@ func _axis_strength(negative_primary: Key, positive_primary: Key, negative_secon
 	return float(positive) - float(negative)
 
 
-func _refresh_hud() -> void:
-	if hud_label == null or panel_pivot == null:
+func _refresh_status() -> void:
+	if status_label == null or panel_pivot == null:
 		return
 
 	var lines := [
 		"[b]3D GUI Panel / 2D Glass Shader Reuse[/b]",
-		"[color=#cbd5e1]Space[/color] toggle auto rotation: %s" % ("ON" if auto_rotate else "OFF"),
-		"[color=#cbd5e1]WASD / Arrows[/color] nudge pitch and yaw",
-		"[color=#cbd5e1]R[/color] reset manual offset",
-		"[color=#cbd5e1]1 / 2 / 3[/color] switch panel background: %s" % _background_mode_name(_background_mode),
+		"[color=#cbd5e1]Space[/color] auto rotation: %s" % ("ON" if auto_rotate else "OFF"),
+		"[color=#cbd5e1]WASD / Arrows[/color] pitch and yaw the wrapper",
+		"[color=#cbd5e1]R[/color] reset wrapper rotation",
+		"[color=#cbd5e1]1 / 2 / 3[/color] panel background: %s" % _background_mode_name(get_preview_background_mode()),
 		"",
 		"Pitch: %.1f°" % panel_pivot.rotation_degrees.x,
 		"Yaw: %.1f°" % panel_pivot.rotation_degrees.y,
 		"",
-		"This panel is the original 2D glass-shader test scene rendered into a SubViewport and mapped onto a rotating 3D quad. The refraction itself is still the canvas_item shader, not the native 3D glass shader.",
+		"This is still the 2D canvas_item glass shader rendered into a SubViewport and mapped onto a rotating 3D quad. It is intentionally not the native 3D glass shader path."
 	]
-	hud_label.text = "\n".join(lines)
+	status_label.text = "\n".join(lines)
 
 
 func _background_mode_name(mode: int) -> String:
 	match mode:
-		BACKGROUND_MODE_IMAGE:
+		PanelSourceScript.BACKGROUND_MODE_IMAGE:
 			return "AeroBeat image"
-		BACKGROUND_MODE_DEBUG:
+		PanelSourceScript.BACKGROUND_MODE_DEBUG:
 			return "Debug pattern"
-		BACKGROUND_MODE_HYBRID:
+		PanelSourceScript.BACKGROUND_MODE_HYBRID:
 			return "Hybrid overlay"
 		_:
 			return "Unknown"
+
+
+func _format_float(value: float) -> String:
+	return "%0.2f" % value
