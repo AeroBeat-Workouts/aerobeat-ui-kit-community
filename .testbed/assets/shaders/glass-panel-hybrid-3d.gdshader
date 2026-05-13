@@ -20,12 +20,12 @@ uniform float edge_width : hint_range(0.0, 0.08, 0.001) = 0.018;
 uniform float chromatic_strength : hint_range(0.0, 5.0, 0.1) = 1.3;
 
 uniform vec4 tint : source_color = vec4(0.94, 0.968, 1.0, 0.44);
-uniform float tint_strength : hint_range(0.0, 1.0, 0.01) = 0.62;
-uniform float body_frost_strength : hint_range(0.0, 1.0, 0.01) = 0.82;
-uniform float background_subdue : hint_range(0.0, 1.0, 0.01) = 0.82;
-uniform float interior_chroma : hint_range(0.0, 1.0, 0.01) = 0.22;
-uniform float face_veil_strength : hint_range(0.0, 1.0, 0.01) = 0.22;
-uniform float perimeter_frost_boost : hint_range(0.0, 0.5, 0.01) = 0.10;
+uniform float tint_strength : hint_range(0.0, 1.0, 0.01) = 0.66;
+uniform float body_frost_strength : hint_range(0.0, 1.0, 0.01) = 0.85;
+uniform float background_subdue : hint_range(0.0, 1.0, 0.01) = 0.86;
+uniform float interior_chroma : hint_range(0.0, 1.0, 0.01) = 0.24;
+uniform float face_veil_strength : hint_range(0.0, 1.0, 0.01) = 0.18;
+uniform float perimeter_frost_boost : hint_range(0.0, 0.5, 0.01) = 0.08;
 uniform vec4 edge_color : source_color = vec4(1.0, 1.0, 1.0, 0.08);
 uniform float world_rim_refraction : hint_range(0.0, 1.0, 0.01) = 0.09;
 uniform float fresnel_power : hint_range(0.5, 8.0, 0.1) = 5.0;
@@ -82,44 +82,47 @@ void fragment() {
 
 	float edge_proximity = 1.0 - w;
 	float interior = smoothstep(0.10, 0.94, w);
+	float mid_body = smoothstep(0.16, 0.82, w) * (1.0 - smoothstep(0.78, 0.98, w));
 	float perimeter_band = smoothstep(0.24, 1.0, edge_proximity);
+	float oblique_body = angle_rim * (0.10 + interior * 0.24 + mid_body * 0.18);
 	vec2 warp_offset = uv_dir * axis_profile * warp_intensity / 10.0;
 	warp_offset *= 1.0 + angle_rim * edge_proximity * world_rim_refraction;
 	vec2 sample_uv = SCREEN_UV - warp_offset;
 
 	vec2 screen_pixel_size = 1.0 / VIEWPORT_SIZE;
-	float chroma_weight = mix(interior_chroma, 1.0, edge_proximity);
+	float chroma_weight = mix(interior_chroma * (0.94 + interior * 0.08), 0.86, edge_proximity);
 	vec2 chroma_offset = uv_dir * chroma_weight * chromatic_strength * screen_pixel_size;
 
-	float interior_blur = blur + 1.1 + interior * (background_subdue * 3.0 + body_frost_strength * 0.85) + face_veil_strength * 0.70;
-	float perimeter_blur = blur + 0.55 + perimeter_band * perimeter_frost_boost * 1.2;
-	float outer_blur = blur + 2.9 + background_subdue * 2.5 + interior * 1.2;
+	float interior_blur = blur + 1.2 + interior * (background_subdue * 3.2 + body_frost_strength * 0.95) + oblique_body * 0.75 + face_veil_strength * 0.45;
+	float perimeter_blur = blur + 0.48 + perimeter_band * perimeter_frost_boost * 0.9;
+	float outer_blur = blur + 3.1 + background_subdue * 2.8 + interior * 1.4 + oblique_body * 0.35;
 	vec3 background = vec3(
 		textureLod(screen_texture, sample_uv - chroma_offset, perimeter_blur).r,
 		textureLod(screen_texture, sample_uv, interior_blur).g,
 		textureLod(screen_texture, sample_uv + chroma_offset, perimeter_blur).b
 	);
 	vec3 background_soft = textureLod(screen_texture, sample_uv, outer_blur).rgb;
-	vec3 subdued_background = mix(background, background_soft, 0.52 + interior * background_subdue * 0.38);
+	vec3 subdued_background = mix(background, background_soft, 0.58 + interior * background_subdue * 0.38 + mid_body * 0.08 + oblique_body * 0.18);
+	subdued_background = mix(subdued_background, background_soft, interior * 0.08 + oblique_body * 0.12);
 	float subdued_luma = luminance(subdued_background);
 	vec3 neutral_background = vec3(subdued_luma);
-	vec3 compressed_background = mix(neutral_background, subdued_background, 0.56 + interior_chroma * 0.28 + interior * 0.10);
-	compressed_background = mix(compressed_background, subdued_background * 0.92 + neutral_background * 0.08, 0.18 + interior * background_subdue * 0.16);
+	vec3 compressed_background = mix(neutral_background, subdued_background, 0.48 + interior_chroma * 0.22 + interior * 0.07 - oblique_body * 0.10);
+	compressed_background = mix(compressed_background, subdued_background * 0.88 + neutral_background * 0.12, 0.30 + interior * background_subdue * 0.20 + mid_body * 0.08 + oblique_body * 0.10);
 
 	float edge = 1.0 - smoothstep(0.0, edge_width_px, -sdf_px);
 	edge *= step(sdf_px, 0.0) * shape_support;
 	float fresnel = pow(1.0 - ndotv, fresnel_power);
-	float face_sheen = smoothstep(0.78, 0.10, panel_uv.y) * face_highlight * (0.28 + interior * 0.52);
-	float face_veil = face_veil_strength * (0.16 + interior * 0.24 + smoothstep(0.88, 0.20, panel_uv.y) * 0.10);
-	float edge_face_lift = perimeter_band * perimeter_frost_boost * (0.26 + angle_rim * 0.18);
+	float face_sheen = smoothstep(0.78, 0.10, panel_uv.y) * face_highlight * (0.22 + interior * 0.42);
+	float face_veil = face_veil_strength * (0.10 + interior * 0.18 + mid_body * 0.08 + smoothstep(0.88, 0.20, panel_uv.y) * 0.08);
+	float edge_face_lift = perimeter_band * perimeter_frost_boost * (0.18 + angle_rim * 0.10);
 
-	float body_mix = clamp(tint.a + tint_strength * 0.18 + body_frost_strength * (0.34 + interior * 0.28) + face_veil * 0.10 + edge_face_lift * 0.05, 0.0, 0.985);
-	vec3 tint_weighted_body = mix(compressed_background, tint.rgb, 0.20 + tint_strength * 0.18 + interior * 0.12);
-	vec3 frost_core = mix(tint_weighted_body, tint.rgb, interior * (0.18 + body_frost_strength * 0.18) + face_veil * 0.08);
+	float body_mix = clamp(tint.a + tint_strength * 0.18 + body_frost_strength * (0.35 + interior * 0.27 + mid_body * 0.05) + oblique_body * 0.10 + face_veil * 0.06 + edge_face_lift * 0.03, 0.0, 0.985);
+	vec3 tint_weighted_body = mix(compressed_background, tint.rgb, 0.24 + tint_strength * 0.20 + interior * 0.13 + mid_body * 0.06 + oblique_body * 0.08);
+	vec3 frost_core = mix(tint_weighted_body, tint.rgb, interior * (0.22 + body_frost_strength * 0.20) + mid_body * 0.08 + oblique_body * 0.08 + face_veil * 0.04);
 	vec3 glass_color = mix(compressed_background, tint_weighted_body, body_mix);
-	glass_color = mix(glass_color, frost_core, interior * (0.20 + body_frost_strength * 0.18));
-	glass_color = mix(glass_color, edge_color.rgb, edge * edge_color.a * 0.22);
-	glass_color += edge_color.rgb * fresnel * fresnel_strength * (0.08 + edge_proximity * 0.18);
+	glass_color = mix(glass_color, frost_core, interior * (0.24 + body_frost_strength * 0.20) + mid_body * 0.06 + oblique_body * 0.08);
+	glass_color = mix(glass_color, edge_color.rgb, edge * edge_color.a * 0.16);
+	glass_color += edge_color.rgb * fresnel * fresnel_strength * (0.06 + edge_proximity * 0.12);
 	glass_color += vec3(face_sheen);
 
 	vec4 ui_sample = texture(ui_texture, authored_uv);
