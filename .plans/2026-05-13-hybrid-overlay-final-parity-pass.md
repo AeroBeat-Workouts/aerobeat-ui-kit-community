@@ -85,7 +85,7 @@ Smallest truthful fix path: keep `REF-02` (hybrid body shader) and `REF-01` (fro
 
 **Results:** Implemented the smallest truthful parity lift in `REF-04` without reopening `REF-01`, `REF-02`, or `REF-03`. The change adds direct node/style ownership for the authored `Shader Preview` badge and then applies a hybrid-world-only accent branch inside `_sync_preview_shell()`. In hybrid world mode, `PreviewInnerBorder` now uses a brighter white alpha derived from `_shell_edge_highlight` (`clampf(0.20 + _shell_edge_highlight.a * 0.18, 0.22, 0.34)`), the badge fill is lifted from the static `0.08` scene alpha to a tuned authored range (`clampf(0.13 + _shell_tint.a * 0.16, 0.14, 0.18)`), the badge border is similarly lifted (`clampf(0.18 + _shell_edge_highlight.a * 0.14, 0.20, 0.28)`), and the badge label alpha is raised from `0.78` to `0.90`. Outside hybrid world mode, the 2D-authored badge and inner-border values are restored so the source/testbed composition remains unchanged.
 
-This should improve parity against `REF-07` because the chip and inner line are now brightened as authored overlay shell elements before the flattened `ui_texture` reaches `REF-01`, instead of trying to globally brighten the whole overlay image after flattening. That keeps the text/body/glass split intact and avoids the blur/smear side effect Derrick saw when using the overlay shader’s global tint/brightness controls. Repo-local validation for this slice was a headless Godot parse/run smoke on both the 2D and hybrid scenes: `godot --headless --path .testbed --scene res://scenes/glass-shader-test.tscn --quit-after 2` and `godot --headless --path .testbed --scene res://scenes/glass-shader-gui-3d-test.tscn --quit-after 2`; both exited cleanly with no script/runtime errors. Commit/push hash pending at the time of this plan update.
+This should improve parity against `REF-07` because the chip and inner line are now brightened as authored overlay shell elements before the flattened `ui_texture` reaches `REF-01`, instead of trying to globally brighten the whole overlay image after flattening. That keeps the text/body/glass split intact and avoids the blur/smear side effect Derrick saw when using the overlay shader’s global tint/brightness controls. Repo-local validation for this slice was a headless Godot parse/run smoke on both the 2D and hybrid scenes: `godot --headless --path .testbed --scene res://scenes/glass-shader-test.tscn --quit-after 2` and `godot --headless --path .testbed --scene res://scenes/glass-shader-gui-3d-test.tscn --quit-after 2`; both exited cleanly with no script/runtime errors. The implementation landed on `main` in commit `036413b` (`Brighten hybrid preview badge and inner border`) after rebasing onto upstream `origin/main`.
 
 ---
 
@@ -138,7 +138,7 @@ This should improve parity against `REF-07` because the chip and inner line are 
 **Reference Check:** Pending.
 
 **Commits:**
-- Pending.
+- `036413b` - Brighten hybrid preview badge and inner border
 
 **Lessons Learned:** Pending.
 
