@@ -1,18 +1,18 @@
 {
 	"parameters": {
 		"background_subdue": 0.0,
-		"blur": 5.9,
+		"blur": 6.0,
 		"body_frost_strength": 0.0,
 		"chromatic_strength": 0.0,
 		"corner_radius": 0.2,
 		"edge_color": {
-			"a": 0.290196090936661,
-			"b": 0.335188448429108,
-			"g": 0.335188448429108,
-			"r": 0.335188448429108
+			"a": 0.0,
+			"b": 0.333333343267441,
+			"g": 0.333333343267441,
+			"r": 0.333333343267441
 		},
-		"edge_smoothness": 1.04,
-		"edge_width": 5.5,
+		"edge_smoothness": 0.5,
+		"edge_width": 2.9,
 		"face_highlight": 0.0,
 		"face_veil_strength": 0.0,
 		"fresnel_power": 0.5,
@@ -21,20 +21,20 @@
 		"offset_x": -1.0,
 		"offset_y": -1.0,
 		"perimeter_frost_boost": 0.0,
-		"strength_x": 13.7,
+		"strength_x": 13.6,
 		"strength_y": 12.3,
 		"tint": {
-			"a": 0.650980412960052,
-			"b": 0.877328097820282,
-			"g": 0.877328097820282,
-			"r": 0.877328097820282
+			"a": 0.643137276172638,
+			"b": 1.0,
+			"g": 1.0,
+			"r": 1.0
 		},
-		"tint_strength": 0.01,
-		"ui_alpha_gain": 1.99,
-		"ui_brightness": 1.98,
-		"ui_embed_strength": 0.29,
-		"ui_overlay_alpha": 1.98,
-		"ui_overlay_brightness": 1.99,
+		"tint_strength": 0.0,
+		"ui_alpha_gain": 0.0,
+		"ui_brightness": 0.2,
+		"ui_embed_strength": 0.0,
+		"ui_overlay_alpha": 2.0,
+		"ui_overlay_brightness": 2.0,
 		"ui_overlay_shadow_strength": 0.0,
 		"ui_overlay_tint": {
 			"a": 1.0,
@@ -47,7 +47,7 @@
 		"world_rim_refraction": 0.0
 	},
 	"preset_kind": "glass_shader_hybrid_3d",
-	"saved_at": "2026-05-13 20:02:01",
+	"saved_at": "2026-05-13 20:50:17",
 	"schema_version": 1,
 	"source_scene": "res://scenes/glass-shader-gui-3d-test.tscn"
 }
