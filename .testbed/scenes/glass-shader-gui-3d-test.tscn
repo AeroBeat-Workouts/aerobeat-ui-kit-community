@@ -1,7 +1,7 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://b60dld1iak52d"]
 
-[ext_resource type="Script" path="res://scripts/glass_shader_gui_3d_test.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/glass_3d_debug_backdrop.gd" id="2"]
+[ext_resource type="Script" uid="uid://ccf3giog1nexh" path="res://scripts/glass_shader_gui_3d_test.gd" id="1"]
+[ext_resource type="Script" uid="uid://dys432qcffgot" path="res://scripts/glass_3d_debug_backdrop.gd" id="2"]
 
 [sub_resource type="Environment" id="Environment_world"]
 background_mode = 1
@@ -12,11 +12,9 @@ ambient_light_energy = 0.7
 reflected_light_source = 1
 ssr_enabled = true
 ssil_enabled = true
-sdfgi_enabled = false
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_shell"]
 transparency = 1
-blend_mode = 0
 depth_draw_mode = 4
 albedo_color = Color(0.08, 0.11, 0.16, 0.26)
 metallic = 0.05
@@ -30,6 +28,12 @@ rim_tint = 0.45
 clearcoat_enabled = true
 clearcoat = 0.2
 clearcoat_roughness = 0.18
+
+[sub_resource type="BoxMesh" id="BoxMesh_shell"]
+size = Vector3(3.08, 1.96, 0.12)
+
+[sub_resource type="QuadMesh" id="QuadMesh_panel"]
+size = Vector2(2.93, 1.8)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_controls_panel"]
 content_margin_left = 0.0
@@ -60,67 +64,58 @@ corner_radius_bottom_left = 14
 shadow_color = Color(0, 0, 0, 0.28)
 shadow_size = 18
 
-[sub_resource type="BoxMesh" id="BoxMesh_shell"]
-size = Vector3(3.08, 1.96, 0.12)
-
-[sub_resource type="QuadMesh" id="QuadMesh_panel"]
-size = Vector2(2.93, 1.8)
-
-[node name="GlassShaderGui3DTest" type="Node3D"]
+[node name="GlassShaderGui3DTest" type="Node3D" unique_id=561646177]
 script = ExtResource("1")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=161478642]
 environment = SubResource("Environment_world")
 
-[node name="SunLight" type="DirectionalLight3D" parent="."]
-position = Vector3(0, 2.75, 1.25)
-rotation = Vector3(-0.797907, -0.651953, 0)
+[node name="SunLight" type="DirectionalLight3D" parent="." unique_id=1097733574]
+transform = Transform3D(0.79490036, 0.43436292, -0.42362988, 0, 0.6982066, 0.7158963, 0.60674, -0.5690662, 0.55500466, 0, 2.75, 1.25)
 light_energy = 2.0
 shadow_enabled = true
 
-[node name="FillLight" type="OmniLight3D" parent="."]
-position = Vector3(-2.1, 1.35, 1.8)
+[node name="FillLight" type="OmniLight3D" parent="." unique_id=1252965586]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.1, 1.35, 1.8)
 light_color = Color(0.72, 0.82, 1, 1)
 light_energy = 1.4
-omni_range = 7.5
 shadow_enabled = true
+omni_range = 7.5
 
-[node name="Camera3D" type="Camera3D" parent="."]
-position = Vector3(0, 0.18, 4.85)
-projection = 0
+[node name="Camera3D" type="Camera3D" parent="." unique_id=633604291]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.18, 4.85)
 fov = 42.0
-near = 0.05
 far = 100.0
 
-[node name="DebugBackdrop" type="Node3D" parent="."]
+[node name="DebugBackdrop" type="Node3D" parent="." unique_id=653721941]
 script = ExtResource("2")
 
-[node name="PanelPivot" type="Node3D" parent="." unique_name_in_owner=true]
-position = Vector3(0.75, 0, -0.35)
+[node name="PanelPivot" type="Node3D" parent="." unique_id=302826531]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 0, -0.35)
 
-[node name="PanelShell" type="MeshInstance3D" parent="PanelPivot"]
+[node name="PanelShell" type="MeshInstance3D" parent="PanelPivot" unique_id=1741739863]
 visible = false
-mesh = SubResource("BoxMesh_shell")
 material_override = SubResource("StandardMaterial3D_shell")
+mesh = SubResource("BoxMesh_shell")
 
-[node name="PanelDisplay" type="MeshInstance3D" parent="PanelPivot" unique_name_in_owner=true]
-position = Vector3(0, 0, 0.051)
+[node name="PanelDisplay" type="MeshInstance3D" parent="PanelPivot" unique_id=591368168]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.051)
 mesh = SubResource("QuadMesh_panel")
 
-[node name="PanelUiOverlay" type="MeshInstance3D" parent="PanelPivot" unique_name_in_owner=true]
-position = Vector3(0, 0, 0.053)
-mesh = SubResource("QuadMesh_panel")
+[node name="PanelUiOverlay" type="MeshInstance3D" parent="PanelPivot" unique_id=414058977]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.053)
 cast_shadow = 0
+mesh = SubResource("QuadMesh_panel")
 
-[node name="PanelViewport" type="SubViewport" parent="PanelPivot" unique_name_in_owner=true]
+[node name="PanelViewport" type="SubViewport" parent="PanelPivot" unique_id=1519973932]
 size = Vector2i(1600, 900)
 
-[node name="MaskViewport" type="SubViewport" parent="PanelPivot" unique_name_in_owner=true]
+[node name="MaskViewport" type="SubViewport" parent="PanelPivot" unique_id=1284956866]
 size = Vector2i(1600, 900)
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=482878078]
 
-[node name="OverlayRoot" type="Control" parent="CanvasLayer"]
+[node name="OverlayRoot" type="Control" parent="CanvasLayer" unique_id=1449326335]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -129,7 +124,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
 
-[node name="SplitRoot" type="HSplitContainer" parent="CanvasLayer/OverlayRoot"]
+[node name="SplitRoot" type="HSplitContainer" parent="CanvasLayer/OverlayRoot" unique_id=560475590]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -139,67 +134,66 @@ grow_vertical = 2
 split_offsets = PackedInt32Array(340)
 split_offset = 340
 
-[node name="ControlsPanel" type="PanelContainer" parent="CanvasLayer/OverlayRoot/SplitRoot"]
+[node name="ControlsPanel" type="PanelContainer" parent="CanvasLayer/OverlayRoot/SplitRoot" unique_id=1615176210]
 custom_minimum_size = Vector2(340, 0)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_controls_panel")
 
-[node name="Margin" type="MarginContainer" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel"]
+[node name="Margin" type="MarginContainer" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel" unique_id=1780287064]
 layout_mode = 2
 theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="ControlsColumn" type="VBoxContainer" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin"]
+[node name="ControlsColumn" type="VBoxContainer" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin" unique_id=1320271123]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Title" type="Label" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn"]
+[node name="Title" type="Label" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn" unique_id=1120948584]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "Hybrid World-Space Glass"
 
-[node name="Subtitle" type="Label" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn"]
+[node name="Subtitle" type="Label" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn" unique_id=202599662]
 modulate = Color(1, 1, 1, 0.72)
 layout_mode = 2
 text = "2D-authored UI composited by a world-aware 3D shader"
 
-[node name="Divider" type="HSeparator" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn"]
+[node name="Divider" type="HSeparator" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn" unique_id=776336813]
 layout_mode = 2
 
-[node name="ControlsScroll" type="ScrollContainer" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn"]
+[node name="ControlsScroll" type="ScrollContainer" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn" unique_id=493815974]
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="ControlsList" type="VBoxContainer" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll" unique_name_in_owner=true]
+[node name="ControlsList" type="VBoxContainer" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll" unique_id=62276606]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 10
 
-[node name="StatusPanel" type="PanelContainer" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn"]
+[node name="StatusPanel" type="PanelContainer" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn" unique_id=176912896]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_info_panel")
 
-[node name="StatusPadding" type="MarginContainer" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/StatusPanel"]
+[node name="StatusPadding" type="MarginContainer" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/StatusPanel" unique_id=1270866473]
 layout_mode = 2
 theme_override_constants/margin_left = 14
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 12
 
-[node name="StatusLabel" type="RichTextLabel" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/StatusPanel/StatusPadding" unique_name_in_owner=true]
+[node name="StatusLabel" type="RichTextLabel" parent="CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/StatusPanel/StatusPadding" unique_id=371343770]
 custom_minimum_size = Vector2(0, 180)
 layout_mode = 2
 bbcode_enabled = true
+text = "3D GUI Panel / 2D Glass Shader Reuse"
 fit_content = true
 scroll_active = false
-autowrap_mode = 3
-text = "3D GUI Panel / 2D Glass Shader Reuse"
 
-[node name="PreviewSide" type="Control" parent="CanvasLayer/OverlayRoot/SplitRoot"]
+[node name="PreviewSide" type="Control" parent="CanvasLayer/OverlayRoot/SplitRoot" unique_id=1482304467]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
