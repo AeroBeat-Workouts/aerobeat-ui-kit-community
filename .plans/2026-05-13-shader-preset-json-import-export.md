@@ -131,14 +131,39 @@ The landed fix updates only those hybrid startup defaults in `REF-04`, which is 
 **Prompt:** In `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-ui-kit-community`, verify that both shader test scenes can export current shader settings to JSON and load them back correctly. Confirm that the expected shader parameters round-trip and that the existing controls still behave correctly after load. If Task 3 lands a body-only parity change, verify whether it is a real visual improvement and whether silhouette/overlay/rim/inner-line behavior stayed intact.
 
 **Folders Created/Deleted/Modified:**
-- `.temp/qa-evidence/` if evidence is collected
+- `.temp/qa-evidence/2026-05-13-shader-preset-json-import-export/`
 
 **Files Created/Deleted/Modified:**
-- optional QA evidence artifacts
+- `.temp/qa_shader_preset_and_hybrid_defaults_2026_05_13.gd`
+- `.temp/qa-evidence/2026-05-13-shader-preset-json-import-export/report.json`
+- `.temp/qa-evidence/2026-05-13-shader-preset-json-import-export/2d-roundtrip.json`
+- `.temp/qa-evidence/2026-05-13-shader-preset-json-import-export/hybrid-roundtrip.json`
+- `.temp/qa-evidence/2026-05-13-shader-preset-json-import-export/2d-full-scene.png`
+- `.temp/qa-evidence/2026-05-13-shader-preset-json-import-export/2d-left-panel.png`
+- `.temp/qa-evidence/2026-05-13-shader-preset-json-import-export/2d-preview-area.png`
+- `.temp/qa-evidence/2026-05-13-shader-preset-json-import-export/hybrid-full-scene.png`
+- `.temp/qa-evidence/2026-05-13-shader-preset-json-import-export/hybrid-left-panel.png`
+- `.temp/qa-evidence/2026-05-13-shader-preset-json-import-export/hybrid-preview-area.png`
+- `.temp/qa-evidence/2026-05-13-shader-preset-json-import-export/hybrid-new-defaults-front.png`
+- `.temp/qa-evidence/2026-05-13-shader-preset-json-import-export/hybrid-new-defaults-front-crop.png`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** QA completed against `4977325`, `b1c5b1d`, and `a44ce27` using the highest-fidelity non-interactive path available in this environment: live Godot scene instantiation plus runtime parameter mutation/restore checks, JSON file inspection, control-tree inspection, and captured UI evidence under `.temp/qa-evidence/2026-05-13-shader-preset-json-import-export/`. A dedicated QA script at `.temp/qa_shader_preset_and_hybrid_defaults_2026_05_13.gd` verified both scenes end-to-end.
+
+JSON workflow verdict: **PASS in both scenes**. In the 2D scene (`REF-03`), QA changed representative float and color values (`blur=5.6`, `strength_x=19.4`, `tint=(0.31, 0.45, 0.95, 0.29)`), exported to `.temp/qa-evidence/2026-05-13-shader-preset-json-import-export/2d-roundtrip.json`, mutated them away, reloaded the preset, and confirmed the shader values restored exactly and the bound slider/color-picker controls resynced correctly. The saved envelope contains the expected top-level keys: `schema_version`, `preset_kind`, `source_scene`, `saved_at`, and `parameters`.
+
+The hybrid scene (`REF-04`) also **PASSed** round-trip QA. QA changed `background_subdue=0.91`, `edge_smoothness=1.73`, and `ui_overlay_tint=(0.91, 0.97, 1.0, 1.0)`, exported to `.temp/qa-evidence/2026-05-13-shader-preset-json-import-export/hybrid-roundtrip.json`, mutated them away, reloaded the preset, and confirmed all three values restored correctly. This also truth-checked the hybrid alias path: the UI-facing `edge_smoothness=1.73` persisted/restored through JSON while the underlying shader parameter resolved to `edge_softness=0.0173`, and the visible slider/value-label state stayed in sync after load. Neither scene reported ignored keys during the clean round-trip case.
+
+Left-panel UX verdict: **landed as requested**. Evidence crops `2d-left-panel.png` and `hybrid-left-panel.png` show the preset actions block directly below the preview-background selector in the existing left rail, with `Export JSON` and `Load JSON` buttons plus inline status text. The old bottom explanatory text area was not kept as a separate extra block in that slot; it has been replaced by the preset block in both testers. The hybrid scene still keeps its separate lower status/help panel, which is appropriate and was already part of that test scene’s layout.
+
+Hybrid runtime-defaults verdict: **aligned to the intended newer body-frost balance**. QA captured the live startup values and confirmed they now match the intended newer defaults exactly: `tint_strength=0.66`, `body_frost_strength=0.85`, `background_subdue=0.86`, `interior_chroma=0.24`, `face_veil_strength=0.18`, and `perimeter_frost_boost=0.08`. These match the expected post-fix values and no longer drift to the older runtime set (`0.62`, `0.82`, `0.82`, `0.22`, `0.22`, `0.10`). See `report.json` plus `hybrid-new-defaults-front.png` / `hybrid-new-defaults-front-crop.png` in the QA evidence folder.
+
+Practical-improvement verdict: **real but modest**. This does not solve the deeper structural 2D-vs-hybrid body-composite difference by itself, so it should not be oversold as a full parity breakthrough. But it is more than a bookkeeping sync: the new startup state meaningfully biases the hybrid body toward the intended stronger interior frost/subdued-background balance and away from the older, slightly weaker/murkier startup mix. In plain terms, the fix makes the scene boot into the better-tuned look Derrick was already converging on, rather than an outdated drifted state. That is worthwhile, but it is still a configuration-alignment improvement inside the current architecture, not a new compositing capability.
+
+Behavior-regression verdict: **no regressions found** in the solved ownership seams. The current hybrid evidence still shows the authored silhouette intact, the overlay/rim/inner-line stack still present and crisp, and no QA sign that the JSON workflow or runtime-default sync disturbed those pieces. The change touched startup defaults, not the authored mask discard path or overlay shader ownership, and observed output remains consistent with that expectation.
+
+Remaining gap: the hybrid body still does not fully match the flatter, creamier 2D body because the underlying world-aware body pipeline remains structurally different. QA therefore considers Task 3’s fix a keeper as a runtime-defaults correction, but not the final answer to full 2D body parity.
 
 ---
 
@@ -156,24 +181,30 @@ The landed fix updates only those hybrid startup defaults in `REF-04`, which is 
 **Files Created/Deleted/Modified:**
 - optional audit notes if needed
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Independent audit confirmed the JSON preset feature is correctly implemented and truthfully documented. The shared helper in `REF-03` / `REF-04` / `glass_shader_preset_io.gd` writes a sane envelope (`schema_version`, `preset_kind`, `source_scene`, `saved_at`, `parameters`), preserves UI-facing parameter names, round-trips floats plus colors, and keeps the hybrid alias/scaling path internal. QA evidence under `.temp/qa-evidence/2026-05-13-shader-preset-json-import-export/` shows **PASS in both scenes**: the 2D preset restored representative float + color values and resynced live controls/value labels, and the hybrid preset restored representative body + overlay values including the `edge_smoothness` → `edge_softness` alias path (`resolved_edge_softness=0.0173`). The left-panel placement also matches Derrick’s request: `2d-left-panel.png` and `hybrid-left-panel.png` show the `preset_json` block in the existing left control rail directly under the background selector, occupying the old explanatory-text slot rather than adding a separate floating panel.
+
+The explanation for the remaining body gap is also directionally correct, but it needs to stay framed as a **structural pipeline difference** rather than a nearly-solved tuning issue. The 2D reference shader in `glass-shader.gdshader` is a single flat screen-space card composite. The hybrid path deliberately splits responsibilities: `glass-panel-hybrid-3d.gdshader` owns the frosted body/refracted world sample, while `glass-panel-ui-overlay-3d.gdshader` separately preserves the crisp rim / inner-line / UI overlay. That means the hybrid body is not trying to reproduce the full 2D composite by itself, and it samples a live 3D `screen_texture` with view-angle terms (`VIEW`, `NORMAL`, `ndotv`, fresnel, world-rim refraction) that the 2D card simply does not have. So the documented explanation is substantially true: the remaining difference is not just “wrong knob values,” it is that the hybrid body is a different, world-aware body-composite architecture.
+
+The runtime-defaults sync from `a44ce27` is real, but the audit verdict is narrower than “meaningful parity breakthrough.” The hybrid scene now boots with the intended newer default set (`tint_strength=0.66`, `body_frost_strength=0.85`, `background_subdue=0.86`, `interior_chroma=0.24`, `face_veil_strength=0.18`, `perimeter_frost_boost=0.08`) instead of the older drifted startup values, so this is a valid **configuration-correctness fix** and worth keeping. However, the evidence for a materially visible body-frost improvement is weak on the reproducible capture path here: fresh old-vs-new startup crops differ only by tiny pixel deltas, and the separate final-polish evidence folder remains pixel-identical to its prior baseline for the checked front/angled/debug crops. So this should be described as “the runtime now matches the intended tuned defaults” rather than “the body parity gap is meaningfully closed.” Silhouette / overlay / rim / inner-line ownership stayed intact throughout.
 
 ---
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**What We Built:** Pending.
+**What We Built:** Shader preset JSON export/import is complete in both the 2D and hybrid test scenes, with the controls placed in the requested left-hand panel location and validated by round-trip QA. The slice also produced a truthful answer about the remaining hybrid-vs-2D body gap: the gap is still primarily architectural, not merely leftover slider drift.
 
-**Reference Check:** Pending.
+**Reference Check:** `REF-03`, `REF-04`, and the QA evidence confirm the preset workflow and left-rail placement. `REF-07` and `REF-08` support the explanation that the hybrid body and overlay intentionally split responsibilities, so the hybrid body alone cannot exactly equal the flatter 2D card composite from `REF-06`. `REF-09` remains a useful visual target, but current evidence does not justify claiming that the runtime-default sync materially achieved that parity.
 
 **Commits:**
-- Pending.
+- `4977325` - Add shader preset JSON import/export
+- `b1c5b1d` - Update plan with preset export commit hash
+- `a44ce27` - Sync hybrid body frost runtime defaults
 
-**Lessons Learned:** Pending.
+**Lessons Learned:** JSON preset sharing was the solid win in this slice. The hybrid body-frost startup sync is still worth keeping, but it should be interpreted as runtime/default alignment inside the existing architecture, not as proof that the deeper 2D-vs-hybrid body-composite gap is solved.
 
 ---
 
