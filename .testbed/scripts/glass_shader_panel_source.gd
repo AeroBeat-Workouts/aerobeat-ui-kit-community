@@ -125,6 +125,10 @@ var _mask_style: StyleBoxFlat
 var _background_texture: Texture2D
 var _background_mode := DEFAULT_BACKGROUND_MODE
 var _presentation_mode := PRESENTATION_MODE_2D
+var _shell_corner_radius := 0.24
+var _shell_edge_width := 2.4
+var _shell_tint := Color(0.92, 0.96, 1.0, 0.22)
+var _shell_edge_highlight := Color(1.0, 1.0, 1.0, 0.62)
 
 
 func _ready() -> void:
@@ -141,6 +145,7 @@ func _ready() -> void:
 	_mask_style = hybrid_mask_panel.get_theme_stylebox("panel") as StyleBoxFlat
 
 	_configure_preview_button()
+	_sync_shell_state_from_shader()
 	_apply_visual_state()
 	preview_button.resized.connect(_sync_preview_shell)
 	preview_inner_border.resized.connect(_sync_preview_shell)
@@ -211,6 +216,8 @@ func set_shader_parameter(parameter_name: String, value: Variant) -> void:
 	if _shader_material == null:
 		return
 	_shader_material.set_shader_parameter(parameter_name, value)
+	if parameter_name in ["corner_radius", "edge_width", "tint", "edge_highlight"]:
+		_sync_shell_state_from_shader()
 	_sync_preview_shell()
 
 
@@ -223,6 +230,18 @@ func get_shader_parameter(parameter_name: String) -> Variant:
 func set_shader_parameters(parameters: Dictionary) -> void:
 	for parameter_name in parameters.keys():
 		set_shader_parameter(str(parameter_name), parameters[parameter_name])
+
+
+func sync_hybrid_shell(parameters: Dictionary) -> void:
+	if parameters.has("corner_radius"):
+		_shell_corner_radius = clampf(float(parameters["corner_radius"]), 0.0, 1.0)
+	if parameters.has("edge_width"):
+		_shell_edge_width = maxf(0.0, float(parameters["edge_width"]))
+	if parameters.has("tint") and parameters["tint"] is Color:
+		_shell_tint = parameters["tint"]
+	if parameters.has("edge_highlight") and parameters["edge_highlight"] is Color:
+		_shell_edge_highlight = parameters["edge_highlight"]
+	_sync_preview_shell()
 
 
 func get_shader_parameters() -> Dictionary:
@@ -271,28 +290,19 @@ func _apply_visual_state() -> void:
 				preview_backdrop_debug.modulate = Color(1.0, 1.0, 1.0, 1.0)
 
 	glass_fill.visible = _presentation_mode == PRESENTATION_MODE_2D
-	preview_frame.visible = _presentation_mode == PRESENTATION_MODE_2D
-	preview_inner_border.visible = _presentation_mode == PRESENTATION_MODE_2D
+	preview_frame.visible = _presentation_mode == PRESENTATION_MODE_2D or is_hybrid_world
+	preview_inner_border.visible = _presentation_mode == PRESENTATION_MODE_2D or is_hybrid_world
 	content_margin.visible = not is_mask_mode
 	hybrid_mask_panel.visible = is_mask_mode
-
-	if is_hybrid_world:
-		preview_frame.visible = false
-		preview_inner_border.visible = false
 
 
 func _sync_preview_shell() -> void:
 	if _shader_material == null:
 		return
 
-	var corner_radius := float(_shader_material.get_shader_parameter("corner_radius"))
-	var edge_width := float(_shader_material.get_shader_parameter("edge_width"))
-	var tint: Color = _shader_material.get_shader_parameter("tint")
-	var edge_highlight: Color = _shader_material.get_shader_parameter("edge_highlight")
-
-	var frame_corner_px := _shader_corner_radius_to_pixels(preview_button.size, corner_radius)
-	var inner_corner_px := _shader_corner_radius_to_pixels(preview_inner_border.size, corner_radius)
-	var border_width := maxi(1, int(round(maxf(1.0, edge_width * 1.35))))
+	var frame_corner_px := _shader_corner_radius_to_pixels(preview_button.size, _shell_corner_radius)
+	var inner_corner_px := _shader_corner_radius_to_pixels(preview_inner_border.size, _shell_corner_radius)
+	var border_width := maxi(1, int(round(maxf(1.0, _shell_edge_width * 1.35))))
 
 	_set_all_corner_radii(_frame_style, frame_corner_px)
 	_set_all_corner_radii(_inner_border_style, inner_corner_px)
@@ -302,13 +312,13 @@ func _sync_preview_shell() -> void:
 	_frame_style.border_width_top = border_width
 	_frame_style.border_width_right = border_width
 	_frame_style.border_width_bottom = border_width
-	_frame_style.bg_color = Color(tint.r, tint.g, tint.b, clampf(tint.a * 0.28, 0.03, 0.12))
-	_frame_style.border_color = edge_highlight.lightened(0.05)
-	_frame_style.border_color.a = clampf(edge_highlight.a + FRAME_ALPHA_BOOST, 0.28, 0.92)
-	_frame_style.shadow_size = maxi(6, int(round(5.0 + edge_width * 2.0)))
-	_frame_style.shadow_color = Color(edge_highlight.r, edge_highlight.g, edge_highlight.b, clampf(edge_highlight.a * 0.18, 0.04, 0.18))
+	_frame_style.bg_color = Color(_shell_tint.r, _shell_tint.g, _shell_tint.b, clampf(_shell_tint.a * 0.28, 0.03, 0.12))
+	_frame_style.border_color = _shell_edge_highlight.lightened(0.05)
+	_frame_style.border_color.a = clampf(_shell_edge_highlight.a + FRAME_ALPHA_BOOST, 0.28, 0.92)
+	_frame_style.shadow_size = maxi(6, int(round(5.0 + _shell_edge_width * 2.0)))
+	_frame_style.shadow_color = Color(_shell_edge_highlight.r, _shell_edge_highlight.g, _shell_edge_highlight.b, clampf(_shell_edge_highlight.a * 0.18, 0.04, 0.18))
 
-	_inner_border_style.border_color = Color(1.0, 1.0, 1.0, clampf(0.08 + tint.a * 0.55, 0.08, 0.24))
+	_inner_border_style.border_color = Color(1.0, 1.0, 1.0, clampf(0.08 + _shell_tint.a * 0.55, 0.08, 0.24))
 	_mask_style.bg_color = Color(1.0, 1.0, 1.0, 1.0)
 	_mask_style.border_width_left = 0
 	_mask_style.border_width_top = 0
@@ -316,6 +326,15 @@ func _sync_preview_shell() -> void:
 	_mask_style.border_width_bottom = 0
 	_mask_style.shadow_size = 0
 	_mask_style.shadow_color = Color(0.0, 0.0, 0.0, 0.0)
+
+
+func _sync_shell_state_from_shader() -> void:
+	if _shader_material == null:
+		return
+	_shell_corner_radius = clampf(float(_shader_material.get_shader_parameter("corner_radius")), 0.0, 1.0)
+	_shell_edge_width = maxf(0.0, float(_shader_material.get_shader_parameter("edge_width")))
+	_shell_tint = _shader_material.get_shader_parameter("tint")
+	_shell_edge_highlight = _shader_material.get_shader_parameter("edge_highlight")
 
 
 func _shader_corner_radius_to_pixels(control_size: Vector2, corner_radius: float) -> int:

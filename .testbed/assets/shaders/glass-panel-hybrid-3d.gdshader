@@ -20,22 +20,22 @@ uniform float edge_width : hint_range(0.0, 0.08, 0.001) = 0.018;
 uniform float chromatic_strength : hint_range(0.0, 5.0, 0.1) = 1.3;
 
 uniform vec4 tint : source_color = vec4(0.95, 0.975, 1.0, 0.40);
-uniform float tint_strength : hint_range(0.0, 1.0, 0.01) = 0.60;
-uniform float body_frost_strength : hint_range(0.0, 1.0, 0.01) = 0.78;
-uniform float background_subdue : hint_range(0.0, 1.0, 0.01) = 0.62;
+uniform float tint_strength : hint_range(0.0, 1.0, 0.01) = 0.52;
+uniform float body_frost_strength : hint_range(0.0, 1.0, 0.01) = 0.72;
+uniform float background_subdue : hint_range(0.0, 1.0, 0.01) = 0.68;
 uniform float interior_chroma : hint_range(0.0, 1.0, 0.01) = 0.16;
-uniform float face_veil_strength : hint_range(0.0, 1.0, 0.01) = 0.34;
-uniform float perimeter_frost_boost : hint_range(0.0, 0.5, 0.01) = 0.18;
-uniform vec4 edge_color : source_color = vec4(1.0, 1.0, 1.0, 0.22);
-uniform float world_rim_refraction : hint_range(0.0, 1.0, 0.01) = 0.14;
+uniform float face_veil_strength : hint_range(0.0, 1.0, 0.01) = 0.30;
+uniform float perimeter_frost_boost : hint_range(0.0, 0.5, 0.01) = 0.12;
+uniform vec4 edge_color : source_color = vec4(1.0, 1.0, 1.0, 0.10);
+uniform float world_rim_refraction : hint_range(0.0, 1.0, 0.01) = 0.09;
 uniform float fresnel_power : hint_range(0.5, 8.0, 0.1) = 5.0;
-uniform float fresnel_strength : hint_range(0.0, 2.0, 0.01) = 0.08;
-uniform float face_highlight : hint_range(0.0, 0.4, 0.01) = 0.06;
+uniform float fresnel_strength : hint_range(0.0, 2.0, 0.01) = 0.04;
+uniform float face_highlight : hint_range(0.0, 0.4, 0.01) = 0.02;
 
 uniform float ui_alpha_gain : hint_range(0.0, 2.0, 0.01) = 1.0;
 uniform float ui_brightness : hint_range(0.2, 2.0, 0.01) = 1.01;
 uniform float ui_shadow_strength : hint_range(0.0, 0.4, 0.01) = 0.02;
-uniform float ui_embed_strength : hint_range(0.0, 0.3, 0.01) = 0.04;
+uniform float ui_embed_strength : hint_range(0.0, 0.3, 0.01) = 0.01;
 uniform bool flip_ui_vertical = false;
 
 float rounded_box_sdf(vec2 p, vec2 half_extents, float radius) {
@@ -104,11 +104,11 @@ void fragment() {
 	float face_veil = face_veil_strength * (0.28 + interior * 0.45 + smoothstep(0.88, 0.20, rect_uv.y) * 0.22);
 	float edge_face_lift = perimeter_band * perimeter_frost_boost * (0.42 + angle_rim * 0.24);
 
-	float body_mix = clamp(tint.a + tint_strength * 0.20 + body_frost_strength * (0.30 + interior * 0.46) + face_veil * 0.28 + edge_face_lift * 0.16, 0.0, 0.992);
+	float body_mix = clamp(tint.a + tint_strength * 0.16 + body_frost_strength * (0.28 + interior * 0.44) + face_veil * 0.22 + edge_face_lift * 0.10, 0.0, 0.985);
 	vec3 glass_color = mix(subdued_background, tint.rgb, body_mix);
-	glass_color = mix(glass_color, tint.rgb, interior * body_frost_strength * 0.20 + face_veil * 0.22);
-	glass_color = mix(glass_color, edge_color.rgb, edge * edge_color.a);
-	glass_color += edge_color.rgb * fresnel * fresnel_strength * (0.18 + edge_proximity * 0.46);
+	glass_color = mix(glass_color, tint.rgb, interior * body_frost_strength * 0.16 + face_veil * 0.18);
+	glass_color = mix(glass_color, edge_color.rgb, edge * edge_color.a * 0.35);
+	glass_color += edge_color.rgb * fresnel * fresnel_strength * (0.10 + edge_proximity * 0.26);
 	glass_color += vec3(face_sheen);
 
 	vec4 ui_sample = texture(ui_texture, authored_uv);
@@ -117,9 +117,9 @@ void fragment() {
 	float ui_underlay = ui_alpha * ui_embed_strength;
 	glass_color = mix(glass_color, glass_color * (1.0 - ui_shadow) + tint.rgb * 0.025, ui_underlay);
 
-	float glass_alpha = clamp(mask * (0.38 + tint.a * 1.02 + interior * body_frost_strength * 0.44 + face_veil * 0.18 + edge * 0.05 + fresnel * 0.015), 0.34, 0.998);
+	float glass_alpha = clamp(mask * (0.34 + tint.a * 1.00 + interior * body_frost_strength * 0.40 + face_veil * 0.14 + edge * 0.03 + fresnel * 0.01), 0.30, 0.992);
 
 	ALBEDO = glass_color;
-	EMISSION = edge_color.rgb * (edge * 0.035 + fresnel * fresnel_strength * 0.035) + tint.rgb * face_sheen * 0.18;
+	EMISSION = edge_color.rgb * (edge * 0.01 + fresnel * fresnel_strength * 0.02) + tint.rgb * face_sheen * 0.10;
 	ALPHA = max(glass_alpha, ui_alpha * 0.02);
 }

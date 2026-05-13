@@ -97,7 +97,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
-		"default": 0.60,
+		"default": 0.52,
 	},
 	{
 		"name": "body_frost_strength",
@@ -105,7 +105,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
-		"default": 0.78,
+		"default": 0.72,
 	},
 	{
 		"name": "background_subdue",
@@ -113,7 +113,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
-		"default": 0.62,
+		"default": 0.68,
 	},
 	{
 		"name": "interior_chroma",
@@ -129,7 +129,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
-		"default": 0.14,
+		"default": 0.09,
 	},
 	{
 		"name": "fresnel_power",
@@ -145,7 +145,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 2.0,
 		"step": 0.01,
-		"default": 0.08,
+		"default": 0.04,
 	},
 	{
 		"name": "face_highlight",
@@ -153,7 +153,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 0.4,
 		"step": 0.01,
-		"default": 0.06,
+		"default": 0.02,
 	},
 	{
 		"name": "face_veil_strength",
@@ -161,7 +161,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
-		"default": 0.34,
+		"default": 0.30,
 	},
 	{
 		"name": "perimeter_frost_boost",
@@ -169,7 +169,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 0.5,
 		"step": 0.01,
-		"default": 0.18,
+		"default": 0.12,
 	},
 	{
 		"name": "ui_alpha_gain",
@@ -193,7 +193,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 0.3,
 		"step": 0.01,
-		"default": 0.04,
+		"default": 0.01,
 	},
 	{
 		"name": "ui_overlay_alpha",
@@ -238,7 +238,7 @@ const HYBRID_COLOR_CONTROLS := [
 	{
 		"name": "edge_color",
 		"label": "edge_color",
-		"default": Color(1.0, 1.0, 1.0, 0.22),
+		"default": Color(1.0, 1.0, 1.0, 0.10),
 	},
 	{
 		"name": "ui_overlay_tint",
@@ -368,13 +368,8 @@ func set_panel_shader_parameter(parameter_name: String, value: Variant) -> void:
 	if not _is_overlay_parameter(parameter_name):
 		_panel_material.set_shader_parameter(resolved["name"], resolved["value"])
 	_apply_overlay_shader_parameter(parameter_name, value)
-	if is_instance_valid(_mask_ui) and _mask_ui.has_method("set_shader_parameter"):
-		var mask_parameter_name := parameter_name
-		if parameter_name == "edge_color":
-			mask_parameter_name = "edge_highlight"
-		if mask_parameter_name in ["corner_radius", "edge_smoothness", "edge_width", "tint", "edge_highlight"]:
-			_mask_ui.call("set_shader_parameter", mask_parameter_name, value)
-	if parameter_name in ["corner_radius", "edge_smoothness", "edge_width"]:
+	_sync_hybrid_shell_parameter(parameter_name, value)
+	if parameter_name == "corner_radius":
 		_sync_authored_card_rect()
 	_sync_single_control_from_panel(parameter_name)
 	_sync_single_control_from_panel(str(resolved["name"]))
@@ -412,6 +407,24 @@ func _get_overlay_shader_parameter(parameter_name: String) -> Variant:
 	if not _is_overlay_parameter(parameter_name):
 		return null
 	return _panel_ui_overlay_material.get_shader_parameter(parameter_name)
+
+
+func _sync_hybrid_shell_parameter(parameter_name: String, value: Variant) -> void:
+	var shell_updates: Dictionary = {}
+	match parameter_name:
+		"corner_radius", "edge_width", "tint":
+			shell_updates[parameter_name] = value
+		"edge_color":
+			shell_updates["edge_highlight"] = value
+		_:
+			return
+	_sync_hybrid_shell(shell_updates)
+
+
+func _sync_hybrid_shell(shell_updates: Dictionary) -> void:
+	for source in [_panel_ui, _mask_ui]:
+		if is_instance_valid(source) and source.has_method("sync_hybrid_shell"):
+			source.call("sync_hybrid_shell", shell_updates)
 
 
 func _is_overlay_parameter(parameter_name: String) -> bool:
@@ -508,7 +521,7 @@ func _build_controls() -> void:
 	controls_list.add_child(_make_background_mode_control())
 
 	var mode_note := Label.new()
-	mode_note.text = "The hybrid path now uses two authored SubViewports: one supplies content-only UI, the other supplies a rounded card mask. The 3D shader owns the actual blur/refraction/tint/highlight and applies them only inside that authored card region."
+	mode_note.text = "The hybrid path now uses two authored SubViewports: one supplies the authored shell overlay (frame, inner border, content) and the other supplies a rounded card mask. The 3D body shader now focuses on frost/refraction/perimeter lift instead of faking the final white rim and inner line by itself."
 	mode_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	mode_note.modulate = Color(1.0, 1.0, 1.0, 0.68)
 	controls_list.add_child(mode_note)
@@ -703,7 +716,7 @@ func _refresh_status() -> void:
 		"Pitch: %.1f°" % panel_pivot.rotation_degrees.x,
 		"Yaw: %.1f°" % panel_pivot.rotation_degrees.y,
 		"",
-		"This parity pass keeps the shared 2D source scene, but now separates the milky glass body from a crisp UI overlay. The body shader uses the authored mask to keep the face flatter and creamier, while the front overlay preserves text clarity and closer 2D-style UI color."
+		"This parity pass keeps the shared 2D source scene, but now separates the frosted body from the authored frame/inner-border overlay. The body shader uses the authored mask for frost and subtle world lift, while the front overlay preserves the sharp white rim, crisp interior line, and UI clarity from the 2D card."
 	]
 	status_label.text = "\n".join(lines)
 
