@@ -85,7 +85,7 @@ Use `REF-07` as the source of truth for what is already solved and should not be
 
 **Status:** ✅ Complete
 
-**Results:** Implemented the body-only parity pass directly in `REF-05` while leaving `REF-06` untouched. The radius correctness bug was fixed by removing the procedural rounded-box mask from final discard/alpha ownership and recomputing the helper rounded-box SDF in pixel/aspect-correct panel space derived from `glass_rect.zw * VIEWPORT_SIZE` and `corner_radius * 0.5 * min(panel_size_px.x, panel_size_px.y)`. That makes the authored mask the only true silhouette for body discard/alpha, so nonzero `corner_radius` no longer lets a smaller normalized-UV body mask cut inward harder than the visible shell. The same corrected SDF is still used for body-only shaping (`w`, `edge`, perimeter/interior weighting, and warp/frost falloff), which preserves the shell/detail ownership split from `REF-07`. The body frost read was then pushed closer to `REF-09`/`REF-10` by increasing default body density/subduing/tint richness in `REF-05` + `REF-01`: stronger tint/body/background-subdue defaults, a lower face-veil contribution to avoid the rejected flat milky veil from `REF-08`, and a deeper composite that blends blurred/chromatically shifted background, neutralized/compressed backdrop, tint-weighted body color, and a richer interior frost core without reassigning rim/inner-line work back to the body pass. Repo-local validation completed via (1) `godot --path .testbed --headless --script res://../.temp/validate_hybrid_load.gd`, which successfully loaded `REF-03`, instantiated the hybrid scene, and toggled `corner_radius` across `0.18`, `0.0`, and `0.24` with the new shader path active and no parse/runtime errors, and (2) a numeric sanity check confirming the old normalized-UV interpretation would have produced ~`93.6px` / `57.6px` effective radius at `corner_radius=0.18` for this panel while the new pixel-space path now matches the authored shell at `28.8px` on both axes. Commit hash: `Pending`. 
+**Results:** Implemented the body-only parity pass directly in `REF-05` while leaving `REF-06` untouched. The radius correctness bug was fixed by removing the procedural rounded-box mask from final discard/alpha ownership and recomputing the helper rounded-box SDF in pixel/aspect-correct panel space derived from `glass_rect.zw * VIEWPORT_SIZE` and `corner_radius * 0.5 * min(panel_size_px.x, panel_size_px.y)`. That makes the authored mask the only true silhouette for body discard/alpha, so nonzero `corner_radius` no longer lets a smaller normalized-UV body mask cut inward harder than the visible shell. The same corrected SDF is still used for body-only shaping (`w`, `edge`, perimeter/interior weighting, and warp/frost falloff), which preserves the shell/detail ownership split from `REF-07`. The body frost read was then pushed closer to `REF-09`/`REF-10` by increasing default body density/subduing/tint richness in `REF-05` + `REF-01`: stronger tint/body/background-subdue defaults, a lower face-veil contribution to avoid the rejected flat milky veil from `REF-08`, and a deeper composite that blends blurred/chromatically shifted background, neutralized/compressed backdrop, tint-weighted body color, and a richer interior frost core without reassigning rim/inner-line work back to the body pass. Repo-local validation completed via (1) `godot --path .testbed --headless --script res://../.temp/validate_hybrid_load.gd`, which successfully loaded `REF-03`, instantiated the hybrid scene, and toggled `corner_radius` across `0.18`, `0.0`, and `0.24` with the new shader path active and no parse/runtime errors, and (2) a numeric sanity check confirming the old normalized-UV interpretation would have produced ~`93.6px` / `57.6px` effective radius at `corner_radius=0.18` for this panel while the new pixel-space path now matches the authored shell at `28.8px` on both axes. Commit hash: `ab34189`. 
 
 ---
 
@@ -131,16 +131,16 @@ Use `REF-07` as the source of truth for what is already solved and should not be
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ⚠️ Partial
 
-**What We Built:** Pending.
+**What We Built:** Task 2 coder pass completed: the hybrid body shader now uses the authored mask as the sole silhouette/discard truth, pixel-space radius math for body shaping, and a richer body-frost composite tuned to subdue the backdrop more while preserving the authored overlay/rim/inner-line split. QA and audit are still pending.
 
-**Reference Check:** Pending.
+**Reference Check:** `REF-05`, `REF-07`, `REF-08`, `REF-09`, `REF-10`, and `REF-11` were addressed in the implementation pass. `REF-06` was intentionally left unchanged.
 
 **Commits:**
-- Pending.
+- `ab34189` - Fix hybrid glass body radius and frost pass
 
-**Lessons Learned:** Pending.
+**Lessons Learned:** The body/shell mismatch was a silhouette ownership problem first and a tuning problem second; once the authored mask became the only clip truth, frost tuning could happen without fighting geometry drift.
 
 ---
 
