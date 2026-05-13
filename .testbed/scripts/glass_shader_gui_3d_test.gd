@@ -3,7 +3,11 @@ extends Node3D
 const SOURCE_2D_SCENE_PATH := "res://scenes/glass-shader-panel-source.tscn"
 const HYBRID_SHADER_PATH := "res://assets/shaders/glass-panel-hybrid-3d.gdshader"
 const UI_OVERLAY_SHADER_PATH := "res://assets/shaders/glass-panel-ui-overlay-3d.gdshader"
+const PRESET_SOURCE_SCENE_PATH := "res://scenes/glass-shader-gui-3d-test.tscn"
+const PRESET_DIRECTORY := "user://shader-presets/hybrid"
+const DEFAULT_PRESET_FILENAME := "glass-shader-hybrid-3d-preset.json"
 const PanelSourceScript = preload("res://scripts/glass_shader_panel_source.gd")
+const PresetIO = preload("res://scripts/glass_shader_preset_io.gd")
 
 const AUTO_YAW_AMPLITUDE_DEG := 26.0
 const AUTO_PITCH_AMPLITUDE_DEG := 10.0
@@ -275,6 +279,9 @@ var _base_rotation := Vector3.ZERO
 var _background_mode_selector: OptionButton
 var _float_sliders: Dictionary = {}
 var _color_pickers: Dictionary = {}
+var _preset_status_label: Label
+var _save_dialog: FileDialog
+var _load_dialog: FileDialog
 
 
 func _ready() -> void:
@@ -289,6 +296,7 @@ func _ready() -> void:
 	_configure_panel_sources_for_hybrid()
 	_apply_panel_materials()
 	_build_controls()
+	_setup_preset_dialogs()
 	call_deferred("_sync_controls_from_panel")
 	call_deferred("_sync_authored_card_rect")
 	_apply_panel_rotation()
@@ -517,14 +525,10 @@ func _build_controls() -> void:
 	_float_sliders.clear()
 	_color_pickers.clear()
 	_background_mode_selector = null
+	_preset_status_label = null
 
 	controls_list.add_child(_make_background_mode_control())
-
-	var mode_note := Label.new()
-	mode_note.text = "The hybrid path now uses two authored SubViewports: one supplies the authored shell overlay (frame, inner border, content) and the other supplies a rounded card mask. The 3D body shader now focuses on frost/refraction/perimeter lift instead of faking the final white rim and inner line by itself."
-	mode_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	mode_note.modulate = Color(1.0, 1.0, 1.0, 0.68)
-	controls_list.add_child(mode_note)
+	controls_list.add_child(_make_preset_actions_block())
 
 	var spacer := Control.new()
 	spacer.custom_minimum_size = Vector2(0.0, 8.0)
@@ -558,6 +562,48 @@ func _make_background_mode_control() -> Control:
 	selector.item_selected.connect(_on_background_mode_selected.bind(selector))
 	wrapper.add_child(selector)
 	_background_mode_selector = selector
+	return wrapper
+
+
+func _make_preset_actions_block() -> Control:
+	var wrapper := VBoxContainer.new()
+	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	wrapper.add_theme_constant_override("separation", 8)
+
+	var title := Label.new()
+	title.text = "preset_json"
+	wrapper.add_child(title)
+
+	var description := Label.new()
+	description.text = "Save the current hybrid body and overlay controls to JSON or load them back into this world-space shader test scene."
+	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	description.modulate = Color(1.0, 1.0, 1.0, 0.68)
+	wrapper.add_child(description)
+
+	var button_row := HBoxContainer.new()
+	button_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button_row.add_theme_constant_override("separation", 8)
+	wrapper.add_child(button_row)
+
+	var export_button := Button.new()
+	export_button.text = "Export JSON"
+	export_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	export_button.pressed.connect(_on_export_json_pressed)
+	button_row.add_child(export_button)
+
+	var load_button := Button.new()
+	load_button.text = "Load JSON"
+	load_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	load_button.pressed.connect(_on_load_json_pressed)
+	button_row.add_child(load_button)
+
+	var status := Label.new()
+	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	status.modulate = Color(1.0, 1.0, 1.0, 0.6)
+	status.text = "No preset loaded yet."
+	wrapper.add_child(status)
+	_preset_status_label = status
+
 	return wrapper
 
 
@@ -612,6 +658,34 @@ func _make_color_control(config: Dictionary) -> Control:
 	return wrapper
 
 
+func _setup_preset_dialogs() -> void:
+	_ensure_preset_directory()
+	if _save_dialog == null:
+		_save_dialog = _create_preset_dialog(FileDialog.FILE_MODE_SAVE_FILE, "Export Hybrid Shader Preset JSON")
+		_save_dialog.file_selected.connect(_export_preset_to_path)
+		add_child(_save_dialog)
+	if _load_dialog == null:
+		_load_dialog = _create_preset_dialog(FileDialog.FILE_MODE_OPEN_FILE, "Load Hybrid Shader Preset JSON")
+		_load_dialog.file_selected.connect(_load_preset_from_path)
+		add_child(_load_dialog)
+
+
+func _create_preset_dialog(file_mode: FileDialog.FileMode, title_text: String) -> FileDialog:
+	var dialog := FileDialog.new()
+	dialog.access = FileDialog.ACCESS_FILESYSTEM
+	dialog.file_mode = file_mode
+	dialog.title = title_text
+	dialog.use_native_dialog = true
+	dialog.filters = PackedStringArray(["*.json ; JSON preset"])
+	dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIRECTORY)
+	dialog.current_file = DEFAULT_PRESET_FILENAME
+	return dialog
+
+
+func _ensure_preset_directory() -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(PRESET_DIRECTORY))
+
+
 func _on_background_mode_selected(index: int, selector: OptionButton) -> void:
 	set_preview_background_mode(selector.get_item_id(index))
 
@@ -625,6 +699,61 @@ func _on_float_value_changed(value: float, parameter_name: String, slider: HSlid
 
 func _on_color_value_changed(color: Color, parameter_name: String) -> void:
 	set_panel_shader_parameter(parameter_name, color)
+
+
+func _on_export_json_pressed() -> void:
+	_ensure_preset_directory()
+	_save_dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIRECTORY)
+	_save_dialog.current_file = DEFAULT_PRESET_FILENAME
+	_save_dialog.popup_centered_ratio(0.7)
+
+
+func _on_load_json_pressed() -> void:
+	_ensure_preset_directory()
+	_load_dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIRECTORY)
+	_load_dialog.popup_centered_ratio(0.7)
+
+
+func _export_preset_to_path(path: String) -> void:
+	var parameters := PresetIO.collect_parameters(
+		HYBRID_FLOAT_CONTROLS,
+		HYBRID_COLOR_CONTROLS,
+		Callable(self, "get_panel_shader_parameter")
+	)
+	var envelope := PresetIO.build_preset_envelope(PresetIO.PRESET_KIND_HYBRID_3D, PRESET_SOURCE_SCENE_PATH, parameters)
+	var result := PresetIO.write_preset_file(path, envelope)
+	if result.get("ok", false):
+		_set_preset_status("Saved preset to %s" % result["path"], false)
+	else:
+		_set_preset_status(str(result.get("error", "Failed to save preset.")), true)
+
+
+func _load_preset_from_path(path: String) -> void:
+	var result := PresetIO.load_and_normalize_preset(
+		path,
+		PresetIO.PRESET_KIND_HYBRID_3D,
+		HYBRID_FLOAT_CONTROLS,
+		HYBRID_COLOR_CONTROLS
+	)
+	if not result.get("ok", false):
+		_set_preset_status(str(result.get("error", "Failed to load preset.")), true)
+		return
+
+	PresetIO.apply_parameters(result["parameters"], Callable(self, "set_panel_shader_parameter"))
+	call_deferred("_sync_controls_from_panel")
+
+	var ignored_keys: Array = result.get("ignored_keys", [])
+	if ignored_keys.is_empty():
+		_set_preset_status("Loaded preset from %s" % path, false)
+	else:
+		_set_preset_status("Loaded preset from %s (ignored: %s)" % [path, _join_string_array(ignored_keys)], false)
+
+
+func _set_preset_status(message: String, is_error: bool) -> void:
+	if not is_instance_valid(_preset_status_label):
+		return
+	_preset_status_label.text = message
+	_preset_status_label.modulate = Color(1.0, 0.72, 0.72, 0.95) if is_error else Color(1.0, 1.0, 1.0, 0.68)
 
 
 func _sync_controls_from_panel() -> void:
@@ -716,7 +845,7 @@ func _refresh_status() -> void:
 		"Pitch: %.1f°" % panel_pivot.rotation_degrees.x,
 		"Yaw: %.1f°" % panel_pivot.rotation_degrees.y,
 		"",
-		"This parity pass keeps the shared 2D source scene, but now separates the frosted body from the authored frame/inner-border overlay. The body shader uses the authored mask for frost and subtle world lift, while the front overlay preserves the sharp white rim, crisp interior line, and UI clarity from the 2D card."
+		"This parity pass keeps the shared 2D source scene, but now separates the frosted body from the authored frame/inner-border overlay. The body shader uses the authored mask for frost and subtle world lift, while the front overlay preserves the sharp white rim, crisp inner line, and UI clarity from the 2D card."
 	]
 	status_label.text = "\n".join(lines)
 
@@ -750,6 +879,13 @@ func _resolve_parameter_alias(parameter_name: String, value: Variant) -> Diction
 		"name": parameter_name,
 		"value": value,
 	}
+
+
+func _join_string_array(values: Array) -> String:
+	var parts: PackedStringArray = []
+	for value in values:
+		parts.append(str(value))
+	return ", ".join(parts)
 
 
 func _format_float(value: float) -> String:

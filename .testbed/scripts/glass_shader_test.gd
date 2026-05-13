@@ -1,7 +1,11 @@
 extends Control
 
 const SOURCE_SCENE_PATH := "res://scenes/glass-shader-panel-source.tscn"
+const PRESET_SOURCE_SCENE_PATH := "res://scenes/glass-shader-test.tscn"
+const PRESET_DIRECTORY := "user://shader-presets/2d"
+const DEFAULT_PRESET_FILENAME := "glass-shader-2d-preset.json"
 const PanelSourceScript = preload("res://scripts/glass_shader_panel_source.gd")
+const PresetIO = preload("res://scripts/glass_shader_preset_io.gd")
 
 @onready var controls_list: VBoxContainer = get_node_or_null("SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll/ControlsList") as VBoxContainer
 @onready var panel_source_host: Control = get_node_or_null("SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost") as Control
@@ -10,11 +14,15 @@ var _panel_source: Control
 var _background_mode_selector: OptionButton
 var _float_sliders: Dictionary = {}
 var _color_pickers: Dictionary = {}
+var _preset_status_label: Label
+var _save_dialog: FileDialog
+var _load_dialog: FileDialog
 
 
 func _ready() -> void:
 	_mount_panel_source()
 	_build_controls()
+	_setup_preset_dialogs()
 	call_deferred("_sync_controls_from_panel")
 
 
@@ -68,14 +76,10 @@ func _build_controls() -> void:
 	_float_sliders.clear()
 	_color_pickers.clear()
 	_background_mode_selector = null
+	_preset_status_label = null
 
 	controls_list.add_child(_make_background_mode_control())
-
-	var mode_note := Label.new()
-	mode_note.text = "Use Debug Pattern, Hybrid Overlay, or No Background to inspect blur and refraction in different contexts."
-	mode_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	mode_note.modulate = Color(1.0, 1.0, 1.0, 0.68)
-	controls_list.add_child(mode_note)
+	controls_list.add_child(_make_preset_actions_block())
 
 	var spacer := Control.new()
 	spacer.custom_minimum_size = Vector2(0.0, 8.0)
@@ -109,6 +113,48 @@ func _make_background_mode_control() -> Control:
 	selector.item_selected.connect(_on_background_mode_selected.bind(selector))
 	wrapper.add_child(selector)
 	_background_mode_selector = selector
+	return wrapper
+
+
+func _make_preset_actions_block() -> Control:
+	var wrapper := VBoxContainer.new()
+	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	wrapper.add_theme_constant_override("separation", 8)
+
+	var title := Label.new()
+	title.text = "preset_json"
+	wrapper.add_child(title)
+
+	var description := Label.new()
+	description.text = "Save the current slider and color values to JSON or load them back into this 2D shader tester."
+	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	description.modulate = Color(1.0, 1.0, 1.0, 0.68)
+	wrapper.add_child(description)
+
+	var button_row := HBoxContainer.new()
+	button_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button_row.add_theme_constant_override("separation", 8)
+	wrapper.add_child(button_row)
+
+	var export_button := Button.new()
+	export_button.text = "Export JSON"
+	export_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	export_button.pressed.connect(_on_export_json_pressed)
+	button_row.add_child(export_button)
+
+	var load_button := Button.new()
+	load_button.text = "Load JSON"
+	load_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	load_button.pressed.connect(_on_load_json_pressed)
+	button_row.add_child(load_button)
+
+	var status := Label.new()
+	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	status.modulate = Color(1.0, 1.0, 1.0, 0.6)
+	status.text = "No preset loaded yet."
+	wrapper.add_child(status)
+	_preset_status_label = status
+
 	return wrapper
 
 
@@ -163,6 +209,34 @@ func _make_color_control(config: Dictionary) -> Control:
 	return wrapper
 
 
+func _setup_preset_dialogs() -> void:
+	_ensure_preset_directory()
+	if _save_dialog == null:
+		_save_dialog = _create_preset_dialog(FileDialog.FILE_MODE_SAVE_FILE, "Export Shader Preset JSON")
+		_save_dialog.file_selected.connect(_export_preset_to_path)
+		add_child(_save_dialog)
+	if _load_dialog == null:
+		_load_dialog = _create_preset_dialog(FileDialog.FILE_MODE_OPEN_FILE, "Load Shader Preset JSON")
+		_load_dialog.file_selected.connect(_load_preset_from_path)
+		add_child(_load_dialog)
+
+
+func _create_preset_dialog(file_mode: FileDialog.FileMode, title_text: String) -> FileDialog:
+	var dialog := FileDialog.new()
+	dialog.access = FileDialog.ACCESS_FILESYSTEM
+	dialog.file_mode = file_mode
+	dialog.title = title_text
+	dialog.use_native_dialog = true
+	dialog.filters = PackedStringArray(["*.json ; JSON preset"])
+	dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIRECTORY)
+	dialog.current_file = DEFAULT_PRESET_FILENAME
+	return dialog
+
+
+func _ensure_preset_directory() -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(PRESET_DIRECTORY))
+
+
 func _on_background_mode_selected(index: int, selector: OptionButton) -> void:
 	set_background_mode(selector.get_item_id(index))
 
@@ -176,6 +250,61 @@ func _on_float_value_changed(value: float, parameter_name: String, slider: HSlid
 
 func _on_color_value_changed(color: Color, parameter_name: String) -> void:
 	set_shader_parameter(parameter_name, color)
+
+
+func _on_export_json_pressed() -> void:
+	_ensure_preset_directory()
+	_save_dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIRECTORY)
+	_save_dialog.current_file = DEFAULT_PRESET_FILENAME
+	_save_dialog.popup_centered_ratio(0.7)
+
+
+func _on_load_json_pressed() -> void:
+	_ensure_preset_directory()
+	_load_dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIRECTORY)
+	_load_dialog.popup_centered_ratio(0.7)
+
+
+func _export_preset_to_path(path: String) -> void:
+	var parameters := PresetIO.collect_parameters(
+		PanelSourceScript.FLOAT_CONTROLS,
+		PanelSourceScript.COLOR_CONTROLS,
+		Callable(self, "get_shader_parameter")
+	)
+	var envelope := PresetIO.build_preset_envelope(PresetIO.PRESET_KIND_2D, PRESET_SOURCE_SCENE_PATH, parameters)
+	var result := PresetIO.write_preset_file(path, envelope)
+	if result.get("ok", false):
+		_set_preset_status("Saved preset to %s" % result["path"], false)
+	else:
+		_set_preset_status(str(result.get("error", "Failed to save preset.")), true)
+
+
+func _load_preset_from_path(path: String) -> void:
+	var result := PresetIO.load_and_normalize_preset(
+		path,
+		PresetIO.PRESET_KIND_2D,
+		PanelSourceScript.FLOAT_CONTROLS,
+		PanelSourceScript.COLOR_CONTROLS
+	)
+	if not result.get("ok", false):
+		_set_preset_status(str(result.get("error", "Failed to load preset.")), true)
+		return
+
+	PresetIO.apply_parameters(result["parameters"], Callable(self, "set_shader_parameter"))
+	call_deferred("_sync_controls_from_panel")
+
+	var ignored_keys: Array = result.get("ignored_keys", [])
+	if ignored_keys.is_empty():
+		_set_preset_status("Loaded preset from %s" % path, false)
+	else:
+		_set_preset_status("Loaded preset from %s (ignored: %s)" % [path, _join_string_array(ignored_keys)], false)
+
+
+func _set_preset_status(message: String, is_error: bool) -> void:
+	if not is_instance_valid(_preset_status_label):
+		return
+	_preset_status_label.text = message
+	_preset_status_label.modulate = Color(1.0, 0.72, 0.72, 0.95) if is_error else Color(1.0, 1.0, 1.0, 0.68)
 
 
 func _sync_controls_from_panel() -> void:
@@ -217,6 +346,13 @@ func _select_background_mode(mode: int) -> void:
 		if _background_mode_selector.get_item_id(index) == mode:
 			_background_mode_selector.select(index)
 			return
+
+
+func _join_string_array(values: Array) -> String:
+	var parts: PackedStringArray = []
+	for value in values:
+		parts.append(str(value))
+	return ", ".join(parts)
 
 
 func _format_float(value: float) -> String:
