@@ -109,6 +109,14 @@ const COLOR_CONTROLS := [
 	},
 ]
 
+const HYBRID_SHELL_DEFAULTS := {
+	"hybrid_inner_border_brightness": 1.0,
+	"hybrid_inner_border_alpha": 0.312,
+	"hybrid_badge_fill_alpha": 0.18,
+	"hybrid_badge_border_alpha": 0.267,
+	"hybrid_badge_label_alpha": 0.9,
+}
+
 @onready var background: TextureRect = get_node_or_null("Background") as TextureRect
 @onready var preview_button: Button = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton") as Button
 @onready var hybrid_mask_panel: Panel = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/HybridMaskPanel") as Panel
@@ -132,6 +140,11 @@ var _shell_corner_radius := 0.24
 var _shell_edge_width := 2.4
 var _shell_tint := Color(0.92, 0.96, 1.0, 0.22)
 var _shell_edge_highlight := Color(1.0, 1.0, 1.0, 0.62)
+var _hybrid_inner_border_brightness := float(HYBRID_SHELL_DEFAULTS["hybrid_inner_border_brightness"])
+var _hybrid_inner_border_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_inner_border_alpha"])
+var _hybrid_badge_fill_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_fill_alpha"])
+var _hybrid_badge_border_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_border_alpha"])
+var _hybrid_badge_label_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_label_alpha"])
 
 
 func _ready() -> void:
@@ -247,7 +260,33 @@ func sync_hybrid_shell(parameters: Dictionary) -> void:
 		_shell_tint = parameters["tint"]
 	if parameters.has("edge_highlight") and parameters["edge_highlight"] is Color:
 		_shell_edge_highlight = parameters["edge_highlight"]
+	if parameters.has("hybrid_inner_border_brightness"):
+		_hybrid_inner_border_brightness = clampf(float(parameters["hybrid_inner_border_brightness"]), 0.0, 2.0)
+	if parameters.has("hybrid_inner_border_alpha"):
+		_hybrid_inner_border_alpha = clampf(float(parameters["hybrid_inner_border_alpha"]), 0.0, 1.0)
+	if parameters.has("hybrid_badge_fill_alpha"):
+		_hybrid_badge_fill_alpha = clampf(float(parameters["hybrid_badge_fill_alpha"]), 0.0, 1.0)
+	if parameters.has("hybrid_badge_border_alpha"):
+		_hybrid_badge_border_alpha = clampf(float(parameters["hybrid_badge_border_alpha"]), 0.0, 1.0)
+	if parameters.has("hybrid_badge_label_alpha"):
+		_hybrid_badge_label_alpha = clampf(float(parameters["hybrid_badge_label_alpha"]), 0.0, 1.0)
 	_sync_preview_shell()
+
+
+func get_hybrid_shell_parameter(parameter_name: String) -> Variant:
+	match parameter_name:
+		"hybrid_inner_border_brightness":
+			return _hybrid_inner_border_brightness
+		"hybrid_inner_border_alpha":
+			return _hybrid_inner_border_alpha
+		"hybrid_badge_fill_alpha":
+			return _hybrid_badge_fill_alpha
+		"hybrid_badge_border_alpha":
+			return _hybrid_badge_border_alpha
+		"hybrid_badge_label_alpha":
+			return _hybrid_badge_label_alpha
+		_:
+			return null
 
 
 func get_shader_parameters() -> Dictionary:
@@ -334,11 +373,16 @@ func _sync_preview_shell() -> void:
 		_frame_style.shadow_color = Color(_shell_edge_highlight.r, _shell_edge_highlight.g, _shell_edge_highlight.b, clampf(_shell_edge_highlight.a * 0.18, 0.04, 0.18))
 
 	if is_hybrid_world:
-		_inner_border_style.border_color = Color(1.0, 1.0, 1.0, clampf(0.20 + _shell_edge_highlight.a * 0.18, 0.22, 0.34))
-		_badge_style.bg_color = Color(1.0, 1.0, 1.0, clampf(0.13 + _shell_tint.a * 0.16, 0.14, 0.18))
-		_badge_style.border_color = Color(1.0, 1.0, 1.0, clampf(0.18 + _shell_edge_highlight.a * 0.14, 0.20, 0.28))
+		_inner_border_style.border_color = Color(
+			_hybrid_inner_border_brightness,
+			_hybrid_inner_border_brightness,
+			_hybrid_inner_border_brightness,
+			_hybrid_inner_border_alpha
+		)
+		_badge_style.bg_color = Color(1.0, 1.0, 1.0, _hybrid_badge_fill_alpha)
+		_badge_style.border_color = Color(1.0, 1.0, 1.0, _hybrid_badge_border_alpha)
 		if is_instance_valid(preview_badge_label):
-			preview_badge_label.modulate = Color(1.0, 1.0, 1.0, 0.9)
+			preview_badge_label.modulate = Color(1.0, 1.0, 1.0, _hybrid_badge_label_alpha)
 	else:
 		_inner_border_style.border_color = Color(1.0, 1.0, 1.0, clampf(0.08 + _shell_tint.a * 0.55, 0.08, 0.24))
 		_badge_style.bg_color = Color(1.0, 1.0, 1.0, 0.08)

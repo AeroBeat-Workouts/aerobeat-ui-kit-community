@@ -8,7 +8,7 @@
 
 ## Goal
 
-Close the remaining hybrid-vs-2D parity gap by improving the overlay-side treatment: make the `Shader Preview` chip/background read closer to the 2D version and make the inner rounded-rectangle line bright/light like the 2D scene, without introducing blur/smear into the rest of the text/UI.
+Close the remaining hybrid-vs-2D parity gap by improving the overlay-side treatment: make the `Shader Preview` chip/background read closer to the 2D version and make the inner rounded-rectangle line bright/light like the 2D scene, without introducing blur/smear into the rest of the text/UI. Also expose the new hybrid-world overlay accent values as real controls/preset keys so Derrick can tweak and save/load them from the test UI instead of relying on hardcoded script values.
 
 ---
 
@@ -17,6 +17,8 @@ Close the remaining hybrid-vs-2D parity gap by improving the overlay-side treatm
 Derrick’s latest side-by-side comparison shows that the hybrid panel is now extremely close overall. The remaining differences no longer look like body-glass architecture problems. Instead, they are narrow overlay-composition issues. Two symptoms stand out: the `Shader Preview` rounded rectangle is darker in the hybrid view, and the inner rounded rectangle line around the panel is darker than the light/white line in the 2D reference. Derrick also found an important control-coupling problem: pushing `ui_overlay_tint` can brighten those elements somewhat, but it also creates an unwanted blur/smear effect across the other UI/text elements.
 
 That strongly suggests the remaining gap is not “find the perfect global tint.” It suggests the hybrid overlay still lacks enough separation between line treatment, chip/background treatment, and overall UI/text embedding. This pass should therefore stay away from reopening body-glass work unless absolutely forced by evidence. The highest-value next move is to inspect the current overlay composition path and identify the smallest truthful way to brighten the chip and inner line independently, while preserving text clarity and the now-good glass/body result.
+
+Derrick’s follow-up confirmed one more usability requirement: these hybrid-only overlay accent lifts should not stay hidden as hardcoded script values. They should become explicit tweakable values visible in the left-hand controls and included in preset JSON round-trips, so experimentation can happen from the UI rather than from code edits.
 
 This should be treated as a manual-review slice again unless Derrick later asks for the full QA/audit loop.
 
@@ -67,11 +69,11 @@ Smallest truthful fix path: keep `REF-02` (hybrid body shader) and `REF-01` (fro
 
 ### Task 2: Implement the overlay-side parity fix
 
-**Bead ID:** `aerobeat-ui-kit-community-257`  
+**Bead ID:** `aerobeat-ui-kit-community-257` → follow-up `aerobeat-ui-kit-community-89c`  
 **SubAgent:** `primary` (for `coder` workflow role)  
 **Role:** `coder`  
 **References:** `REF-01`, `REF-02`, `REF-03`, `REF-04`, `REF-06`, `REF-07`, `REF-08`  
-**Prompt:** In `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-ui-kit-community`, implement the smallest truthful overlay-side parity fix that makes the `Shader Preview` chip and the inner rounded rectangle line read closer to the 2D reference without introducing blur/smear across the rest of the UI/text. Preserve the now-good body/glass behavior and avoid reopening silhouette/default-preset work unless required.
+**Prompt:** In `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-ui-kit-community`, implement the smallest truthful overlay-side parity fix that makes the `Shader Preview` chip and the inner rounded rectangle line read closer to the 2D reference without introducing blur/smear across the rest of the UI/text. Also expose the new hybrid-only overlay accent values as real tweakable controls/preset keys in the left panel and JSON workflow so Derrick can modify them directly. Preserve the now-good body/glass behavior and avoid reopening silhouette/default-preset work unless required.
 
 **Folders Created/Deleted/Modified:**
 - `.testbed/scripts/`
@@ -79,13 +81,17 @@ Smallest truthful fix path: keep `REF-02` (hybrid body shader) and `REF-01` (fro
 
 **Files Created/Deleted/Modified:**
 - `.testbed/scripts/glass_shader_panel_source.gd`
+- `.testbed/scripts/glass_shader_gui_3d_test.gd`
+- `.testbed/presets/glass/hybrid/default.json`
 - `.plans/2026-05-13-hybrid-overlay-final-parity-pass.md`
 
 **Status:** ✅ Complete
 
-**Results:** Implemented the smallest truthful parity lift in `REF-04` without reopening `REF-01`, `REF-02`, or `REF-03`. The change adds direct node/style ownership for the authored `Shader Preview` badge and then applies a hybrid-world-only accent branch inside `_sync_preview_shell()`. In hybrid world mode, `PreviewInnerBorder` now uses a brighter white alpha derived from `_shell_edge_highlight` (`clampf(0.20 + _shell_edge_highlight.a * 0.18, 0.22, 0.34)`), the badge fill is lifted from the static `0.08` scene alpha to a tuned authored range (`clampf(0.13 + _shell_tint.a * 0.16, 0.14, 0.18)`), the badge border is similarly lifted (`clampf(0.18 + _shell_edge_highlight.a * 0.14, 0.20, 0.28)`), and the badge label alpha is raised from `0.78` to `0.90`. Outside hybrid world mode, the 2D-authored badge and inner-border values are restored so the source/testbed composition remains unchanged.
+**Results:** Initial parity lift landed in commit `036413b` (`Brighten hybrid preview badge and inner border`) by moving the remaining chip/inner-line brightening into `REF-04` (`glass_shader_panel_source.gd`) as authored hybrid-world styling instead of pushing harder on the global overlay shader controls in `REF-01`. That preserved the body/glass result and avoided the blur/smear side effect Derrick saw when brightening through `ui_overlay_*`.
 
-This should improve parity against `REF-07` because the chip and inner line are now brightened as authored overlay shell elements before the flattened `ui_texture` reaches `REF-01`, instead of trying to globally brighten the whole overlay image after flattening. That keeps the text/body/glass split intact and avoids the blur/smear side effect Derrick saw when using the overlay shader’s global tint/brightness controls. Repo-local validation for this slice was a headless Godot parse/run smoke on both the 2D and hybrid scenes: `godot --headless --path .testbed --scene res://scenes/glass-shader-test.tscn --quit-after 2` and `godot --headless --path .testbed --scene res://scenes/glass-shader-gui-3d-test.tscn --quit-after 2`; both exited cleanly with no script/runtime errors. The implementation landed on `main` in commit `036413b` (`Brighten hybrid preview badge and inner border`) after rebasing onto upstream `origin/main`.
+Follow-up bead `aerobeat-ui-kit-community-89c` then converted those hybrid-only accent lifts from hardcoded authored values into real left-panel controls and preset keys without changing the truthful model. `REF-03` (`glass_shader_gui_3d_test.gd`) now exposes five hybrid-only sliders — `hybrid_inner_border_brightness`, `hybrid_inner_border_alpha`, `hybrid_badge_fill_alpha`, `hybrid_badge_border_alpha`, and `hybrid_badge_label_alpha` — and routes them through the same save/load JSON workflow as the rest of the hybrid scene controls. `REF-04` now stores those values explicitly, applies them only in hybrid world mode, and still restores the original 2D-authored values (`0.08` fill, `0.14` border, `0.78` label, original inner-border formula) outside hybrid world mode so the shared 2D source remains sane/truthful.
+
+The bundled hybrid startup preset at `res://presets/glass/hybrid/default.json` was updated to include those new keys with the exact values that preserve the current visual result: inner border brightness `1.0`, inner border alpha `0.312`, badge fill alpha `0.18`, badge border alpha `0.267`, badge label alpha `0.9`. Repo-local validation for this slice was a headless Godot parse/run smoke on both the 2D and hybrid scenes: `godot --headless --path .testbed --scene res://scenes/glass-shader-test.tscn --quit-after 2` and `godot --headless --path .testbed --scene res://scenes/glass-shader-gui-3d-test.tscn --quit-after 2`; both exited cleanly with no script/runtime errors. Follow-up commit/push details were added after this handoff pass.
 
 ---
 
