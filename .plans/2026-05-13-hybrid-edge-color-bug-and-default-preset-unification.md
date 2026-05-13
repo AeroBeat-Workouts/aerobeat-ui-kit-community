@@ -95,7 +95,7 @@ For preset dialogs, the cleanest repo-local path handling is to keep bundled sta
 
 The manual preset dialogs now default into the repo-local preset tree instead of `user://` app data. `glass_shader_test.gd` now points its Export/Load dialogs at `res://presets/glass/2d`, and `glass_shader_gui_3d_test.gd` points at `res://presets/glass/hybrid`, both globalized to filesystem paths so the native dialogs open inside the tracked `.testbed/presets/glass/...` folders. Bundled startup defaults remain unchanged under `res://presets/glass/2d/default.json` and `res://presets/glass/hybrid/default.json`, and both scenes still use the shared `glass_shader_preset_io.gd` loader for startup + manual JSON import.
 
-Repo-local validation passed with `godot --headless --path .testbed --import`, `godot --headless --path .testbed --script res://../.temp/validate_shader_preset_json_io_2026_05_13.gd`, and `godot --headless --path .testbed --script res://../.temp/validate_hybrid_edge_color_and_default_presets_2026_05_13.gd`. The hybrid validation was expanded to verify (1) both scenes boot from the bundled default preset values, (2) both manual preset dialogs default to the repo-local preset directories, and (3) hybrid `PreviewFrame` fill/shadow stay disabled while `edge_color` changes no longer restyle the overlay border and `edge_width` still syncs shell width. Follow-up implementation commit hash: `059e9ed` (`Fix hybrid overlay fill and preset dialog defaults`). Push status: pushed to `origin/main`.
+Repo-local validation passed with `godot --headless --path .testbed --import`, `godot --headless --path .testbed --script res://../.temp/validate_shader_preset_json_io_2026_05_13.gd`, and `godot --headless --path .testbed --script res://../.temp/validate_hybrid_edge_color_and_default_presets_2026_05_13.gd`. The hybrid validation was expanded to verify (1) both scenes boot from the bundled default preset values, (2) both manual preset dialogs default to the repo-local preset directories, and (3) hybrid `PreviewFrame` fill/shadow stay disabled while `edge_color` changes no longer restyle the overlay border and `edge_width` still syncs shell width. Follow-up implementation commit hash: `bdfadee` (`Fix hybrid overlay fill and preset dialog defaults`). Push status: pushed to `origin/main`.
 
 ---
 
@@ -149,7 +149,7 @@ Repo-local validation passed with `godot --headless --path .testbed --import`, `
 
 **Commits:**
 - `2a09100` - Fix hybrid edge color sync and unify default presets
-- `059e9ed` - Fix hybrid overlay fill and preset dialog defaults
+- `bdfadee` - Fix hybrid overlay fill and preset dialog defaults
 
 **Lessons Learned:** The controller-level `edge_color` forwarding cleanup was necessary but not sufficient. The final bug was an ownership/compositing issue in the authored overlay frame: once hybrid mode stops that overlay from painting its own interior fill and shadow, the body shader can own the panel interior cleanly while the repo-local preset folders remain the practical place for manual import/export work.
 
