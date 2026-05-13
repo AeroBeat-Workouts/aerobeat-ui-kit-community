@@ -101,7 +101,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
-		"default": 0.62,
+		"default": 0.66,
 	},
 	{
 		"name": "body_frost_strength",
@@ -109,7 +109,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
-		"default": 0.82,
+		"default": 0.85,
 	},
 	{
 		"name": "background_subdue",
@@ -117,7 +117,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
-		"default": 0.82,
+		"default": 0.86,
 	},
 	{
 		"name": "interior_chroma",
@@ -125,7 +125,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
-		"default": 0.22,
+		"default": 0.24,
 	},
 	{
 		"name": "world_rim_refraction",
@@ -165,7 +165,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
-		"default": 0.22,
+		"default": 0.18,
 	},
 	{
 		"name": "perimeter_frost_boost",
@@ -173,7 +173,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 0.5,
 		"step": 0.01,
-		"default": 0.10,
+		"default": 0.08,
 	},
 	{
 		"name": "ui_alpha_gain",

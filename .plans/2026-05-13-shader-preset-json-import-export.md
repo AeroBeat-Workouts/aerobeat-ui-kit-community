@@ -105,17 +105,20 @@ Repo-local validation passed with both (1) `godot --headless --path .testbed --i
 **Prompt:** In `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-ui-kit-community`, compare the current strong 2D frosted-body treatment against the current hybrid 3D body path and identify the most credible body-only route to close the remaining parity gap. If there is a clear, low-risk improvement that preserves the solved silhouette and overlay/rim/inner-line ownership, implement one targeted body-only pass. If there is not a credible implementation path yet, document the strongest candidate solutions instead of forcing a noisy tweak. Be explicit about what is structurally different, what is merely parameter drift, and what should not be touched.
 
 **Folders Created/Deleted/Modified:**
-- `.testbed/assets/shaders/`
-- `.testbed/scripts/` only if truly needed
+- `.testbed/scripts/`
 - `.plans/` (results/documentation)
+- `.temp/`
 
 **Files Created/Deleted/Modified:**
-- `.testbed/assets/shaders/glass-panel-hybrid-3d.gdshader` if a credible body-only improvement is implemented
-- related analysis notes if needed
+- `.testbed/scripts/glass_shader_gui_3d_test.gd`
+- `.plans/2026-05-13-shader-preset-json-import-export.md`
+- `.temp/validate_task3_hybrid_defaults_2026_05_13.gd`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Implemented one credible body-only parity fix, but the real divergence turned out to be **runtime parameter drift**, not another missing shader branch. Comparing the current strong 2D source path (`REF-03` / `REF-05` / `REF-06`) against the live hybrid boot path (`REF-04` / `REF-07`) confirmed the structural gap remains what Task 1 already documented: the 2D card’s body is part of a flatter controlled screen-space composite, while the hybrid body samples a live 3D world and intentionally leaves silhouette/rim/inner-line ownership to the authored mask + overlay. The clearest *actionable* divergence inside the current hybrid body path, though, was that `glass_shader_gui_3d_test.gd` was still force-applying the **older pre-polish body defaults** at startup (`tint_strength=0.62`, `body_frost_strength=0.82`, `background_subdue=0.82`, `interior_chroma=0.22`, `face_veil_strength=0.22`, `perimeter_frost_boost=0.10`) even though the current body shader in `REF-07` had already moved to a stronger interior-compression / deeper mid-body frost balance (`0.66`, `0.85`, `0.86`, `0.24`, `0.18`, `0.08`). In practice, the hybrid scene was therefore not booting into the latest intended body treatment.
+
+The landed fix updates only those hybrid startup defaults in `REF-04`, which is disciplined and low-risk because it keeps the solved ownership seams intact while finally letting the runtime use the current body balance already encoded in `REF-07`. This specifically follows the preferred direction from Task 1: more interior backdrop compression/subduing and deeper center/mid-body frost weighting, with **less** reliance on `face_veil_strength` and body-side perimeter lift. Nothing touched the authored-mask discard path, nothing changed the overlay shader in `REF-08`, and shell/edge ownership was not reopened. Repo-local validation passed via `godot --path .testbed --headless --script res://../.temp/validate_final_body_frost_polish_pass.gd` and `godot --path .testbed --headless --script res://../.temp/validate_task3_hybrid_defaults_2026_05_13.gd`, confirming both scenes still load and the hybrid scene now boots with the intended body defaults. Commit/push status recorded after git handoff.
 
 ---
 
