@@ -97,7 +97,7 @@ Derrick’s next manual review then exposed a remaining darker center-slab artif
 
 The manual preset dialogs now default into the repo-local preset tree instead of `user://` app data. `glass_shader_test.gd` now points its Export/Load dialogs at `res://presets/glass/2d`, and `glass_shader_gui_3d_test.gd` points at `res://presets/glass/hybrid`, both globalized to filesystem paths so the native dialogs open inside the tracked `.testbed/presets/glass/...` folders. Bundled startup defaults remain unchanged under `res://presets/glass/2d/default.json` and `res://presets/glass/hybrid/default.json`, and both scenes still use the shared `glass_shader_preset_io.gd` loader for startup + manual JSON import.
 
-Repo-local validation passed with `godot --headless --path .testbed --import`, `godot --headless --path .testbed --script res://../.temp/validate_shader_preset_json_io_2026_05_13.gd`, `godot --headless --path .testbed --script res://../.temp/validate_hybrid_edge_color_and_default_presets_2026_05_13.gd`, and `godot --headless --path .testbed --script res://../.temp/validate_task3_hybrid_defaults_2026_05_13.gd`. The hybrid validation continues to verify the repo-local preset directories and overlay ownership split; the new shader-only follow-up also compiled cleanly through the headless import pass. Follow-up implementation commits: `bdfadee` (`Fix hybrid overlay fill and preset dialog defaults`) and `cc6289c` (`Reduce hybrid center-slab body band`). Push status: pending at time of writing; see final results.
+Repo-local validation for this slice passed with `godot --headless --path .testbed --import`, `godot --headless --path .testbed --script res://../.temp/validate_shader_preset_json_io_2026_05_13.gd`, and `godot --headless --path .testbed --script res://../.temp/validate_hybrid_edge_color_and_default_presets_2026_05_13.gd`. The hybrid validation continues to verify the repo-local preset directories and overlay ownership split; the new shader-only follow-up also compiled cleanly through the headless import pass. A broader temp validator, `godot --headless --path .testbed --script res://../.temp/validate_task3_hybrid_defaults_2026_05_13.gd`, now fails after upstream commit `e5a91d5` changed the tracked hybrid default preset values (`tint_strength` now differs from the script’s hard-coded expectation), so it is no longer a trustworthy gate for this shader-only slice. Follow-up implementation commits: `bdfadee` (`Fix hybrid overlay fill and preset dialog defaults`) and `80f16e9` (`Reduce hybrid center-slab body band`). Push status: pending at time of writing; see final results.
 
 ---
 
@@ -152,9 +152,10 @@ Repo-local validation passed with `godot --headless --path .testbed --import`, `
 **Commits:**
 - `2a09100` - Fix hybrid edge color sync and unify default presets
 - `bdfadee` - Fix hybrid overlay fill and preset dialog defaults
-- `cc6289c` - Reduce hybrid center-slab body band
+- `80f16e9` - Reduce hybrid center-slab body band
+- `d3f077d` - Update plan for hybrid center-slab follow-up
 
-**Lessons Learned:** The controller-level `edge_color` forwarding cleanup was necessary but not sufficient, and even the overlay fill/shadow shutdown was not the whole story. The remaining artifact came from reusing a second inset body band too aggressively inside the hybrid shader’s color/compression math; trimming that structure directly was cleaner than trying to hide it with more preset tuning.
+**Lessons Learned:** The controller-level `edge_color` forwarding cleanup was necessary but not sufficient, and even the overlay fill/shadow shutdown was not the whole story. The remaining artifact came from reusing a second inset body band too aggressively inside the hybrid shader’s color/compression math; trimming that structure directly was cleaner than trying to hide it with more preset tuning. Also, one repo-local temp validator is now stale relative to the latest default preset commit, so validation notes need to distinguish between slice-relevant gates and unrelated hard-coded expectation drift.
 
 ## Follow-up Research Addendum — center-slab artifact (post-manual review)
 
