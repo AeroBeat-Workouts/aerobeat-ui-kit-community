@@ -128,7 +128,10 @@ void fragment() {
 	vec4 ui_sample = texture(ui_texture, authored_uv);
 	float ui_alpha = clamp(ui_sample.a * ui_alpha_gain, 0.0, 1.0);
 	float ui_shadow = smoothstep(0.0, 0.6, ui_alpha) * ui_shadow_strength;
-	float ui_underlay = ui_alpha * ui_embed_strength;
+	float shell_exclusion_px = edge_width_px + max(6.0, short_side_px * 0.03);
+	float shell_feather_px = max(4.0, short_side_px * 0.02);
+	float ui_interior_mask = smoothstep(shell_exclusion_px, shell_exclusion_px + shell_feather_px, -sdf_px);
+	float ui_underlay = ui_alpha * ui_embed_strength * ui_interior_mask;
 	glass_color = mix(glass_color, glass_color * (1.0 - ui_shadow) + tint.rgb * 0.025, ui_underlay);
 
 	float glass_alpha = clamp(authored_mask * (0.38 + tint.a * 0.92 + interior * body_frost_strength * 0.34 + face_veil * 0.04 + edge * 0.02), 0.32, 0.992);

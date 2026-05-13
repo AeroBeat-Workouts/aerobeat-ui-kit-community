@@ -14,7 +14,7 @@ Fix the hybrid 3D GUI shader bug where nonzero `edge_color` intensity produces a
 
 ## Overview
 
-Derrick found a new hybrid-specific rendering bug: when `edge_color` has visible intensity, the hybrid 3D scene can show an obvious white rounded-rectangle line across the interior body region instead of restricting that energy to the intended shell/edge treatment. An initial implementation attempt assumed this was primarily a controller/ownership leak, but Derrick’s follow-up manual review confirmed the bug is still present when intensity is above zero. The latest manual test shows progress overall — the panel now has a real fuzzy glass read — but there is still an unintended **secondary interior shape** in the body: a darker center rectangle/slab with sharper triangular-ish transitions at its edges. That suggests another compositing layer, overlay remnant, or body-weighting region is still reading as a separate object instead of one smooth sheet of glass. This should be treated as a correctness issue, not tuning.
+Derrick found a new hybrid-specific rendering bug: when `edge_color` has visible intensity, the hybrid 3D scene can show an obvious white rounded-rectangle line across the interior body region instead of restricting that energy to the intended shell/edge treatment. An initial implementation attempt assumed this was primarily a controller/ownership leak, but Derrick’s follow-up manual review confirmed the bug is still present when intensity is above zero. The latest manual tests sharpen the diagnosis further: even with `PanelUiOverlay` disabled, the interior rounded-rectangle artifact remains visible, and it correlates strongly with **`edge_width > 0`** and low **`blur`** values. That means the remaining bug is not in the overlay path at all; it is most likely coming from the hybrid body shader’s own edge band / edge-distance logic drawing an internal ring. This should be treated as a correctness issue, not tuning.
 
 Derrick also wants the 2D and hybrid test scenes to stop using two different default-loading models. Right now both scenes do load bundled default preset JSONs, but the manual load/export dialogs still default to `user://` app-data locations. Derrick wants the practical workflow centered in the repo itself so experimentation assets stay easy to inspect and commit. The cleaner direction is to define one explicit default preset JSON file per scene/shader flavor and have both scenes load startup values through the same JSON preset-loading path, while also making the manual export/load dialogs default into the repo-local `.testbed/presets` tree rather than local app-data storage.
 
@@ -43,7 +43,7 @@ This slice should therefore do two tightly related things: (1) diagnose and fix 
 
 ### Task 1: Research the hybrid `edge_color` bug and the cleanest default-preset unification path
 
-**Bead ID:** `aerobeat-ui-kit-community-90s` → follow-up `aerobeat-ui-kit-community-5d6` → follow-up `aerobeat-ui-kit-community-r1a`  
+**Bead ID:** `aerobeat-ui-kit-community-90s` → follow-up `aerobeat-ui-kit-community-5d6` → follow-up `aerobeat-ui-kit-community-r1a` → follow-up `aerobeat-ui-kit-community-prh`  
 **SubAgent:** `primary` (for `research` workflow role)  
 **Role:** `research`  
 **References:** `REF-01`, `REF-02`, `REF-03`, `REF-04`, `REF-05`, `REF-06`, `REF-07`, `REF-08`, `REF-09`, `REF-10`  
@@ -69,7 +69,7 @@ For preset dialogs, the cleanest repo-local path handling is to keep bundled sta
 
 ### Task 2: Implement the hybrid `edge_color` bug fix and default-preset unification
 
-**Bead ID:** `aerobeat-ui-kit-community-tka` → follow-up `aerobeat-ui-kit-community-mwf` → follow-up `aerobeat-ui-kit-community-pzq`  
+**Bead ID:** `aerobeat-ui-kit-community-tka` → follow-up `aerobeat-ui-kit-community-mwf` → follow-up `aerobeat-ui-kit-community-pzq` → follow-up `aerobeat-ui-kit-community-445`  
 **SubAgent:** `primary` (for `coder` workflow role)  
 **Role:** `coder`  
 **References:** `REF-01`, `REF-02`, `REF-03`, `REF-04`, `REF-05`, `REF-06`, `REF-07`, `REF-08`, `REF-09`, `REF-10`  
@@ -97,7 +97,9 @@ Derrick’s next manual review then exposed a remaining darker center-slab artif
 
 The manual preset dialogs now default into the repo-local preset tree instead of `user://` app data. `glass_shader_test.gd` now points its Export/Load dialogs at `res://presets/glass/2d`, and `glass_shader_gui_3d_test.gd` points at `res://presets/glass/hybrid`, both globalized to filesystem paths so the native dialogs open inside the tracked `.testbed/presets/glass/...` folders. Bundled startup defaults remain unchanged under `res://presets/glass/2d/default.json` and `res://presets/glass/hybrid/default.json`, and both scenes still use the shared `glass_shader_preset_io.gd` loader for startup + manual JSON import.
 
-Repo-local validation for this slice passed with `godot --headless --path .testbed --import`, `godot --headless --path .testbed --script res://../.temp/validate_shader_preset_json_io_2026_05_13.gd`, and `godot --headless --path .testbed --script res://../.temp/validate_hybrid_edge_color_and_default_presets_2026_05_13.gd`. The hybrid validation continues to verify the repo-local preset directories and overlay ownership split; the new shader-only follow-up also compiled cleanly through the headless import pass. A broader temp validator, `godot --headless --path .testbed --script res://../.temp/validate_task3_hybrid_defaults_2026_05_13.gd`, now fails after upstream commit `e5a91d5` changed the tracked hybrid default preset values (`tint_strength` now differs from the script’s hard-coded expectation), so it is no longer a trustworthy gate for this shader-only slice. Follow-up implementation commits: `bdfadee` (`Fix hybrid overlay fill and preset dialog defaults`) and `80f16e9` (`Reduce hybrid center-slab body band`). Push status: pending at time of writing; see final results.
+Derrick’s latest isolation pass then narrowed the remaining artifact to the hybrid BODY shader’s own `ui_underlay` path: the authored `PreviewFrame` border alpha inside `ui_texture` was still being re-embedded back into the frosted body, which explains why the ring survived with `PanelUiOverlay` disabled, scaled with `edge_width`, and became obvious at very low `blur`. The next follow-up therefore stayed shader-only in `glass-panel-hybrid-3d.gdshader`: `ui_underlay` is now multiplied by an interior-safe SDF mask built from `-sdf_px`, `edge_width_px`, and short-side-scaled padding/feather distances. Concretely, the body shader now suppresses underlay contribution across the shell border / inner-line zone (`shell_exclusion_px`, `shell_feather_px`, `ui_interior_mask`) while still allowing deeper interior UI embedding to survive farther inside the glass.
+
+Repo-local validation for this slice passed with `godot --headless --path .testbed --import` and `godot --headless --path .testbed --script res://../.temp/validate_hybrid_edge_color_and_default_presets_2026_05_13.gd`. The hybrid validator still verifies the repo-local preset directories and overlay ownership split, and the new shader-only follow-up compiled cleanly through the headless import pass. A broader temp validator, `godot --headless --path .testbed --script res://../.temp/validate_task3_hybrid_defaults_2026_05_13.gd`, remains stale after upstream commit `e5a91d5` changed tracked hybrid default preset values (`tint_strength` now differs from the script’s hard-coded expectation), so it is not a trustworthy gate for this ring-focused shader-only slice. Follow-up implementation commits now include `bdfadee` (`Fix hybrid overlay fill and preset dialog defaults`), `80f16e9` (`Reduce hybrid center-slab body band`), and `Pending` for bead `aerobeat-ui-kit-community-445` (`Mask hybrid ui_underlay away from shell border`). Push status: pending at time of writing; see final results.
 
 ---
 
@@ -145,17 +147,18 @@ Repo-local validation for this slice passed with `godot --headless --path .testb
 
 **Status:** ✅ Complete
 
-**What We Built:** Finished the hybrid interior-cleanup sequence in two truthful layers: first by disabling the overlay `PreviewFrame` interior fill/shadow in hybrid world mode while keeping the overlay border + inner line visible, and then by removing the hybrid body shader’s extra `mid_body` weighting from the backdrop compression and body/tint/frost color path so the panel interior reads as one continuous frosted sheet instead of a second inset slab. The repo-local Export/Load dialog defaults under `.testbed/presets/glass/...` remain in place.
+**What We Built:** Finished the hybrid interior-cleanup sequence in three truthful layers: first by disabling the overlay `PreviewFrame` interior fill/shadow in hybrid world mode while keeping the overlay border + inner line visible, then by removing the hybrid body shader’s extra `mid_body` weighting from the backdrop compression and body/tint/frost color path, and finally by masking the BODY shader’s `ui_underlay` away from the shell border / inner-line zone so the authored `ui_texture` border alpha no longer gets re-embedded into the frosted glass. The repo-local Export/Load dialog defaults under `.testbed/presets/glass/...` remain in place.
 
-**Reference Check:** `REF-05` still enforces the intended hybrid ownership split directly in the authored source scene: overlay rim/inner-line stay on, overlay interior fill/shadow stay off, and the world shader continues to own the body fill/frost. `REF-07` now favors the continuous `interior` ramp over the extra `mid_body` band in the color/compression stack, which is the smallest direct response to the post-review center-slab artifact. `REF-03` / `REF-04` still use the shared preset-loading path for startup and manual preset load, and their native dialogs still default to repo-local preset directories instead of `user://`. `REF-06` continues to own the shared JSON import/export logic. `REF-10`’s earlier symptom was addressed by the controller/overlay fixes, and the follow-up screenshot symptom is addressed by the `REF-07` compositing cleanup.
+**Reference Check:** `REF-05` still enforces the intended hybrid ownership split directly in the authored source scene: overlay rim/inner-line stay on, overlay interior fill/shadow stay off, and the world shader continues to own the body fill/frost. `REF-07` now does two targeted cleanup jobs without disturbing the broader fuzzy-glass structure: it favors the continuous `interior` ramp over the extra `mid_body` band in the color/compression stack, and it gates `ui_underlay` with an interior-safe SDF mask so shell-border alpha from `ui_texture` no longer darkens/tints the body near the rim. `REF-03` / `REF-04` still use the shared preset-loading path for startup and manual preset load, and their native dialogs still default to repo-local preset directories instead of `user://`. `REF-06` continues to own the shared JSON import/export logic. `REF-10`’s earlier symptom was addressed by the controller/overlay fixes, and Derrick’s later low-blur / overlay-disabled isolation is addressed directly in `REF-07` by the new underlay mask.
 
 **Commits:**
 - `2a09100` - Fix hybrid edge color sync and unify default presets
 - `bdfadee` - Fix hybrid overlay fill and preset dialog defaults
 - `80f16e9` - Reduce hybrid center-slab body band
-- `d3f077d` - Update plan for hybrid center-slab follow-up
+- `Pending` - Mask hybrid ui_underlay away from shell border
+- `Pending` - Update plan for hybrid internal-ring follow-up
 
-**Lessons Learned:** The controller-level `edge_color` forwarding cleanup was necessary but not sufficient, and even the overlay fill/shadow shutdown was not the whole story. The remaining artifact came from reusing a second inset body band too aggressively inside the hybrid shader’s color/compression math; trimming that structure directly was cleaner than trying to hide it with more preset tuning. Also, one repo-local temp validator is now stale relative to the latest default preset commit, so validation notes need to distinguish between slice-relevant gates and unrelated hard-coded expectation drift.
+**Lessons Learned:** The controller-level `edge_color` forwarding cleanup was necessary but not sufficient, the overlay fill/shadow shutdown was still not the whole story, and even the center-slab trim did not fully explain a ring that survived with `PanelUiOverlay` disabled. The most precise remaining cause was the BODY shader re-embedding authored border alpha through `ui_underlay`; removing that ownership leak structurally is cleaner than chasing the symptom with preset tuning. Also, one repo-local temp validator is now stale relative to the latest default preset commit, so validation notes need to distinguish between slice-relevant gates and unrelated hard-coded expectation drift.
 
 ## Follow-up Research Addendum — center-slab artifact (post-manual review)
 
@@ -168,6 +171,62 @@ Most likely active source now: `REF-07` defines a second inset body region via `
 Smallest truthful fix for the remaining artifact: change only `REF-07` first. Remove or sharply reduce `mid_body` participation in the color/compression/body-mix path while keeping the existing blur/refraction/fuzzy-glass behavior, rim ownership, inner-line ownership, mask ownership, and preset flow intact. Prefer one continuous interior ramp (`interior`) plus the existing perimeter/edge terms over a second inset body band. If visual rebalance is still needed after that structural cleanup, use the hybrid default preset only as a follow-up trim pass, not as the primary fix.
 
 Follow-up research notes were recorded in `.temp/2026-05-13-hybrid-center-slab-followup-research.md`.
+
+## Follow-up Research Addendum — internal ring after PanelUiOverlay disable / low blur isolation
+
+Derrick's next isolation pass sharpens the remaining symptom further:
+- `PanelUiOverlay` disabled
+- interior rounded-rectangle ring still present
+- artifact appears when `edge_width > 0`
+- artifact becomes very obvious when `blur` is very low / `0`
+
+That changes the most credible root cause again. The remaining ring is now most likely **not** the separate front overlay mesh and **not primarily** the broad frost/compression stack (`mid_body`, `oblique_body`, `edge_proximity`, or `interior` mixes). The strongest code match is the hybrid BODY shader's own reuse of `ui_texture` alpha as an embedded underlay.
+
+Relevant body-shader lines in `REF-07`:
+- `ui_sample = texture(ui_texture, authored_uv)`
+- `ui_alpha = clamp(ui_sample.a * ui_alpha_gain, 0.0, 1.0)`
+- `ui_underlay = ui_alpha * ui_embed_strength`
+- `glass_color = mix(glass_color, glass_color * (1.0 - ui_shadow) + tint.rgb * 0.025, ui_underlay)`
+
+Relevant authored-shell lines in `REF-05`:
+- `preview_frame.visible = _presentation_mode == PRESENTATION_MODE_2D or is_hybrid_world`
+- `_sync_preview_shell()` still sets `PreviewFrame` border width from `_shell_edge_width`
+- hybrid world mode only disables the frame fill/shadow; it intentionally keeps the border/inner line visible
+
+That means `edge_width > 0` is currently doing **two** things at once:
+1. widening the BODY shader's own SDF `edge` band, and
+2. widening the authored `PreviewFrame` border inside `ui_texture`, which the BODY shader then re-embeds into the frosted glass via `ui_underlay` even when the separate `PanelUiOverlay` mesh is disabled.
+
+This second path is the best explanation for the newly isolated symptom because it survives overlay-mesh disable, tracks `edge_width` directly, and becomes much easier to see as `blur` drops and the body stops hiding it behind heavier fuzz.
+
+The direct SDF `edge` term in `REF-07` remains a plausible **secondary** contributor:
+- `edge = 1.0 - smoothstep(0.0, edge_width_px, -sdf_px)`
+- `glass_color = mix(glass_color, edge_color.rgb, edge * edge_color.a * 0.16)`
+
+But that contribution is comparatively small, so it is less likely to be the main visible ring than the `ui_underlay` path under the current hybrid defaults.
+
+### Recommended smallest truthful fix
+
+Change only `REF-07` first.
+
+Smallest truthful fix direction:
+- keep the fuzzy glass / refraction / body behavior intact
+- keep `REF-05` overlay ownership split intact
+- keep `REF-08` untouched
+- keep preset/default-loading work untouched
+- stop the BODY shader from re-embedding shell-border alpha from `ui_texture`
+
+Most practical body-shader-only fix:
+- gate or suppress `ui_underlay` near the shell border using an interior-safe SDF mask so border/inner-line alpha remains overlay-owned only
+- if a faint ring still survives after that, then do a tiny second-pass trim on the BODY shader's direct `edge` mix/emission term
+
+What should remain untouched unless testing disproves this diagnosis:
+- `REF-05` hybrid-world overlay fill/shadow shutdown
+- `REF-08` front overlay shader
+- `.testbed/scripts/glass_shader_gui_3d_test.gd`
+- `.testbed/presets/glass/` default preset workflow
+
+Follow-up research notes for this isolation pass were recorded in `.temp/2026-05-13-hybrid-internal-ring-followup-research.md`.
 
 ---
 
