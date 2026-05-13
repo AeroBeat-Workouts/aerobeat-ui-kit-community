@@ -233,6 +233,8 @@ func set_shader_parameters(parameters: Dictionary) -> void:
 
 
 func sync_hybrid_shell(parameters: Dictionary) -> void:
+	# Hybrid shell sync is intentionally limited to authored shell-alignment values.
+	# The authored PreviewFrame highlight is overlay-owned and should not mirror hybrid body edge_color.
 	if parameters.has("corner_radius"):
 		_shell_corner_radius = clampf(float(parameters["corner_radius"]), 0.0, 1.0)
 	if parameters.has("edge_width"):

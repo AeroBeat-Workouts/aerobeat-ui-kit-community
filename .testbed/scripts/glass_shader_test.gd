@@ -4,6 +4,7 @@ const SOURCE_SCENE_PATH := "res://scenes/glass-shader-panel-source.tscn"
 const PRESET_SOURCE_SCENE_PATH := "res://scenes/glass-shader-test.tscn"
 const PRESET_DIRECTORY := "user://shader-presets/2d"
 const DEFAULT_PRESET_FILENAME := "glass-shader-2d-preset.json"
+const BUNDLED_DEFAULT_PRESET_PATH := "res://presets/glass/2d/default.json"
 const PanelSourceScript = preload("res://scripts/glass_shader_panel_source.gd")
 const PresetIO = preload("res://scripts/glass_shader_preset_io.gd")
 
@@ -23,6 +24,7 @@ func _ready() -> void:
 	_mount_panel_source()
 	_build_controls()
 	_setup_preset_dialogs()
+	_load_startup_default_preset()
 	call_deferred("_sync_controls_from_panel")
 
 
@@ -280,24 +282,41 @@ func _export_preset_to_path(path: String) -> void:
 
 
 func _load_preset_from_path(path: String) -> void:
-	var result := PresetIO.load_and_normalize_preset(
+	var result := PresetIO.load_and_apply_preset(
 		path,
 		PresetIO.PRESET_KIND_2D,
 		PanelSourceScript.FLOAT_CONTROLS,
-		PanelSourceScript.COLOR_CONTROLS
+		PanelSourceScript.COLOR_CONTROLS,
+		Callable(self, "set_shader_parameter")
 	)
 	if not result.get("ok", false):
 		_set_preset_status(str(result.get("error", "Failed to load preset.")), true)
 		return
 
-	PresetIO.apply_parameters(result["parameters"], Callable(self, "set_shader_parameter"))
 	call_deferred("_sync_controls_from_panel")
+	_apply_loaded_preset_status(result, path, "Loaded preset from")
 
+
+func _load_startup_default_preset() -> void:
+	var result := PresetIO.load_and_apply_preset(
+		BUNDLED_DEFAULT_PRESET_PATH,
+		PresetIO.PRESET_KIND_2D,
+		PanelSourceScript.FLOAT_CONTROLS,
+		PanelSourceScript.COLOR_CONTROLS,
+		Callable(self, "set_shader_parameter")
+	)
+	if not result.get("ok", false):
+		_set_preset_status("Bundled startup preset failed (%s). Using scene fallback defaults." % str(result.get("error", "unknown error")), true)
+		return
+	_apply_loaded_preset_status(result, BUNDLED_DEFAULT_PRESET_PATH, "Loaded bundled startup defaults from")
+
+
+func _apply_loaded_preset_status(result: Dictionary, path: String, prefix: String) -> void:
 	var ignored_keys: Array = result.get("ignored_keys", [])
 	if ignored_keys.is_empty():
-		_set_preset_status("Loaded preset from %s" % path, false)
+		_set_preset_status("%s %s" % [prefix, path], false)
 	else:
-		_set_preset_status("Loaded preset from %s (ignored: %s)" % [path, _join_string_array(ignored_keys)], false)
+		_set_preset_status("%s %s (ignored: %s)" % [prefix, path, _join_string_array(ignored_keys)], false)
 
 
 func _set_preset_status(message: String, is_error: bool) -> void:

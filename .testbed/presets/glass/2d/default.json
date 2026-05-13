@@ -1,0 +1,30 @@
+{
+	"schema_version": 1,
+	"preset_kind": "glass_shader_2d",
+	"source_scene": "res://scenes/glass-shader-test.tscn",
+	"saved_at": "2026-05-13T13:15:00-04:00",
+	"parameters": {
+		"blur": 4.2,
+		"warp_intensity": 0.45,
+		"strength_x": 14.0,
+		"strength_y": 14.0,
+		"offset_x": 0.03,
+		"offset_y": 0.0,
+		"corner_radius": 0.24,
+		"edge_smoothness": 1.1,
+		"edge_width": 2.4,
+		"chromatic_strength": 2.2,
+		"tint": {
+			"r": 0.92,
+			"g": 0.96,
+			"b": 1.0,
+			"a": 0.22
+		},
+		"edge_highlight": {
+			"r": 1.0,
+			"g": 1.0,
+			"b": 1.0,
+			"a": 0.62
+		}
+	}
+}

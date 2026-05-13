@@ -6,6 +6,7 @@ const UI_OVERLAY_SHADER_PATH := "res://assets/shaders/glass-panel-ui-overlay-3d.
 const PRESET_SOURCE_SCENE_PATH := "res://scenes/glass-shader-gui-3d-test.tscn"
 const PRESET_DIRECTORY := "user://shader-presets/hybrid"
 const DEFAULT_PRESET_FILENAME := "glass-shader-hybrid-3d-preset.json"
+const BUNDLED_DEFAULT_PRESET_PATH := "res://presets/glass/hybrid/default.json"
 const PanelSourceScript = preload("res://scripts/glass_shader_panel_source.gd")
 const PresetIO = preload("res://scripts/glass_shader_preset_io.gd")
 
@@ -297,6 +298,7 @@ func _ready() -> void:
 	_apply_panel_materials()
 	_build_controls()
 	_setup_preset_dialogs()
+	_load_startup_default_preset()
 	call_deferred("_sync_controls_from_panel")
 	call_deferred("_sync_authored_card_rect")
 	_apply_panel_rotation()
@@ -422,8 +424,6 @@ func _sync_hybrid_shell_parameter(parameter_name: String, value: Variant) -> voi
 	match parameter_name:
 		"corner_radius", "edge_width", "tint":
 			shell_updates[parameter_name] = value
-		"edge_color":
-			shell_updates["edge_highlight"] = value
 		_:
 			return
 	_sync_hybrid_shell(shell_updates)
@@ -729,24 +729,41 @@ func _export_preset_to_path(path: String) -> void:
 
 
 func _load_preset_from_path(path: String) -> void:
-	var result := PresetIO.load_and_normalize_preset(
+	var result := PresetIO.load_and_apply_preset(
 		path,
 		PresetIO.PRESET_KIND_HYBRID_3D,
 		HYBRID_FLOAT_CONTROLS,
-		HYBRID_COLOR_CONTROLS
+		HYBRID_COLOR_CONTROLS,
+		Callable(self, "set_panel_shader_parameter")
 	)
 	if not result.get("ok", false):
 		_set_preset_status(str(result.get("error", "Failed to load preset.")), true)
 		return
 
-	PresetIO.apply_parameters(result["parameters"], Callable(self, "set_panel_shader_parameter"))
 	call_deferred("_sync_controls_from_panel")
+	_apply_loaded_preset_status(result, path, "Loaded preset from")
 
+
+func _load_startup_default_preset() -> void:
+	var result := PresetIO.load_and_apply_preset(
+		BUNDLED_DEFAULT_PRESET_PATH,
+		PresetIO.PRESET_KIND_HYBRID_3D,
+		HYBRID_FLOAT_CONTROLS,
+		HYBRID_COLOR_CONTROLS,
+		Callable(self, "set_panel_shader_parameter")
+	)
+	if not result.get("ok", false):
+		_set_preset_status("Bundled startup preset failed (%s). Using scene fallback defaults." % str(result.get("error", "unknown error")), true)
+		return
+	_apply_loaded_preset_status(result, BUNDLED_DEFAULT_PRESET_PATH, "Loaded bundled startup defaults from")
+
+
+func _apply_loaded_preset_status(result: Dictionary, path: String, prefix: String) -> void:
 	var ignored_keys: Array = result.get("ignored_keys", [])
 	if ignored_keys.is_empty():
-		_set_preset_status("Loaded preset from %s" % path, false)
+		_set_preset_status("%s %s" % [prefix, path], false)
 	else:
-		_set_preset_status("Loaded preset from %s (ignored: %s)" % [path, _join_string_array(ignored_keys)], false)
+		_set_preset_status("%s %s (ignored: %s)" % [prefix, path, _join_string_array(ignored_keys)], false)
 
 
 func _set_preset_status(message: String, is_error: bool) -> void:

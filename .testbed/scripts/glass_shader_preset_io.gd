@@ -108,6 +108,14 @@ static func apply_parameters(parameters: Dictionary, setter: Callable) -> void:
 		setter.call(str(parameter_name), parameters[parameter_name])
 
 
+static func load_and_apply_preset(path: String, expected_preset_kind: String, float_controls: Array, color_controls: Array, setter: Callable) -> Dictionary:
+	var result := load_and_normalize_preset(path, expected_preset_kind, float_controls, color_controls)
+	if not result.get("ok", false):
+		return result
+	apply_parameters(result["parameters"], setter)
+	return result
+
+
 static func ensure_json_extension(path: String) -> String:
 	if path.get_extension().to_lower() == "json":
 		return path
