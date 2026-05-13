@@ -91,7 +91,7 @@ Smallest truthful fix path: keep `REF-02` (hybrid body shader) and `REF-01` (fro
 
 Follow-up bead `aerobeat-ui-kit-community-89c` then converted those hybrid-only accent lifts from hardcoded authored values into real left-panel controls and preset keys without changing the truthful model. `REF-03` (`glass_shader_gui_3d_test.gd`) now exposes five hybrid-only sliders — `hybrid_inner_border_brightness`, `hybrid_inner_border_alpha`, `hybrid_badge_fill_alpha`, `hybrid_badge_border_alpha`, and `hybrid_badge_label_alpha` — and routes them through the same save/load JSON workflow as the rest of the hybrid scene controls. `REF-04` now stores those values explicitly, applies them only in hybrid world mode, and still restores the original 2D-authored values (`0.08` fill, `0.14` border, `0.78` label, original inner-border formula) outside hybrid world mode so the shared 2D source remains sane/truthful.
 
-The bundled hybrid startup preset at `res://presets/glass/hybrid/default.json` was updated to include those new keys with the exact values that preserve the current visual result: inner border brightness `1.0`, inner border alpha `0.312`, badge fill alpha `0.18`, badge border alpha `0.267`, badge label alpha `0.9`. Repo-local validation for this slice was a headless Godot parse/run smoke on both the 2D and hybrid scenes: `godot --headless --path .testbed --scene res://scenes/glass-shader-test.tscn --quit-after 2` and `godot --headless --path .testbed --scene res://scenes/glass-shader-gui-3d-test.tscn --quit-after 2`; both exited cleanly with no script/runtime errors. Follow-up commit/push details were added after this handoff pass.
+The bundled hybrid startup preset at `res://presets/glass/hybrid/default.json` was updated to include those new keys with the exact values that preserve the current visual result: inner border brightness `1.0`, inner border alpha `0.312`, badge fill alpha `0.18`, badge border alpha `0.267`, badge label alpha `0.9`. Repo-local validation for this slice was a headless Godot parse/run smoke on both the 2D and hybrid scenes: `godot --headless --path .testbed --scene res://scenes/glass-shader-test.tscn --quit-after 2` and `godot --headless --path .testbed --scene res://scenes/glass-shader-gui-3d-test.tscn --quit-after 2`; both exited cleanly with no script/runtime errors. The follow-up exposure pass landed on `main` in commit `92df7d6` (`Expose hybrid overlay accent controls`) and was pushed to `origin/main`.
 
 ---
 
@@ -137,16 +137,17 @@ The bundled hybrid startup preset at `res://presets/glass/hybrid/default.json` w
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**What We Built:** Pending.
+**What We Built:** The hybrid scene now keeps the authored overlay-side parity lift while also exposing the hybrid-only accent values as real left-panel sliders and preset JSON keys. Derrick can tune the hybrid inner border brightness/alpha plus the badge fill/border/label alphas directly from the test UI, and the bundled startup preset preserves the current intended visual result.
 
-**Reference Check:** Pending.
+**Reference Check:** `REF-01` and `REF-02` remained structurally untouched for this follow-up; the behavior change stayed in `REF-03`/`REF-04` plus the bundled hybrid preset. `REF-04` now applies the accent values only in hybrid world mode and restores the original 2D-authored styling otherwise, which satisfies the “keep 2D sane/truthful” requirement. `REF-06` startup defaults still come from `res://presets/glass/hybrid/default.json`, now with the new keys present.
 
 **Commits:**
 - `036413b` - Brighten hybrid preview badge and inner border
+- `92df7d6` - Expose hybrid overlay accent controls
 
-**Lessons Learned:** Pending.
+**Lessons Learned:** Once the hybrid scene depends on authored overlay-only compensation, the values should be surfaced as explicit hybrid controls early instead of leaving them hidden in script formulas; that keeps parity work tweakable without reopening the global overlay shader coupling problem.
 
 ---
 
