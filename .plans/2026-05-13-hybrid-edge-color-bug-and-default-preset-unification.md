@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — Hybrid Edge-Color Bug + Default Preset Unification
 
 **Date:** 2026-05-13  
-**Status:** Draft  
+**Status:** Complete  
 **Agent:** Byte 🐈‍⬛
 
 ---
@@ -89,9 +89,13 @@ For startup-default unification, the cleanest architecture is to make explicit r
 - `.testbed/assets/shaders/glass-panel-hybrid-3d.gdshader` and/or `.testbed/assets/shaders/glass-panel-ui-overlay-3d.gdshader` if needed
 - default preset JSON files for 2D and hybrid startup values
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Implemented both requested changes without reopening the solved silhouette / overlay / rim / inner-line ownership split. For the hybrid white interior rounded-rectangle bug, the fix stayed at the controller boundary instead of the shaders: `glass_shader_gui_3d_test.gd` no longer forwards hybrid `edge_color` into the authored source scene’s `edge_highlight`, so increasing hybrid body edge energy no longer brightens the overlay-owned `PreviewFrame` border inside the panel body. `glass_shader_panel_source.gd` now also documents that the authored frame highlight is overlay-owned and should not mirror hybrid body `edge_color`.
+
+Startup default loading is now unified through the shared preset path in both scene controllers. Repo-tracked bundled defaults now live at `res://presets/glass/2d/default.json` and `res://presets/glass/hybrid/default.json` (repo paths `.testbed/presets/glass/2d/default.json` and `.testbed/presets/glass/hybrid/default.json`). Both `glass_shader_test.gd` and `glass_shader_gui_3d_test.gd` now build their scene/material state, build controls/dialogs, then call the shared preset helper in `glass_shader_preset_io.gd` to load-and-apply the bundled default preset before the deferred control sync. Manual JSON load now uses that same shared `load_and_apply_preset(...)` path as startup, so there is one preset-loading mechanism instead of separate startup-vs-manual paths. The existing `user://shader-presets/2d` and `user://shader-presets/hybrid` save/load UX remains intact.
+
+Repo-local validation passed with `godot --headless --path .testbed --import`, `godot --headless --path .testbed --script res://../.temp/validate_shader_preset_json_io_2026_05_13.gd`, and `godot --headless --path .testbed --script res://../.temp/validate_hybrid_edge_color_and_default_presets_2026_05_13.gd`. The last validation script specifically verified (1) both scenes boot from the bundled default preset values and (2) changing hybrid `edge_color` no longer restyles the authored preview-frame border, while `edge_width` still syncs shell width as intended. Commit hash: `5870586` (`Fix hybrid edge color sync and unify default presets`). Push status recorded after git push handoff.
 
 ---
 
@@ -137,16 +141,16 @@ For startup-default unification, the cleanest architecture is to make explicit r
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**What We Built:** Pending.
+**What We Built:** Fixed the hybrid `edge_color` ownership leak that was brightening the authored interior rounded rectangle, and unified both the 2D and hybrid startup shader defaults so they now load from explicit bundled preset JSON files through the shared preset loader before syncing controls.
 
-**Reference Check:** Pending.
+**Reference Check:** `REF-03` / `REF-04` now use the same preset-loading path for startup and manual preset load. `REF-05` still owns the authored shell/frame presentation, but it no longer receives hybrid `edge_color` as overlay highlight input. `REF-06` now exposes the shared `load_and_apply_preset(...)` helper used by both scenes. `REF-10`’s reported symptom is addressed by removing the controller-level `edge_color` -> `edge_highlight` leak while preserving shell sync for `corner_radius`, `edge_width`, and `tint`.
 
 **Commits:**
-- Pending.
+- `5870586` - Fix hybrid edge color sync and unify default presets
 
-**Lessons Learned:** Pending.
+**Lessons Learned:** The cleanest fix was to treat the white interior frame as an ownership bug, not a shader-tuning bug. Once startup defaults and manual preset loads share the same helper path, bundled `res://` defaults can become the authoritative startup source while the existing `user://` preset workflow stays unchanged.
 
 ---
 
