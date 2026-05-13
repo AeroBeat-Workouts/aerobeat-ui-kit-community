@@ -232,6 +232,46 @@ const HYBRID_FLOAT_CONTROLS := [
 		"step": 0.01,
 		"default": 0.02,
 	},
+	{
+		"name": "hybrid_inner_border_brightness",
+		"label": "hybrid_inner_border_brightness",
+		"min": 0.0,
+		"max": 2.0,
+		"step": 0.01,
+		"default": 1.0,
+	},
+	{
+		"name": "hybrid_inner_border_alpha",
+		"label": "hybrid_inner_border_alpha",
+		"min": 0.0,
+		"max": 1.0,
+		"step": 0.01,
+		"default": 0.312,
+	},
+	{
+		"name": "hybrid_badge_fill_alpha",
+		"label": "hybrid_badge_fill_alpha",
+		"min": 0.0,
+		"max": 1.0,
+		"step": 0.01,
+		"default": 0.18,
+	},
+	{
+		"name": "hybrid_badge_border_alpha",
+		"label": "hybrid_badge_border_alpha",
+		"min": 0.0,
+		"max": 1.0,
+		"step": 0.01,
+		"default": 0.267,
+	},
+	{
+		"name": "hybrid_badge_label_alpha",
+		"label": "hybrid_badge_label_alpha",
+		"min": 0.0,
+		"max": 1.0,
+		"step": 0.01,
+		"default": 0.9,
+	},
 ]
 
 const HYBRID_COLOR_CONTROLS := [
@@ -374,6 +414,12 @@ func set_panel_shader_parameter(parameter_name: String, value: Variant) -> void:
 	if _panel_material == null:
 		return
 
+	if _is_hybrid_shell_parameter(parameter_name):
+		_sync_hybrid_shell({parameter_name: value})
+		_sync_single_control_from_panel(parameter_name)
+		_refresh_status()
+		return
+
 	var resolved: Dictionary = _resolve_parameter_alias(parameter_name, value)
 	if not _is_overlay_parameter(parameter_name):
 		_panel_material.set_shader_parameter(resolved["name"], resolved["value"])
@@ -387,6 +433,8 @@ func set_panel_shader_parameter(parameter_name: String, value: Variant) -> void:
 
 
 func get_panel_shader_parameter(parameter_name: String) -> Variant:
+	if _is_hybrid_shell_parameter(parameter_name):
+		return _get_hybrid_shell_parameter(parameter_name)
 	if _is_overlay_parameter(parameter_name):
 		return _get_overlay_shader_parameter(parameter_name)
 
@@ -433,6 +481,16 @@ func _sync_hybrid_shell(shell_updates: Dictionary) -> void:
 	for source in [_panel_ui, _mask_ui]:
 		if is_instance_valid(source) and source.has_method("sync_hybrid_shell"):
 			source.call("sync_hybrid_shell", shell_updates)
+
+
+func _get_hybrid_shell_parameter(parameter_name: String) -> Variant:
+	if is_instance_valid(_panel_ui) and _panel_ui.has_method("get_hybrid_shell_parameter"):
+		return _panel_ui.call("get_hybrid_shell_parameter", parameter_name)
+	return null
+
+
+func _is_hybrid_shell_parameter(parameter_name: String) -> bool:
+	return parameter_name.begins_with("hybrid_")
 
 
 func _is_overlay_parameter(parameter_name: String) -> bool:
