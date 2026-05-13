@@ -97,7 +97,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
-		"default": 0.52,
+		"default": 0.62,
 	},
 	{
 		"name": "body_frost_strength",
@@ -105,7 +105,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
-		"default": 0.72,
+		"default": 0.82,
 	},
 	{
 		"name": "background_subdue",
@@ -113,7 +113,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
-		"default": 0.68,
+		"default": 0.82,
 	},
 	{
 		"name": "interior_chroma",
@@ -121,7 +121,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
-		"default": 0.16,
+		"default": 0.22,
 	},
 	{
 		"name": "world_rim_refraction",
@@ -153,7 +153,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 0.4,
 		"step": 0.01,
-		"default": 0.02,
+		"default": 0.015,
 	},
 	{
 		"name": "face_veil_strength",
@@ -161,7 +161,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 1.0,
 		"step": 0.01,
-		"default": 0.30,
+		"default": 0.22,
 	},
 	{
 		"name": "perimeter_frost_boost",
@@ -169,7 +169,7 @@ const HYBRID_FLOAT_CONTROLS := [
 		"min": 0.0,
 		"max": 0.5,
 		"step": 0.01,
-		"default": 0.12,
+		"default": 0.10,
 	},
 	{
 		"name": "ui_alpha_gain",
@@ -233,12 +233,12 @@ const HYBRID_COLOR_CONTROLS := [
 	{
 		"name": "tint",
 		"label": "tint",
-		"default": Color(0.95, 0.975, 1.0, 0.40),
+		"default": Color(0.94, 0.968, 1.0, 0.44),
 	},
 	{
 		"name": "edge_color",
 		"label": "edge_color",
-		"default": Color(1.0, 1.0, 1.0, 0.10),
+		"default": Color(1.0, 1.0, 1.0, 0.08),
 	},
 	{
 		"name": "ui_overlay_tint",
