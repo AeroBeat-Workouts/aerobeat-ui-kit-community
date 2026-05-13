@@ -314,11 +314,20 @@ func _sync_preview_shell() -> void:
 	_frame_style.border_width_top = border_width
 	_frame_style.border_width_right = border_width
 	_frame_style.border_width_bottom = border_width
-	_frame_style.bg_color = Color(_shell_tint.r, _shell_tint.g, _shell_tint.b, clampf(_shell_tint.a * 0.28, 0.03, 0.12))
 	_frame_style.border_color = _shell_edge_highlight.lightened(0.05)
 	_frame_style.border_color.a = clampf(_shell_edge_highlight.a + FRAME_ALPHA_BOOST, 0.28, 0.92)
-	_frame_style.shadow_size = maxi(6, int(round(5.0 + _shell_edge_width * 2.0)))
-	_frame_style.shadow_color = Color(_shell_edge_highlight.r, _shell_edge_highlight.g, _shell_edge_highlight.b, clampf(_shell_edge_highlight.a * 0.18, 0.04, 0.18))
+
+	var is_hybrid_world := _presentation_mode == PRESENTATION_MODE_HYBRID_WORLD_SPACE
+	if is_hybrid_world:
+		# In hybrid world mode the front overlay owns the crisp rim/inner line only.
+		# The frosted body fill must come exclusively from the world-space shader.
+		_frame_style.bg_color = Color(_shell_tint.r, _shell_tint.g, _shell_tint.b, 0.0)
+		_frame_style.shadow_size = 0
+		_frame_style.shadow_color = Color(_shell_edge_highlight.r, _shell_edge_highlight.g, _shell_edge_highlight.b, 0.0)
+	else:
+		_frame_style.bg_color = Color(_shell_tint.r, _shell_tint.g, _shell_tint.b, clampf(_shell_tint.a * 0.28, 0.03, 0.12))
+		_frame_style.shadow_size = maxi(6, int(round(5.0 + _shell_edge_width * 2.0)))
+		_frame_style.shadow_color = Color(_shell_edge_highlight.r, _shell_edge_highlight.g, _shell_edge_highlight.b, clampf(_shell_edge_highlight.a * 0.18, 0.04, 0.18))
 
 	_inner_border_style.border_color = Color(1.0, 1.0, 1.0, clampf(0.08 + _shell_tint.a * 0.55, 0.08, 0.24))
 	_mask_style.bg_color = Color(1.0, 1.0, 1.0, 1.0)

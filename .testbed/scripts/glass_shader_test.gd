@@ -2,7 +2,7 @@ extends Control
 
 const SOURCE_SCENE_PATH := "res://scenes/glass-shader-panel-source.tscn"
 const PRESET_SOURCE_SCENE_PATH := "res://scenes/glass-shader-test.tscn"
-const PRESET_DIRECTORY := "user://shader-presets/2d"
+const PRESET_DIALOG_DIRECTORY := "res://presets/glass/2d"
 const DEFAULT_PRESET_FILENAME := "glass-shader-2d-preset.json"
 const BUNDLED_DEFAULT_PRESET_PATH := "res://presets/glass/2d/default.json"
 const PanelSourceScript = preload("res://scripts/glass_shader_panel_source.gd")
@@ -230,13 +230,13 @@ func _create_preset_dialog(file_mode: FileDialog.FileMode, title_text: String) -
 	dialog.title = title_text
 	dialog.use_native_dialog = true
 	dialog.filters = PackedStringArray(["*.json ; JSON preset"])
-	dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIRECTORY)
+	dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIALOG_DIRECTORY)
 	dialog.current_file = DEFAULT_PRESET_FILENAME
 	return dialog
 
 
 func _ensure_preset_directory() -> void:
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(PRESET_DIRECTORY))
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(PRESET_DIALOG_DIRECTORY))
 
 
 func _on_background_mode_selected(index: int, selector: OptionButton) -> void:
@@ -256,14 +256,14 @@ func _on_color_value_changed(color: Color, parameter_name: String) -> void:
 
 func _on_export_json_pressed() -> void:
 	_ensure_preset_directory()
-	_save_dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIRECTORY)
+	_save_dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIALOG_DIRECTORY)
 	_save_dialog.current_file = DEFAULT_PRESET_FILENAME
 	_save_dialog.popup_centered_ratio(0.7)
 
 
 func _on_load_json_pressed() -> void:
 	_ensure_preset_directory()
-	_load_dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIRECTORY)
+	_load_dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIALOG_DIRECTORY)
 	_load_dialog.popup_centered_ratio(0.7)
 
 
