@@ -14,7 +14,7 @@ Fix the hybrid 3D GUI shader bug where nonzero `edge_color` intensity produces a
 
 ## Overview
 
-Derrick found a new hybrid-specific rendering bug: when `edge_color` has visible intensity, the hybrid 3D scene can show an obvious white rounded-rectangle line across the interior body region instead of restricting that energy to the intended shell/edge treatment. An initial implementation attempt assumed this was primarily a controller/ownership leak, but Derrick’s follow-up manual review confirmed the bug is still present when intensity is above zero. That means the problem is not fully solved yet and likely still involves active shader/compositing behavior in addition to or instead of controller forwarding. This should be treated as a correctness issue, not tuning.
+Derrick found a new hybrid-specific rendering bug: when `edge_color` has visible intensity, the hybrid 3D scene can show an obvious white rounded-rectangle line across the interior body region instead of restricting that energy to the intended shell/edge treatment. An initial implementation attempt assumed this was primarily a controller/ownership leak, but Derrick’s follow-up manual review confirmed the bug is still present when intensity is above zero. The latest manual test shows progress overall — the panel now has a real fuzzy glass read — but there is still an unintended **secondary interior shape** in the body: a darker center rectangle/slab with sharper triangular-ish transitions at its edges. That suggests another compositing layer, overlay remnant, or body-weighting region is still reading as a separate object instead of one smooth sheet of glass. This should be treated as a correctness issue, not tuning.
 
 Derrick also wants the 2D and hybrid test scenes to stop using two different default-loading models. Right now both scenes do load bundled default preset JSONs, but the manual load/export dialogs still default to `user://` app-data locations. Derrick wants the practical workflow centered in the repo itself so experimentation assets stay easy to inspect and commit. The cleaner direction is to define one explicit default preset JSON file per scene/shader flavor and have both scenes load startup values through the same JSON preset-loading path, while also making the manual export/load dialogs default into the repo-local `.testbed/presets` tree rather than local app-data storage.
 
@@ -43,7 +43,7 @@ This slice should therefore do two tightly related things: (1) diagnose and fix 
 
 ### Task 1: Research the hybrid `edge_color` bug and the cleanest default-preset unification path
 
-**Bead ID:** `aerobeat-ui-kit-community-90s` → follow-up `aerobeat-ui-kit-community-5d6`  
+**Bead ID:** `aerobeat-ui-kit-community-90s` → follow-up `aerobeat-ui-kit-community-5d6` → follow-up `aerobeat-ui-kit-community-r1a`  
 **SubAgent:** `primary` (for `research` workflow role)  
 **Role:** `research`  
 **References:** `REF-01`, `REF-02`, `REF-03`, `REF-04`, `REF-05`, `REF-06`, `REF-07`, `REF-08`, `REF-09`, `REF-10`  
@@ -69,7 +69,7 @@ For preset dialogs, the cleanest repo-local path handling is to keep bundled sta
 
 ### Task 2: Implement the hybrid `edge_color` bug fix and default-preset unification
 
-**Bead ID:** `aerobeat-ui-kit-community-tka` → follow-up `aerobeat-ui-kit-community-mwf`  
+**Bead ID:** `aerobeat-ui-kit-community-tka` → follow-up `aerobeat-ui-kit-community-mwf` → follow-up `aerobeat-ui-kit-community-pzq`  
 **SubAgent:** `primary` (for `coder` workflow role)  
 **Role:** `coder`  
 **References:** `REF-01`, `REF-02`, `REF-03`, `REF-04`, `REF-05`, `REF-06`, `REF-07`, `REF-08`, `REF-09`, `REF-10`  
@@ -152,6 +152,18 @@ Repo-local validation passed with `godot --headless --path .testbed --import`, `
 - `bdfadee` - Fix hybrid overlay fill and preset dialog defaults
 
 **Lessons Learned:** The controller-level `edge_color` forwarding cleanup was necessary but not sufficient. The final bug was an ownership/compositing issue in the authored overlay frame: once hybrid mode stops that overlay from painting its own interior fill and shadow, the body shader can own the panel interior cleanly while the repo-local preset folders remain the practical place for manual import/export work.
+
+## Follow-up Research Addendum — center-slab artifact (post-manual review)
+
+Derrick’s later manual review exposed one more artifact after the fuzzy-glass pass was improved: a darker inset center slab / secondary interior rounded-rectangle shape is still visible inside the hybrid panel. Re-checking the current repo state against that screenshot changes the most likely root cause.
+
+The earlier overlay-remnant theory is no longer the strongest fit because `REF-05` already zeroes the authored `PreviewFrame` body contribution in hybrid world mode (`bg_color.a = 0.0`, `shadow_size = 0`, `shadow_color.a = 0.0`), and `REF-08` only renders existing `ui_texture` alpha rather than generating an extra interior slab. The remaining artifact is therefore most credibly body-shader-owned.
+
+Most likely active source now: `REF-07` defines a second inset body region via `mid_body = smoothstep(0.16, 0.82, w) * (1.0 - smoothstep(0.78, 0.98, w))`, then reuses that band in the backdrop compression path and the body/tint/frost compositing stack (notably lines around the `subdued_background`, `compressed_background`, `body_mix`, `tint_weighted_body`, `frost_core`, and `glass_color` mixes). That stacked reuse can make the panel read as a separate darker slab instead of one continuous sheet of glass.
+
+Smallest truthful fix for the remaining artifact: change only `REF-07` first. Remove or sharply reduce `mid_body` participation in the color/compression/body-mix path while keeping the existing blur/refraction/fuzzy-glass behavior, rim ownership, inner-line ownership, mask ownership, and preset flow intact. Prefer one continuous interior ramp (`interior`) plus the existing perimeter/edge terms over a second inset body band. If visual rebalance is still needed after that structural cleanup, use the hybrid default preset only as a follow-up trim pass, not as the primary fix.
+
+Follow-up research notes were recorded in `.temp/2026-05-13-hybrid-center-slab-followup-research.md`.
 
 ---
 

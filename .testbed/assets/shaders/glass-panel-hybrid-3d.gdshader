@@ -102,25 +102,25 @@ void fragment() {
 		textureLod(screen_texture, sample_uv + chroma_offset, perimeter_blur).b
 	);
 	vec3 background_soft = textureLod(screen_texture, sample_uv, outer_blur).rgb;
-	vec3 subdued_background = mix(background, background_soft, 0.58 + interior * background_subdue * 0.38 + mid_body * 0.08 + oblique_body * 0.18);
+	vec3 subdued_background = mix(background, background_soft, 0.58 + interior * background_subdue * 0.38 + oblique_body * 0.18);
 	subdued_background = mix(subdued_background, background_soft, interior * 0.08 + oblique_body * 0.12);
 	float subdued_luma = luminance(subdued_background);
 	vec3 neutral_background = vec3(subdued_luma);
 	vec3 compressed_background = mix(neutral_background, subdued_background, 0.48 + interior_chroma * 0.22 + interior * 0.07 - oblique_body * 0.10);
-	compressed_background = mix(compressed_background, subdued_background * 0.88 + neutral_background * 0.12, 0.30 + interior * background_subdue * 0.20 + mid_body * 0.08 + oblique_body * 0.10);
+	compressed_background = mix(compressed_background, subdued_background * 0.88 + neutral_background * 0.12, 0.30 + interior * background_subdue * 0.20 + oblique_body * 0.10);
 
 	float edge = 1.0 - smoothstep(0.0, edge_width_px, -sdf_px);
 	edge *= step(sdf_px, 0.0) * shape_support;
 	float fresnel = pow(1.0 - ndotv, fresnel_power);
 	float face_sheen = smoothstep(0.78, 0.10, panel_uv.y) * face_highlight * (0.22 + interior * 0.42);
-	float face_veil = face_veil_strength * (0.10 + interior * 0.18 + mid_body * 0.08 + smoothstep(0.88, 0.20, panel_uv.y) * 0.08);
+	float face_veil = face_veil_strength * (0.10 + interior * 0.18 + smoothstep(0.88, 0.20, panel_uv.y) * 0.08);
 	float edge_face_lift = perimeter_band * perimeter_frost_boost * (0.18 + angle_rim * 0.10);
 
-	float body_mix = clamp(tint.a + tint_strength * 0.18 + body_frost_strength * (0.35 + interior * 0.27 + mid_body * 0.05) + oblique_body * 0.10 + face_veil * 0.06 + edge_face_lift * 0.03, 0.0, 0.985);
-	vec3 tint_weighted_body = mix(compressed_background, tint.rgb, 0.24 + tint_strength * 0.20 + interior * 0.13 + mid_body * 0.06 + oblique_body * 0.08);
-	vec3 frost_core = mix(tint_weighted_body, tint.rgb, interior * (0.22 + body_frost_strength * 0.20) + mid_body * 0.08 + oblique_body * 0.08 + face_veil * 0.04);
+	float body_mix = clamp(tint.a + tint_strength * 0.18 + body_frost_strength * (0.35 + interior * 0.27) + oblique_body * 0.10 + face_veil * 0.06 + edge_face_lift * 0.03, 0.0, 0.985);
+	vec3 tint_weighted_body = mix(compressed_background, tint.rgb, 0.24 + tint_strength * 0.20 + interior * 0.13 + oblique_body * 0.08);
+	vec3 frost_core = mix(tint_weighted_body, tint.rgb, interior * (0.22 + body_frost_strength * 0.20) + oblique_body * 0.08 + face_veil * 0.04);
 	vec3 glass_color = mix(compressed_background, tint_weighted_body, body_mix);
-	glass_color = mix(glass_color, frost_core, interior * (0.24 + body_frost_strength * 0.20) + mid_body * 0.06 + oblique_body * 0.08);
+	glass_color = mix(glass_color, frost_core, interior * (0.24 + body_frost_strength * 0.20) + oblique_body * 0.08);
 	glass_color = mix(glass_color, edge_color.rgb, edge * edge_color.a * 0.16);
 	glass_color += edge_color.rgb * fresnel * fresnel_strength * (0.06 + edge_proximity * 0.12);
 	glass_color += vec3(face_sheen);
