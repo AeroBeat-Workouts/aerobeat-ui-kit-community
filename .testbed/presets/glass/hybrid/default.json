@@ -4,27 +4,27 @@
 		"blur": 6.0,
 		"body_frost_strength": 0.0,
 		"chromatic_strength": 0.0,
-		"corner_radius": 0.2,
+		"corner_radius": 0.21,
 		"edge_color": {
 			"a": 0.0,
-			"b": 0.333333343267441,
-			"g": 0.333333343267441,
-			"r": 0.333333343267441
+			"b": 0.420340806245804,
+			"g": 0.420340806245804,
+			"r": 0.420340806245804
 		},
 		"edge_smoothness": 0.5,
-		"edge_width": 2.9,
+		"edge_width": 3.0,
 		"face_highlight": 0.0,
 		"face_veil_strength": 0.0,
 		"fresnel_power": 0.5,
 		"fresnel_strength": 0.0,
-		"interior_chroma": 0.0,
-		"offset_x": -1.0,
+		"interior_chroma": 1.0,
+		"offset_x": -0.99,
 		"offset_y": -1.0,
 		"perimeter_frost_boost": 0.0,
-		"strength_x": 13.6,
+		"strength_x": 13.7,
 		"strength_y": 12.3,
 		"tint": {
-			"a": 0.643137276172638,
+			"a": 0.647058844566345,
 			"b": 1.0,
 			"g": 1.0,
 			"r": 1.0
@@ -47,7 +47,7 @@
 		"world_rim_refraction": 0.0
 	},
 	"preset_kind": "glass_shader_hybrid_3d",
-	"saved_at": "2026-05-13 20:50:17",
+	"saved_at": "2026-05-13 21:07:34",
 	"schema_version": 1,
 	"source_scene": "res://scenes/glass-shader-gui-3d-test.tscn"
 }
