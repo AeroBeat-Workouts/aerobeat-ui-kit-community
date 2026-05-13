@@ -87,7 +87,7 @@ Recommended push/soften/leave-alone guidance: **push** interior/mid-body backdro
 
 **Status:** ✅ Complete
 
-**Results:** Implemented a shader-only final polish pass in `REF-02` while leaving the authored overlay in `REF-03` untouched. The body composite now pushes more of its improvement through interior/mid-body backdrop suppression and tint-weighted frost depth instead of white face-veil gain: defaults for `tint_strength`, `body_frost_strength`, `background_subdue`, and `interior_chroma` were nudged upward, while `face_veil_strength` and `perimeter_frost_boost` were reduced to keep the body from reclaiming shell/edge responsibility. In the composite itself, the body now computes a dedicated `mid_body` band plus a mild `oblique_body` term from `angle_rim`, then uses those to (1) deepen interior/angled blur and backdrop softening, (2) compress more of the interior toward the `background_soft` / neutralized backdrop path, and (3) strengthen `tint_weighted_body` / `frost_core` in the center-to-mid body. Edge-white contribution, fresnel carry, face sheen, and body-side perimeter lift were all softened slightly so the sharp white rim and crisp inner line remain overlay-owned. Repo-local validation completed via `godot --path .testbed --headless --script res://../.temp/validate_final_body_frost_polish_pass.gd`, which successfully loaded both test scenes, exercised the hybrid scene API, and toggled `corner_radius` across `0.18`, `0.0`, and `0.24` with the updated shader active and no parse/runtime failures. I also re-ran `godot --path .testbed --headless --script res://../.temp/qa_hybrid_body_frost_pass_2026_05_13.gd`; it exited `0` and continued to produce the existing headless dummy-renderer `SubViewport.get_texture()` null warnings during viewport-texture capture, which is a capture-environment limitation rather than a new shader failure. Commit hash: `PENDING`. Push status: `PENDING`. References held: silhouette ownership stayed on the authored mask, overlay/rim/inner-line ownership stayed with `REF-03`, fixed-radius behavior stayed untouched, and the body did not reintroduce the flat milky face veil look.
+**Results:** Implemented a shader-only final polish pass in `REF-02` while leaving the authored overlay in `REF-03` untouched. The body composite now pushes more of its improvement through interior/mid-body backdrop suppression and tint-weighted frost depth instead of white face-veil gain: defaults for `tint_strength`, `body_frost_strength`, `background_subdue`, and `interior_chroma` were nudged upward, while `face_veil_strength` and `perimeter_frost_boost` were reduced to keep the body from reclaiming shell/edge responsibility. In the composite itself, the body now computes a dedicated `mid_body` band plus a mild `oblique_body` term from `angle_rim`, then uses those to (1) deepen interior/angled blur and backdrop softening, (2) compress more of the interior toward the `background_soft` / neutralized backdrop path, and (3) strengthen `tint_weighted_body` / `frost_core` in the center-to-mid body. Edge-white contribution, fresnel carry, face sheen, and body-side perimeter lift were all softened slightly so the sharp white rim and crisp inner line remain overlay-owned. Repo-local validation completed via `godot --path .testbed --headless --script res://../.temp/validate_final_body_frost_polish_pass.gd`, which successfully loaded both test scenes, exercised the hybrid scene API, and toggled `corner_radius` across `0.18`, `0.0`, and `0.24` with the updated shader active and no parse/runtime failures. I also re-ran `godot --path .testbed --headless --script res://../.temp/qa_hybrid_body_frost_pass_2026_05_13.gd`; it exited `0` and continued to produce the existing headless dummy-renderer `SubViewport.get_texture()` null warnings during viewport-texture capture, which is a capture-environment limitation rather than a new shader failure. Commit hash: `2141321`. Push status: `pushed to origin/main`.  References held: silhouette ownership stayed on the authored mask, overlay/rim/inner-line ownership stayed with `REF-03`, fixed-radius behavior stayed untouched, and the body did not reintroduce the flat milky face veil look.
 
 ---
 
@@ -133,16 +133,16 @@ Recommended push/soften/leave-alone guidance: **push** interior/mid-body backdro
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ⚠️ Coder Complete / QA+Audit Pending
 
-**What We Built:** Pending.
+**What We Built:** A shader-only final body-frost polish pass that deepens the hybrid glass interior, softens the body perimeter, and compresses backdrop contrast more aggressively through the existing body-frost composite while preserving the authored-mask silhouette and overlay-owned rim/inner-line split.
 
-**Reference Check:** Pending.
+**Reference Check:** `REF-02` was updated without touching `REF-03`, so the overlay remained the owner of the sharp white rim and crisp inner line. The body pass stayed inside the fixed-radius path and kept the authored mask as the only silhouette/discard owner. The remaining unverified question is aesthetic acceptance in QA/audit, not structural ownership.
 
 **Commits:**
-- Pending.
+- `2141321` - Polish final hybrid glass body frost pass
 
-**Lessons Learned:** Pending.
+**Lessons Learned:** The safest way to improve this last gap was to deepen the interior composite and backdrop compression, not to add more face veil or body-side edge white. Mild angle-aware body density helps, but only when it feeds the interior frost composite rather than rim lighting.
 
 ---
 
