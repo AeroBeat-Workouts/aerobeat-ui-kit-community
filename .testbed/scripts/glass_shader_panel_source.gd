@@ -115,12 +115,15 @@ const COLOR_CONTROLS := [
 @onready var glass_fill: ColorRect = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/GlassFill") as ColorRect
 @onready var preview_frame: Panel = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/PreviewFrame") as Panel
 @onready var preview_inner_border: Panel = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/InnerBorderInset/PreviewInnerBorder") as Panel
+@onready var preview_badge: PanelContainer = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/Badge") as PanelContainer
+@onready var preview_badge_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/Badge/BadgePadding/BadgeLabel") as Label
 @onready var content_margin: MarginContainer = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/ContentMargin") as MarginContainer
 @onready var preview_backdrop_debug: Control = get_node_or_null("PreviewCenter/PreviewStack/PreviewBackdropDebug") as Control
 
 var _shader_material: ShaderMaterial
 var _frame_style: StyleBoxFlat
 var _inner_border_style: StyleBoxFlat
+var _badge_style: StyleBoxFlat
 var _mask_style: StyleBoxFlat
 var _background_texture: Texture2D
 var _background_mode := DEFAULT_BACKGROUND_MODE
@@ -142,6 +145,7 @@ func _ready() -> void:
 
 	_frame_style = preview_frame.get_theme_stylebox("panel") as StyleBoxFlat
 	_inner_border_style = preview_inner_border.get_theme_stylebox("panel") as StyleBoxFlat
+	_badge_style = preview_badge.get_theme_stylebox("panel") as StyleBoxFlat
 	_mask_style = hybrid_mask_panel.get_theme_stylebox("panel") as StyleBoxFlat
 
 	_configure_preview_button()
@@ -329,7 +333,19 @@ func _sync_preview_shell() -> void:
 		_frame_style.shadow_size = maxi(6, int(round(5.0 + _shell_edge_width * 2.0)))
 		_frame_style.shadow_color = Color(_shell_edge_highlight.r, _shell_edge_highlight.g, _shell_edge_highlight.b, clampf(_shell_edge_highlight.a * 0.18, 0.04, 0.18))
 
-	_inner_border_style.border_color = Color(1.0, 1.0, 1.0, clampf(0.08 + _shell_tint.a * 0.55, 0.08, 0.24))
+	if is_hybrid_world:
+		_inner_border_style.border_color = Color(1.0, 1.0, 1.0, clampf(0.20 + _shell_edge_highlight.a * 0.18, 0.22, 0.34))
+		_badge_style.bg_color = Color(1.0, 1.0, 1.0, clampf(0.13 + _shell_tint.a * 0.16, 0.14, 0.18))
+		_badge_style.border_color = Color(1.0, 1.0, 1.0, clampf(0.18 + _shell_edge_highlight.a * 0.14, 0.20, 0.28))
+		if is_instance_valid(preview_badge_label):
+			preview_badge_label.modulate = Color(1.0, 1.0, 1.0, 0.9)
+	else:
+		_inner_border_style.border_color = Color(1.0, 1.0, 1.0, clampf(0.08 + _shell_tint.a * 0.55, 0.08, 0.24))
+		_badge_style.bg_color = Color(1.0, 1.0, 1.0, 0.08)
+		_badge_style.border_color = Color(1.0, 1.0, 1.0, 0.14)
+		if is_instance_valid(preview_badge_label):
+			preview_badge_label.modulate = Color(1.0, 1.0, 1.0, 0.78)
+
 	_mask_style.bg_color = Color(1.0, 1.0, 1.0, 1.0)
 	_mask_style.border_width_left = 0
 	_mask_style.border_width_top = 0
