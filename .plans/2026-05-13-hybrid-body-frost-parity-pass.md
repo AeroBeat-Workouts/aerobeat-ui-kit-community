@@ -103,9 +103,9 @@ Use `REF-07` as the source of truth for what is already solved and should not be
 **Files Created/Deleted/Modified:**
 - optional QA evidence artifacts
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** QA verified the landed pass against `REF-09`, `REF-10`, and `REF-11` using fresh Godot captures saved under `.temp/qa-evidence/2026-05-13-hybrid-body-frost-pass/`. At nonzero radius, the old body/shell silhouette bug appears fixed in practice: the new `corner_radius = 0.18` and `0.24` debug captures show the frosted body now following the authored shell instead of collapsing inward to a much smaller rounded capsule (`hybrid-debug-radius-018-front-crop.png`, `hybrid-debug-radius-024-front-crop.png`), which is a clear improvement over `REF-10`. At `corner_radius = 0.0`, the expected collapse behavior still reads sensibly: body and shell both resolve to the same rectangular footprint with no residual mismatch (`hybrid-debug-radius-000-front-crop.png`), matching the logic demonstrated in `REF-11`. Visually, the body frost is materially closer to the 2D reference from `REF-09` than the prior 3D state: the interior now has more density, more colored/creamy frost, and less raw background read-through, especially in the front hybrid overlay comparison (`2d-reference-crop.png` vs `hybrid-overlay-radius-018-front-crop.png`). It still does not fully reach the 2D card’s richness or polish — the 3D body remains a bit flatter/greyer and lets the debug geometry read slightly harder than the 2D source, especially away from the center and at angle (`hybrid-overlay-radius-018-angled-crop.png`) — but it is now in the right neighborhood instead of obviously under-frosted. The authored overlay behavior stayed stable: the sharp white rim and crisp inner line remain intact and are still clearly being carried by the overlay path rather than getting blurred out by the body pass, with no obvious regression in the front or angled captures. Supplemental viewport artifacts and a simple artifact index were also saved in the same evidence folder; QA added only temporary capture scripts under `.temp/` and made no product-code changes.
 
 ---
 
@@ -123,24 +123,25 @@ Use `REF-07` as the source of truth for what is already solved and should not be
 **Files Created/Deleted/Modified:**
 - optional audit notes if needed
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Independent audit passes this slice as complete for its intended scope. The core correctness bug from `REF-10` is genuinely fixed, not merely tuned around: `REF-05` now discards strictly on `authored_mask` and no longer multiplies final alpha/discard by a second procedural rounded-box mask, so the old duplicated-silhouette failure mode is removed in code rather than cosmetically hidden. The remaining rounded-box SDF is now rebuilt in panel pixel space from `glass_rect.zw * VIEWPORT_SIZE` and `corner_radius * 0.5 * min(panel_size_px.x, panel_size_px.y)`, which matches the shell math used in `REF-02`; that makes the helper shape suitable for interior weighting/edge falloff without being a second silhouette owner. The visual evidence agrees with the code path: the new `hybrid-debug-radius-018-front-crop.png` and `hybrid-debug-radius-024-front-crop.png` show the frosted body tracking the authored shell footprint instead of collapsing inward into the smaller capsule visible in `REF-10`, while `hybrid-debug-radius-000-front-crop.png` still collapses cleanly to the shared rectangular case like `REF-11`. On frost quality, the body is materially improved over the prior under-frosted 3D state: the front and angled overlay captures show more density, more colored frost, and less harsh background read-through than before, while the shader diff confirms that gain came from stronger background subduing / tint-weighted body compositing and a reduced `face_veil_strength` rather than reintroducing the rejected flat milky veil from `REF-08`. The pass does not fully equal the 2D richness in `REF-09` — the 3D body still reads a bit flatter/greyer and some debug geometry remains more legible than in the 2D card — but that is now a follow-up polish gap, not a blocker for this slice. Overlay ownership also stays intact: `REF-06` was not changed, the crisp white rim and inner line are still visibly authored-overlay responsibilities in the QA crops, and the body shader’s edge white contribution was actually softened rather than promoted. Based on code inspection plus artifact review, this bead should pass and close for the intended slice: silhouette ownership is corrected, the duplicated-mask bug is removed, the body frost is meaningfully better without the milky regression, and the preserved overlay/rim/inner-line separation remains truthful.
 
 ---
 
 ## Final Results
 
-**Status:** ⚠️ Partial
+**Status:** ✅ Complete
 
-**What We Built:** Task 2 coder pass completed: the hybrid body shader now uses the authored mask as the sole silhouette/discard truth, pixel-space radius math for body shaping, and a richer body-frost composite tuned to subdue the backdrop more while preserving the authored overlay/rim/inner-line split. QA and audit are still pending.
+**What We Built:** The landed pass fixes the hybrid body/shell radius mismatch by making the authored mask the only silhouette/discard owner and moving the helper rounded-box SDF onto the same pixel-space radius model as the authored shell. It also improves the 3D body frost materially with denser, more colored, more backdrop-subduing body compositing while preserving the authored overlay split that carries the sharp white rim and crisp inner line.
 
-**Reference Check:** `REF-05`, `REF-07`, `REF-08`, `REF-09`, `REF-10`, and `REF-11` were addressed in the implementation pass. `REF-06` was intentionally left unchanged.
+**Reference Check:** `REF-10` and `REF-11` are satisfied for the targeted correctness bug: the nonzero-radius inward body cut is gone and the zero-radius case still collapses cleanly. `REF-07` remains respected because overlay/detail ownership was not reopened. `REF-08` remains respected because the body did not regress back into the rejected milky front-face veil; the shader change explicitly lowered `face_veil_strength` while increasing density through deeper body compositing instead. `REF-09` is only partially matched aesthetically: the 3D body is now clearly closer, but still a bit flatter/greyer than the 2D card. That remaining richness gap is acceptable as a future polish follow-up rather than a blocker for this slice. `REF-06` stayed intentionally unchanged and still owns the crisp overlay behavior.
 
 **Commits:**
 - `ab34189` - Fix hybrid glass body radius and frost pass
+- `79249b2` - Update hybrid body frost pass plan results
 
-**Lessons Learned:** The body/shell mismatch was a silhouette ownership problem first and a tuning problem second; once the authored mask became the only clip truth, frost tuning could happen without fighting geometry drift.
+**Lessons Learned:** This fix only became trustworthy once silhouette ownership was made singular. Matching the body helper math to the authored shell’s pixel-space radius removed the correctness trap, and reducing face-veil reliance was the right way to improve frost without reviving the old milky regression.
 
 ---
 

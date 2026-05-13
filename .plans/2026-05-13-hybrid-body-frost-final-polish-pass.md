@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — Hybrid Body Frost Final Polish Pass
 
 **Date:** 2026-05-13  
-**Status:** In Progress  
+**Status:** Complete (No-op Follow-up / Not Kept)  
 **Agent:** Byte 🐈‍⬛
 
 ---
@@ -103,11 +103,17 @@ Recommended push/soften/leave-alone guidance: **push** interior/mid-body backdro
 - `.temp/qa-evidence/` if evidence is collected
 
 **Files Created/Deleted/Modified:**
-- optional QA evidence artifacts
+- `.temp/qa-evidence/2026-05-13-hybrid-body-frost-final-polish-pass/2d-reference*.png`
+- `.temp/qa-evidence/2026-05-13-hybrid-body-frost-final-polish-pass/hybrid-*.png`
+- `.temp/qa-evidence/2026-05-13-hybrid-body-frost-final-polish-pass/*comparison-sheet.png`
+- `.temp/qa-evidence/2026-05-13-hybrid-body-frost-final-polish-pass/pixel-identity-report.json`
+- `.temp/qa-evidence/2026-05-13-hybrid-body-frost-final-polish-pass/qa-summary.md`
+- `.temp/qa_hybrid_body_frost_final_polish_2026_05_13.gd`
+- `.temp/qa_hybrid_body_frost_final_polish_angle_2026_05_13.gd`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** QA ran fresh windowed Godot captures against the current `2141321`/`71a8e25` state and saved them under `.temp/qa-evidence/2026-05-13-hybrid-body-frost-final-polish-pass/`. The highest-fidelity reproducible path available in this environment was `godot --path .testbed --script res://../.temp/qa_hybrid_body_frost_final_polish_2026_05_13.gd` plus a dedicated angled capture script on DISPLAY `:0`; Godot reported Vulkan Forward+ on `llvmpipe`. The resulting front, angled, and debug comparison crops do **not** show a new visual win over the prior QA baseline in `REF-11`. In fact, the key comparison images are pixel-identical to the prior pass on this capture path: `hybrid-overlay-radius-018-front-crop.png`, `hybrid-overlay-radius-018-angled-crop.png`, `hybrid-debug-radius-018-front-crop.png`, `hybrid-debug-radius-024-front-crop.png`, and `hybrid-debug-radius-000-front-crop.png` all matched the earlier artifacts exactly, which was recorded in `pixel-identity-report.json` and summarized in `qa-summary.md`. Because the captured output is identical, angled-view richness did not measurably improve here, the remaining grey/flat body read versus the 2D reference also remains, and background geometry is not more subdued in the captured result. The good news is that the fixed silhouette still reads correct and the authored overlay / sharp white rim / crisp inner line behavior remained intact as well, again because the captured output did not regress relative to the previous verified baseline. This makes the pass look non-harmful but not a demonstrable keeper on the available evidence path; it likely needs Derrick’s manual eyeballing on real hardware if the intent was a subtle GPU-only improvement.
 
 ---
 
@@ -123,26 +129,27 @@ Recommended push/soften/leave-alone guidance: **push** interior/mid-body backdro
 - `.plans/` (notes/results only if needed)
 
 **Files Created/Deleted/Modified:**
-- optional audit notes if needed
+- `.plans/2026-05-13-hybrid-body-frost-final-polish-pass.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Independent audit says this extra iteration should be recorded as a **complete-but-not-kept no-op follow-up**, not as a truthful visual win. The code diff in `2141321` is real and restrained: `REF-02` increases interior/mid-body weighting (`mid_body`, `oblique_body`, stronger backdrop compression / tint-weighted body blending) while reducing body-side face veil and perimeter lift, and `REF-03` stays untouched, so the intended ownership boundaries were respected in code. But the available evidence path does not show a shipped improvement. QA’s fresh captures under `.temp/qa-evidence/2026-05-13-hybrid-body-frost-final-polish-pass/` are pixel-identical to the prior verified baseline from `REF-11` for the key front, angled, and radius-debug crops, as recorded in `pixel-identity-report.json` and `qa-summary.md`. That means this pass did **not** demonstrate a measurable gain in angled-view richness, did **not** reduce the remaining grey/flat read in captured output, and did **not** further subdue background geometry on the reproducible capture path. The good news is that it also appears non-harmful: because the resulting captures are identical, the fixed silhouette remains intact, the authored overlay still owns the sharp white rim and crisp inner line, and there is no evidence of the body shader reclaiming shell/edge responsibility or reviving the rejected milky face-veil look. Truthful verdict for this slice: complete audit, no demonstrated visual delta, safe to treat as a data point rather than a keeper. Derrick only needs a manual real-hardware eyeball pass if he specifically wants to test whether these shader nudges show up on GPU/render paths that the llvmpipe capture path failed to reveal; otherwise this iteration should simply be logged as a non-harmful no-op follow-up.
 
 ---
 
 ## Final Results
 
-**Status:** ⚠️ Coder Complete / QA+Audit Pending
+**Status:** ✅ Complete (No-op Follow-up / Not Kept)
 
-**What We Built:** A shader-only final body-frost polish pass that deepens the hybrid glass interior, softens the body perimeter, and compresses backdrop contrast more aggressively through the existing body-frost composite while preserving the authored-mask silhouette and overlay-owned rim/inner-line split.
+**What We Built:** This slice produced a real shader-only body-frost polish attempt in `REF-02`, but on the available evidence it should be treated as a **complete-but-not-kept no-op follow-up** rather than a meaningful visual upgrade over the prior hybrid body frost pass.
 
-**Reference Check:** `REF-02` was updated without touching `REF-03`, so the overlay remained the owner of the sharp white rim and crisp inner line. The body pass stayed inside the fixed-radius path and kept the authored mask as the only silhouette/discard owner. The remaining unverified question is aesthetic acceptance in QA/audit, not structural ownership.
+**Reference Check:** Structural constraints remained satisfied. `REF-02` changed while `REF-03` stayed untouched, so the authored overlay continued to own the sharp white rim and crisp inner line. The authored mask remained the only silhouette/discard owner and the already-fixed radius/silhouette behavior from `REF-01` was preserved. Against the actual outcome criteria, though, the pass does not clear the bar: QA evidence in `REF-11` plus the fresh final-polish evidence folder show pixel-identical front, angled, and radius-debug crops, so the iteration did **not** prove any improvement to angled richness, grey/flat reduction, or background subduing on the reproducible capture path. This means the pass is best recorded as non-harmful but not a keeper.
 
 **Commits:**
 - `2141321` - Polish final hybrid glass body frost pass
+- `71a8e25` - Record final body frost polish coder results
 
-**Lessons Learned:** The safest way to improve this last gap was to deepen the interior composite and backdrop compression, not to add more face veil or body-side edge white. Mild angle-aware body density helps, but only when it feeds the interior frost composite rather than rim lighting.
+**Lessons Learned:** A reasonable shader diff is not enough by itself; if the highest-fidelity reproducible evidence path stays pixel-identical to the prior baseline, the honest call is no-op follow-up rather than “subtle win.” This pass did at least preserve silhouette correctness and overlay/rim/inner-line ownership, so it is useful as a safe data point. Derrick should only spend manual review time on this build if there is a specific hypothesis that real GPU hardware will reveal a subtle improvement hidden by the llvmpipe capture path; otherwise the previous audited baseline is the truthful keeper.
 
 ---
 
