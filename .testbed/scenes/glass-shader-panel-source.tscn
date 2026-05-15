@@ -69,6 +69,61 @@ corner_radius_top_right = 14
 corner_radius_bottom_right = 14
 corner_radius_bottom_left = 14
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_chip_panel"]
+resource_local_to_scene = true
+bg_color = Color(1, 1, 1, 0.08)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.22)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 22
+corner_radius_bottom_left = 22
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_summary_panel"]
+resource_local_to_scene = true
+bg_color = Color(0.08, 0.1, 0.14, 0.46)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.14)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_strip_panel"]
+resource_local_to_scene = true
+bg_color = Color(1, 1, 1, 0.05)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.18)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_strip_track"]
+resource_local_to_scene = true
+bg_color = Color(1, 1, 1, 0.08)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_strip_handle"]
+resource_local_to_scene = true
+bg_color = Color(1, 1, 1, 0.88)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
 [node name="GlassShaderPanelSource" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -113,8 +168,47 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("3_script")
 
-[node name="PreviewButton" type="Button" parent="PreviewCenter/PreviewStack" unique_name_in_owner=true]
-custom_minimum_size = Vector2(520, 320)
+[node name="SecondaryToggleChip" type="Button" parent="PreviewCenter/PreviewStack" unique_name_in_owner=true]
+custom_minimum_size = Vector2(210, 66)
+layout_mode = 1
+anchors_preset = 0
+offset_left = 88.0
+offset_top = 64.0
+offset_right = 298.0
+offset_bottom = 130.0
+grow_horizontal = 0
+grow_vertical = 0
+flat = true
+theme_override_styles/normal = SubResource("StyleBoxFlat_chip_panel")
+theme_override_styles/hover = SubResource("StyleBoxFlat_chip_panel")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_chip_panel")
+
+[node name="ChipColumn" type="VBoxContainer" parent="PreviewCenter/PreviewStack/SecondaryToggleChip"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 18.0
+offset_top = 14.0
+offset_right = -18.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 2
+
+[node name="ChipLabel" type="Label" parent="PreviewCenter/PreviewStack/SecondaryToggleChip/ChipColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "SECONDARY CHIP OFF"
+
+[node name="ChipStateLabel" type="Label" parent="PreviewCenter/PreviewStack/SecondaryToggleChip/ChipColumn"]
+modulate = Color(1, 1, 1, 0.7)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "hover NO • press 0 • taps 0"
+
+[node name="PrimaryCardButton" type="Button" parent="PreviewCenter/PreviewStack" unique_name_in_owner=true]
+custom_minimum_size = Vector2(520, 280)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -122,14 +216,14 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -260.0
-offset_top = -160.0
+offset_top = -120.0
 offset_right = 260.0
 offset_bottom = 160.0
 grow_horizontal = 2
 grow_vertical = 2
 flat = true
 
-[node name="HybridMaskPanel" type="Panel" parent="PreviewCenter/PreviewStack/PreviewButton" unique_name_in_owner=true]
+[node name="HybridMaskPanel" type="Panel" parent="PreviewCenter/PreviewStack/PrimaryCardButton" unique_name_in_owner=true]
 visible = false
 layout_mode = 1
 anchors_preset = 15
@@ -140,7 +234,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_hybrid_mask")
 
-[node name="GlassFill" type="ColorRect" parent="PreviewCenter/PreviewStack/PreviewButton" unique_name_in_owner=true]
+[node name="GlassFill" type="ColorRect" parent="PreviewCenter/PreviewStack/PrimaryCardButton" unique_name_in_owner=true]
 material = SubResource("ShaderMaterial_glass")
 layout_mode = 1
 anchors_preset = 15
@@ -150,7 +244,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="PreviewFrame" type="Panel" parent="PreviewCenter/PreviewStack/PreviewButton" unique_name_in_owner=true]
+[node name="PreviewFrame" type="Panel" parent="PreviewCenter/PreviewStack/PrimaryCardButton" unique_name_in_owner=true]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -160,7 +254,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_glass_frame")
 
-[node name="InnerBorderInset" type="MarginContainer" parent="PreviewCenter/PreviewStack/PreviewButton"]
+[node name="InnerBorderInset" type="MarginContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -173,12 +267,12 @@ theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="PreviewInnerBorder" type="Panel" parent="PreviewCenter/PreviewStack/PreviewButton/InnerBorderInset" unique_name_in_owner=true]
+[node name="PreviewInnerBorder" type="Panel" parent="PreviewCenter/PreviewStack/PrimaryCardButton/InnerBorderInset" unique_name_in_owner=true]
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_glass_inner_border")
 
-[node name="ContentMargin" type="MarginContainer" parent="PreviewCenter/PreviewStack/PreviewButton"]
+[node name="ContentMargin" type="MarginContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -187,103 +281,225 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/margin_left = 36
-theme_override_constants/margin_top = 32
+theme_override_constants/margin_top = 28
 theme_override_constants/margin_right = 36
-theme_override_constants/margin_bottom = 32
+theme_override_constants/margin_bottom = 28
 
-[node name="ContentColumn" type="VBoxContainer" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin"]
+[node name="ContentColumn" type="VBoxContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
-[node name="Badge" type="PanelContainer" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
+[node name="Badge" type="PanelContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn"]
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_horizontal = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_badge")
 
-[node name="BadgePadding" type="MarginContainer" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/Badge"]
+[node name="BadgePadding" type="MarginContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge"]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 6
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 6
 
-[node name="BadgeLabel" type="Label" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/Badge/BadgePadding"]
+[node name="BadgeLabel" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge/BadgePadding"]
 modulate = Color(1, 1, 1, 0.78)
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "Shader Preview"
+text = "Hybrid multi-target proof"
 
-[node name="Spacer" type="Control" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
-custom_minimum_size = Vector2(0, 26)
+[node name="Spacer" type="Control" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn"]
+custom_minimum_size = Vector2(0, 12)
 layout_mode = 2
 
-[node name="Headline" type="Label" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
+[node name="Headline" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 38
 text = "AeroBeat"
 vertical_alignment = 1
 
-[node name="Body" type="Label" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
+[node name="Body" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn"]
 modulate = Color(1, 1, 1, 0.82)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "Mouse or touch the world-space card. The card itself is the input-proof toggle."
+text = "Primary tap target. Hover can leave this card while ownership stays locked here until release."
 autowrap_mode = 3
 
-[node name="InteractionStatePanel" type="PanelContainer" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
-custom_minimum_size = Vector2(0, 124)
+[node name="InteractionStatePanel" type="PanelContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn"]
+custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_summary_panel")
 
-[node name="InteractionStatePadding" type="MarginContainer" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/InteractionStatePanel"]
+[node name="InteractionStatePadding" type="MarginContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/InteractionStatePanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 14
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 12
 
-[node name="InteractionStateColumn" type="VBoxContainer" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding"]
+[node name="InteractionStateColumn" type="VBoxContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding"]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="InteractionTitle" type="Label" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn"]
+[node name="InteractionTitle" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "Input Proof Readout"
+text = "Primary target readout"
 
-[node name="InteractionSourceLabel" type="Label" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn"]
+[node name="InteractionSourceLabel" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn"]
 modulate = Color(1, 1, 1, 0.88)
 layout_mode = 2
 text = "Source: waiting"
 
-[node name="InteractionPointerLabel" type="Label" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn"]
+[node name="InteractionPointerLabel" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn"]
 modulate = Color(1, 1, 1, 0.88)
 layout_mode = 2
 text = "Pointer: idle"
 
-[node name="InteractionToggleLabel" type="Label" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn"]
+[node name="InteractionToggleLabel" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn"]
 modulate = Color(1, 1, 1, 0.88)
 layout_mode = 2
 text = "Toggle: OFF"
 
-[node name="InteractionCountLabel" type="Label" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn"]
+[node name="InteractionCountLabel" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn"]
 modulate = Color(1, 1, 1, 0.72)
 layout_mode = 2
 text = "Counts: press 0 • release 0 • drag 0"
-
 autowrap_mode = 3
 
-[node name="BottomSpacer" type="Control" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
+[node name="BottomSpacer" type="Control" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="HintLabel" type="Label" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
+[node name="HintLabel" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn"]
 modulate = Color(1, 1, 1, 0.66)
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
-text = "Expected proof: hover lights the card, press/release updates the readout, and each successful click/tap toggles the card ON/OFF."
+text = "Primary should tap independently. Releasing over another sibling must not transfer the tap."
+autowrap_mode = 3
+
+[node name="DragStrip" type="PanelContainer" parent="PreviewCenter/PreviewStack" unique_name_in_owner=true]
+custom_minimum_size = Vector2(560, 92)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -280.0
+offset_top = -108.0
+offset_right = 280.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_strip_panel")
+
+[node name="StripPadding" type="MarginContainer" parent="PreviewCenter/PreviewStack/DragStrip"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 14
+
+[node name="StripColumn" type="VBoxContainer" parent="PreviewCenter/PreviewStack/DragStrip/StripPadding"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="StripTitleLabel" type="Label" parent="PreviewCenter/PreviewStack/DragStrip/StripPadding/StripColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "DRAG STRIP"
+
+[node name="StripTrack" type="Panel" parent="PreviewCenter/PreviewStack/DragStrip/StripPadding/StripColumn"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_strip_track")
+
+[node name="StripFill" type="ColorRect" parent="PreviewCenter/PreviewStack/DragStrip/StripPadding/StripColumn/StripTrack"]
+color = Color(1, 1, 1, 0.6)
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 0.0
+offset_top = -12.0
+offset_right = 72.0
+offset_bottom = 12.0
+grow_vertical = 2
+
+[node name="StripHandle" type="Panel" parent="PreviewCenter/PreviewStack/DragStrip/StripPadding/StripColumn/StripTrack"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 0
+offset_left = 60.0
+offset_top = 2.0
+offset_right = 80.0
+offset_bottom = 22.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_strip_handle")
+
+[node name="StripStateLabel" type="Label" parent="PreviewCenter/PreviewStack/DragStrip/StripPadding/StripColumn"]
+modulate = Color(1, 1, 1, 0.72)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "owner test: 12% • drags 0 • releases 0"
+
+[node name="HybridSummaryPanel" type="PanelContainer" parent="PreviewCenter/PreviewStack"]
+custom_minimum_size = Vector2(246, 170)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -266.0
+offset_top = 64.0
+offset_right = -20.0
+offset_bottom = 234.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_summary_panel")
+
+[node name="SummaryPadding" type="MarginContainer" parent="PreviewCenter/PreviewStack/HybridSummaryPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="SummaryColumn" type="VBoxContainer" parent="PreviewCenter/PreviewStack/HybridSummaryPanel/SummaryPadding"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="SummaryTitle" type="Label" parent="PreviewCenter/PreviewStack/HybridSummaryPanel/SummaryPadding/SummaryColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "Hybrid routing summary"
+
+[node name="HoverTargetLabel" type="Label" parent="PreviewCenter/PreviewStack/HybridSummaryPanel/SummaryPadding/SummaryColumn"]
+modulate = Color(1, 1, 1, 0.86)
+layout_mode = 2
+text = "Hover target: none"
+
+[node name="OwnerTargetLabel" type="Label" parent="PreviewCenter/PreviewStack/HybridSummaryPanel/SummaryPadding/SummaryColumn"]
+modulate = Color(1, 1, 1, 0.86)
+layout_mode = 2
+text = "Active owner: none"
+
+[node name="ReleaseTargetLabel" type="Label" parent="PreviewCenter/PreviewStack/HybridSummaryPanel/SummaryPadding/SummaryColumn"]
+modulate = Color(1, 1, 1, 0.86)
+layout_mode = 2
+text = "Last release: none"
+
+[node name="PhaseSummaryLabel" type="Label" parent="PreviewCenter/PreviewStack/HybridSummaryPanel/SummaryPadding/SummaryColumn"]
+modulate = Color(1, 1, 1, 0.74)
+layout_mode = 2
+text = "Last phase: waiting"
+autowrap_mode = 3
+
+[node name="CountsSummaryLabel" type="Label" parent="PreviewCenter/PreviewStack/HybridSummaryPanel/SummaryPadding/SummaryColumn"]
+modulate = Color(1, 1, 1, 0.74)
+layout_mode = 2
+text = "Primary taps 0 • Chip taps 0 • Strip drags 0"
 autowrap_mode = 3

@@ -19,7 +19,7 @@ func _run_capture() -> void:
 
 	var plate_shadow := scene_root.find_child("PlateShadow", true, false) as CanvasItem
 	var contrast_panel := scene_root.find_child("PreviewContrastPanel", true, false) as CanvasItem
-	var preview_button := scene_root.find_child("PreviewButton", true, false) as CanvasItem
+	var preview_button := scene_root.find_child("PrimaryCardButton", true, false) as CanvasItem
 	if plate_shadow:
 		plate_shadow.visible = false
 	if contrast_panel:

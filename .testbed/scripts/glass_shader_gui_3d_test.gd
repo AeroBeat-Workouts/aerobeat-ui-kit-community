@@ -10,7 +10,6 @@ const BUNDLED_DEFAULT_PRESET_PATH := "res://presets/glass/hybrid/default.json"
 const HYBRID_SURFACE_ID: StringName = &"hybrid_glass_panel"
 const HYBRID_SURFACE_TYPE: StringName = AeroUiInteractionTypes.SURFACE_TYPE_HYBRID_3D_GUI
 const HYBRID_POINTER_MOUSE: StringName = &"mouse_0"
-const PREVIEW_BUTTON_PATH := NodePath("PreviewCenter/PreviewStack/PreviewButton")
 const PanelSourceScript = preload("res://scripts/glass_shader_panel_source.gd")
 const PresetIO = preload("res://scripts/glass_shader_preset_io.gd")
 
@@ -333,8 +332,13 @@ var _save_dialog: FileDialog
 var _load_dialog: FileDialog
 var _mouse_panel_capture := false
 var _mouse_hover_active := false
+var _mouse_hover_target_path: NodePath = NodePath()
+var _mouse_owner_target_path: NodePath = NodePath()
 var _last_mouse_projected_data: Dictionary = {}
-var _active_touch_projected: Dictionary = {}
+var _active_touch_state: Dictionary = {}
+var _last_surface_hover_hit := false
+var _last_live_target_path: NodePath = NodePath()
+var _last_release_target_path := ""
 var _last_forwarded_panel_event := "waiting for normalized panel input"
 var _last_contract_phase := "waiting"
 var _last_contract_source_variant := "waiting"
@@ -447,58 +451,81 @@ func _forward_world_panel_input(event: InputEvent) -> bool:
 func _publish_mouse_button_to_contract(event: InputEventMouseButton) -> bool:
 	var hit := _screen_position_to_panel_hit(event.position)
 	var has_hit: bool = bool(hit.get("hit", false))
+	var live_target_path: NodePath = _resolve_projected_target_path(hit.get("viewport_position", Vector2.ZERO)) if has_hit else NodePath()
+	_last_surface_hover_hit = has_hit
+	_last_live_target_path = live_target_path
+
 	if event.pressed and not has_hit:
 		return false
 	if not event.pressed and not has_hit and not _mouse_panel_capture:
 		return false
 
-	if has_hit and not _mouse_hover_active:
-		_publish_hover_phase(AeroUiInteractionTypes.PHASE_HOVER_ENTER, HYBRID_POINTER_MOUSE, event.position, hit, _last_mouse_projected_data)
-		_mouse_hover_active = true
+	_update_mouse_hover_target(event.position, hit, live_target_path)
 
-	var projected_data := _build_projected_data(event.position, hit, _last_mouse_projected_data)
+	var published_target_path := live_target_path
+	if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		_mouse_owner_target_path = live_target_path
+		_mouse_panel_capture = _mouse_owner_target_path != NodePath()
+		published_target_path = _mouse_owner_target_path
+	elif _mouse_panel_capture and _mouse_owner_target_path != NodePath():
+		published_target_path = _mouse_owner_target_path
+
+	if not event.pressed and event.button_index == MOUSE_BUTTON_LEFT and not _mouse_panel_capture and published_target_path == NodePath():
+		_last_forwarded_panel_event = "surface release with no owner"
+		return has_hit
+
+	var projected_data := _build_projected_data(event.position, hit, _last_mouse_projected_data, published_target_path, live_target_path)
 	hybrid_input_adapter.publish_from_input_event(event, projected_data, {"pointer_id": HYBRID_POINTER_MOUSE})
 	_last_mouse_projected_data = projected_data
-	if event.pressed and has_hit and event.button_index == MOUSE_BUTTON_LEFT:
-		_mouse_panel_capture = true
 	if not event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_last_release_target_path = str(projected_data.get("target_path", NodePath()))
 		_mouse_panel_capture = false
-		if not has_hit and _mouse_hover_active:
-			_publish_hover_phase(AeroUiInteractionTypes.PHASE_HOVER_EXIT, HYBRID_POINTER_MOUSE, event.position, {}, _last_mouse_projected_data)
-			_mouse_hover_active = false
-	_last_forwarded_panel_event = "publish mouse %s -> %.0f, %.0f" % ["press" if event.pressed else "release", projected_data["surface_position"].x, projected_data["surface_position"].y]
+		_mouse_owner_target_path = NodePath()
+		if not has_hit:
+			_update_mouse_hover_target(event.position, {}, NodePath())
+	_last_forwarded_panel_event = "publish mouse %s -> %.0f, %.0f • %s" % [
+		"press" if event.pressed else "release",
+		projected_data["surface_position"].x,
+		projected_data["surface_position"].y,
+		_path_label(projected_data.get("target_path", NodePath()))
+	]
 	return true
 
 
 func _publish_mouse_motion_to_contract(event: InputEventMouseMotion) -> bool:
 	var hit := _screen_position_to_panel_hit(event.position)
 	var has_hit: bool = bool(hit.get("hit", false))
-	if not has_hit and not _mouse_panel_capture and not _mouse_hover_active:
+	var live_target_path: NodePath = _resolve_projected_target_path(hit.get("viewport_position", Vector2.ZERO)) if has_hit else NodePath()
+	_last_surface_hover_hit = has_hit
+	_last_live_target_path = live_target_path
+	if not has_hit and not _mouse_panel_capture and _mouse_hover_target_path == NodePath():
 		return false
 
-	if has_hit and not _mouse_hover_active:
-		_publish_hover_phase(AeroUiInteractionTypes.PHASE_HOVER_ENTER, HYBRID_POINTER_MOUSE, event.position, hit, _last_mouse_projected_data)
-		_mouse_hover_active = true
-	elif not has_hit and _mouse_hover_active and not _mouse_panel_capture:
-		_publish_hover_phase(AeroUiInteractionTypes.PHASE_HOVER_EXIT, HYBRID_POINTER_MOUSE, event.position, {}, _last_mouse_projected_data)
-		_mouse_hover_active = false
-		_last_forwarded_panel_event = "publish hover_exit"
-		return true
+	_update_mouse_hover_target(event.position, hit, live_target_path)
 
-	var projected_data := _build_projected_data(event.position, hit, _last_mouse_projected_data)
+	if not _mouse_panel_capture and live_target_path == NodePath():
+		_last_forwarded_panel_event = "surface motion -> no interactive target"
+		return has_hit or _mouse_hover_active
+
+	var published_target_path := _mouse_owner_target_path if _mouse_panel_capture and _mouse_owner_target_path != NodePath() else live_target_path
+	var projected_data := _build_projected_data(event.position, hit, _last_mouse_projected_data, published_target_path, live_target_path)
 	hybrid_input_adapter.publish_from_input_event(event, projected_data, {"pointer_id": HYBRID_POINTER_MOUSE})
 	_last_mouse_projected_data = projected_data
-	_last_forwarded_panel_event = "publish mouse motion -> %.0f, %.0f%s" % [
+	_last_forwarded_panel_event = "publish mouse motion -> %.0f, %.0f • hover %s • owner %s%s" % [
 		projected_data["surface_position"].x,
 		projected_data["surface_position"].y,
-		" (captured)" if _mouse_panel_capture and not has_hit else ""
+		_path_label(live_target_path),
+		_path_label(_mouse_owner_target_path),
+		" (captured)" if _mouse_panel_capture else ""
 	]
 	return true
 
 
 func _publish_screen_touch_to_contract(event: InputEventScreenTouch) -> bool:
 	var pointer_id := StringName("touch_%s" % event.index)
-	var previous_projected: Dictionary = _active_touch_projected.get(pointer_id, {})
+	var previous_state: Dictionary = _active_touch_state.get(pointer_id, {})
+	var previous_projected: Dictionary = previous_state.get("projected_data", {})
+	var previous_owner: NodePath = previous_state.get("owner_target_path", NodePath())
 	if event.canceled:
 		if previous_projected.is_empty():
 			return false
@@ -511,39 +538,97 @@ func _publish_screen_touch_to_contract(event: InputEventScreenTouch) -> bool:
 			"raw_event_class": &"InputEventScreenTouch",
 			"raw_metadata": {"index": event.index, "canceled": true}
 		})
-		_active_touch_projected.erase(pointer_id)
+		_active_touch_state.erase(pointer_id)
 		_last_forwarded_panel_event = "publish touch cancel #%d" % event.index
 		return true
 
 	var hit := _screen_position_to_panel_hit(event.position)
 	var has_hit: bool = bool(hit.get("hit", false))
-	if event.pressed and not has_hit:
+	var live_target_path: NodePath = _resolve_projected_target_path(hit.get("viewport_position", Vector2.ZERO)) if has_hit else NodePath()
+	if event.pressed and (not has_hit or live_target_path == NodePath()):
 		return false
 	if not event.pressed and not has_hit and previous_projected.is_empty():
 		return false
 
-	var projected_data := _build_projected_data(event.position, hit, previous_projected)
+	var owner_target_path := previous_owner
+	if event.pressed:
+		owner_target_path = live_target_path
+	var published_target_path := owner_target_path if owner_target_path != NodePath() else live_target_path
+	var projected_data := _build_projected_data(event.position, hit, previous_projected, published_target_path, live_target_path)
 	hybrid_input_adapter.publish_from_input_event(event, projected_data, {"pointer_id": pointer_id})
 	if event.pressed:
-		_active_touch_projected[pointer_id] = projected_data
+		_active_touch_state[pointer_id] = {
+			"projected_data": projected_data,
+			"owner_target_path": owner_target_path,
+		}
 	else:
-		_active_touch_projected.erase(pointer_id)
-	_last_forwarded_panel_event = "publish touch %s #%d -> %.0f, %.0f" % ["press" if event.pressed else "release", event.index, projected_data["surface_position"].x, projected_data["surface_position"].y]
+		_last_release_target_path = str(projected_data.get("target_path", NodePath()))
+		_active_touch_state.erase(pointer_id)
+	_last_forwarded_panel_event = "publish touch %s #%d -> %.0f, %.0f • %s" % [
+		"press" if event.pressed else "release",
+		event.index,
+		projected_data["surface_position"].x,
+		projected_data["surface_position"].y,
+		_path_label(projected_data.get("target_path", NodePath()))
+	]
 	return true
 
 
 func _publish_screen_drag_to_contract(event: InputEventScreenDrag) -> bool:
 	var pointer_id := StringName("touch_%s" % event.index)
-	var previous_projected: Dictionary = _active_touch_projected.get(pointer_id, {})
-	if previous_projected.is_empty():
+	var previous_state: Dictionary = _active_touch_state.get(pointer_id, {})
+	if previous_state.is_empty():
 		return false
 
+	var previous_projected: Dictionary = previous_state.get("projected_data", {})
+	var owner_target_path: NodePath = previous_state.get("owner_target_path", NodePath())
 	var hit := _screen_position_to_panel_hit(event.position)
-	var projected_data := _build_projected_data(event.position, hit, previous_projected)
+	var has_hit: bool = bool(hit.get("hit", false))
+	var live_target_path: NodePath = _resolve_projected_target_path(hit.get("viewport_position", Vector2.ZERO)) if has_hit else NodePath()
+	var projected_data := _build_projected_data(event.position, hit, previous_projected, owner_target_path, live_target_path)
 	hybrid_input_adapter.publish_from_input_event(event, projected_data, {"pointer_id": pointer_id})
-	_active_touch_projected[pointer_id] = projected_data
-	_last_forwarded_panel_event = "publish touch drag #%d -> %.0f, %.0f" % [event.index, projected_data["surface_position"].x, projected_data["surface_position"].y]
+	_active_touch_state[pointer_id] = {
+		"projected_data": projected_data,
+		"owner_target_path": owner_target_path,
+	}
+	_last_forwarded_panel_event = "publish touch drag #%d -> %.0f, %.0f • owner %s • hover %s" % [
+		event.index,
+		projected_data["surface_position"].x,
+		projected_data["surface_position"].y,
+		_path_label(owner_target_path),
+		_path_label(live_target_path)
+	]
 	return true
+
+
+func _update_mouse_hover_target(screen_position: Vector2, hit: Dictionary, new_target_path: NodePath) -> void:
+	if _mouse_hover_target_path == new_target_path:
+		_mouse_hover_active = new_target_path != NodePath()
+		return
+
+	var previous_target_path := _mouse_hover_target_path
+	if previous_target_path != NodePath():
+		_publish_hover_phase(
+			AeroUiInteractionTypes.PHASE_HOVER_EXIT,
+			HYBRID_POINTER_MOUSE,
+			screen_position,
+			hit,
+			_last_mouse_projected_data,
+			previous_target_path,
+			new_target_path
+		)
+	if new_target_path != NodePath():
+		_publish_hover_phase(
+			AeroUiInteractionTypes.PHASE_HOVER_ENTER,
+			HYBRID_POINTER_MOUSE,
+			screen_position,
+			hit,
+			_last_mouse_projected_data,
+			new_target_path,
+			new_target_path
+		)
+	_mouse_hover_target_path = new_target_path
+	_mouse_hover_active = new_target_path != NodePath()
 
 
 func _publish_hover_phase(
@@ -551,9 +636,11 @@ func _publish_hover_phase(
 	pointer_id: StringName,
 	screen_position: Vector2,
 	hit: Dictionary,
-	previous_projected: Dictionary
+	previous_projected: Dictionary,
+	target_path: NodePath,
+	live_target_path: NodePath
 ) -> void:
-	var projected_data := _build_projected_data(screen_position, hit, previous_projected)
+	var projected_data := _build_projected_data(screen_position, hit, previous_projected, target_path, live_target_path)
 	_publish_projected_phase(phase, pointer_id, projected_data, {
 		"source_type": AeroUiInteractionTypes.SOURCE_TYPE_MOUSE,
 		"source_variant": AeroUiInteractionTypes.SOURCE_VARIANT_SCREEN_MOUSE,
@@ -563,7 +650,9 @@ func _publish_hover_phase(
 		"raw_event_class": &"HybridHoverProjection",
 		"raw_metadata": {
 			"host_phase": str(phase),
-			"hover_continuity": "world_ray_projection"
+			"hover_continuity": "world_ray_projection",
+			"live_target_path": str(live_target_path),
+			"published_target_path": str(target_path),
 		}
 	})
 
@@ -617,10 +706,18 @@ func _screen_position_to_panel_hit(screen_position: Vector2) -> Dictionary:
 	}
 
 
-func _build_projected_data(screen_position: Vector2, hit: Dictionary, previous_projected: Dictionary = {}) -> Dictionary:
+func _build_projected_data(
+	screen_position: Vector2,
+	hit: Dictionary,
+	previous_projected: Dictionary = {},
+	explicit_target_path: NodePath = NodePath(),
+	live_target_path: NodePath = NodePath()
+) -> Dictionary:
 	var projected_data: Dictionary = previous_projected.duplicate(true)
 	var has_hit: bool = bool(hit.get("hit", false))
-	var target_path := _resolve_panel_target_path()
+	var target_path := explicit_target_path
+	if target_path == NodePath() and has_hit:
+		target_path = _resolve_projected_target_path(hit.get("viewport_position", Vector2.ZERO))
 	if target_path != NodePath():
 		projected_data["target_path"] = target_path
 
@@ -636,7 +733,11 @@ func _build_projected_data(screen_position: Vector2, hit: Dictionary, previous_p
 			"uv": hit.get("uv", Vector2.ZERO),
 			"local_hit": hit.get("local_hit", Vector3.ZERO),
 			"surface_size": hit.get("surface_size", _get_panel_surface_size()),
-			"target_resolution": "preview_button_path",
+			"target_resolution": "multi_target_panel_rect_lookup",
+			"live_target_path": str(live_target_path),
+			"published_target_path": str(target_path),
+			"hover_target_path": str(_mouse_hover_target_path),
+			"owner_target_path": str(_mouse_owner_target_path),
 		}
 	else:
 		if not projected_data.has("surface_normalized_position"):
@@ -650,18 +751,33 @@ func _build_projected_data(screen_position: Vector2, hit: Dictionary, previous_p
 		projected_data["world_direction"] = hit.get("world_direction", projected_data.get("world_direction", Vector3.ZERO))
 		var raw_metadata: Dictionary = projected_data.get("raw_metadata", {}).duplicate(true)
 		raw_metadata["off_surface_continuation"] = true
-		raw_metadata["target_resolution"] = "preview_button_path"
+		raw_metadata["target_resolution"] = "multi_target_panel_rect_lookup"
+		raw_metadata["live_target_path"] = str(live_target_path)
+		raw_metadata["published_target_path"] = str(target_path)
 		projected_data["raw_metadata"] = raw_metadata
 	return projected_data
 
 
-func _resolve_panel_target_path() -> NodePath:
-	if not is_instance_valid(_panel_ui):
+func _resolve_projected_target_path(surface_position: Vector2) -> NodePath:
+	if not is_instance_valid(_panel_ui) or not _panel_ui.has_method("get_interaction_target_specs"):
 		return NodePath()
-	var preview_button := _panel_ui.get_node_or_null(PREVIEW_BUTTON_PATH)
-	if preview_button == null:
-		return NodePath()
-	return preview_button.get_path()
+	for spec_variant in _panel_ui.call("get_interaction_target_specs"):
+		if not (spec_variant is Dictionary):
+			continue
+		var spec: Dictionary = spec_variant
+		var rect: Rect2 = spec.get("rect", Rect2())
+		if rect.has_point(surface_position):
+			return spec.get("target_path", NodePath())
+	return NodePath()
+
+
+func _path_label(path: Variant) -> String:
+	if path is NodePath and path == NodePath():
+		return "none"
+	var path_text := str(path)
+	if path_text == "":
+		return "none"
+	return path_text.get_file()
 
 
 func _on_contract_interaction_event(event: AeroUiInteractionEvent) -> void:
@@ -1230,8 +1346,13 @@ func _refresh_status() -> void:
 		"Yaw: %.1f°" % panel_pivot.rotation_degrees.y,
 		"Mouse capture: %s" % ("ON" if _mouse_panel_capture else "OFF"),
 		"Hover active: %s" % ("YES" if _mouse_hover_active else "NO"),
-		"Active touches: %d" % _active_touch_projected.size(),
-		"Target path: %s" % (_last_contract_target_path if _last_contract_target_path != "" else "waiting"),
+		"Surface currently hit: %s" % ("YES" if _last_surface_hover_hit else "NO"),
+		"Hover target path: %s" % _path_label(_mouse_hover_target_path),
+		"Active owner path: %s" % _path_label(_mouse_owner_target_path),
+		"Live projected target: %s" % _path_label(_last_live_target_path),
+		"Last release target: %s" % (_last_release_target_path if _last_release_target_path != "" else "none"),
+		"Active touches: %d" % _active_touch_state.size(),
+		"Published target path: %s" % (_last_contract_target_path if _last_contract_target_path != "" else "waiting"),
 		"Source variant: %s" % _last_contract_source_variant,
 		"Phase: %s" % _last_contract_phase,
 		"Surface ID: %s" % _last_contract_surface_id,
@@ -1239,7 +1360,7 @@ func _refresh_status() -> void:
 		"Verification notes: %s" % _last_contract_verification_notes,
 		"Last contract publish: %s" % _last_forwarded_panel_event,
 		"",
-		"Host-owned truth stays here: world ray picking, local hit -> UV -> viewport mapping, hover/capture continuity, and preview-button target resolution. Normalized semantics now live on the shared input-core bus/adapter contract."
+		"Host-owned truth stays here: world ray picking, local hit -> UV -> viewport mapping, sibling target lookup, hover enter/exit truth, and per-pointer owner-path continuity. Normalized semantics stay on the shared input-core bus/adapter contract."
 	]
 	status_label.text = "\n".join(lines)
 
