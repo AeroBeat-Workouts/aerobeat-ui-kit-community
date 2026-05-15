@@ -355,6 +355,7 @@ func _ready() -> void:
 	_mount_source_2d_scenes()
 	_configure_panel_sources_for_hybrid()
 	_ensure_interaction_contract_nodes()
+	_inject_panel_source_interaction_bus()
 	_apply_panel_materials()
 	_build_controls()
 	_setup_preset_dialogs()
@@ -417,6 +418,15 @@ func _ensure_interaction_contract_nodes() -> void:
 	hybrid_input_adapter.surface_pixel_size = Vector2(panel_viewport.size)
 	if not interaction_bus.interaction_event.is_connected(_on_contract_interaction_event):
 		interaction_bus.interaction_event.connect(_on_contract_interaction_event)
+
+
+func _inject_panel_source_interaction_bus() -> void:
+	if not is_instance_valid(interaction_bus):
+		return
+	var bus_path := interaction_bus.get_path()
+	for source in [_panel_ui, _mask_ui]:
+		if is_instance_valid(source) and source.has_method("set_interaction_bus_path"):
+			source.call("set_interaction_bus_path", bus_path)
 
 
 func _forward_world_panel_input(event: InputEvent) -> bool:

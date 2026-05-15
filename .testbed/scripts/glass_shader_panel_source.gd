@@ -5,6 +5,7 @@ const FRAME_ALPHA_BOOST := 0.18
 const TOGGLE_ON_ACCENT := Color(0.4, 0.82, 1.0, 1.0)
 const HYBRID_SURFACE_ID: StringName = &"hybrid_glass_panel"
 const HYBRID_BUS_PATH := NodePath("../../../AeroUiInteractionBus")
+const HYBRID_BUS_NODE_NAME := ^"AeroUiInteractionBus"
 
 const BACKGROUND_MODE_IMAGE := 0
 const BACKGROUND_MODE_DEBUG := 1
@@ -169,6 +170,7 @@ var _touch_event_count := 0
 var _last_interaction_event: AeroUiInteractionEvent = null
 var _ui_interactable: AeroUiInteractable
 var _ui_listener: AeroUiInteractionListener
+var _interaction_bus_path_override: NodePath = NodePath()
 
 
 func _ready() -> void:
@@ -187,6 +189,7 @@ func _ready() -> void:
 
 	_configure_preview_button()
 	_setup_contract_consumers()
+	call_deferred("_bind_contract_consumers_to_runtime_bus")
 	_sync_shell_state_from_shader()
 	_apply_visual_state()
 	preview_button.resized.connect(_sync_preview_shell)
@@ -249,6 +252,8 @@ func _setup_contract_consumers() -> void:
 		consumer.surface_id_filter = HYBRID_SURFACE_ID
 		consumer.target_path_filter = target_path
 
+	_bind_contract_consumers_to_runtime_bus()
+
 	if not _ui_interactable.hovered_changed.is_connected(_on_interactable_hovered_changed):
 		_ui_interactable.hovered_changed.connect(_on_interactable_hovered_changed)
 	if not _ui_interactable.pressed_changed.is_connected(_on_interactable_pressed_changed):
@@ -261,6 +266,42 @@ func _setup_contract_consumers() -> void:
 		_ui_listener.interaction_event.connect(_on_listener_interaction_event)
 	if not _ui_listener.tapped.is_connected(_on_listener_tapped):
 		_ui_listener.tapped.connect(_on_listener_tapped)
+
+
+func set_interaction_bus_path(bus_path: NodePath) -> void:
+	_interaction_bus_path_override = bus_path
+	_bind_contract_consumers_to_runtime_bus()
+
+
+func _bind_contract_consumers_to_runtime_bus() -> void:
+	var bus := _resolve_interaction_bus()
+	if bus == null:
+		return
+
+	for consumer in [_ui_interactable, _ui_listener]:
+		if not is_instance_valid(consumer):
+			continue
+		consumer.bus_path = bus.get_path()
+		var handler := Callable(consumer, "_on_bus_interaction_event")
+		if not bus.interaction_event.is_connected(handler):
+			bus.interaction_event.connect(handler)
+
+
+func _resolve_interaction_bus() -> AeroUiInteractionBus:
+	if _interaction_bus_path_override != NodePath():
+		return get_node_or_null(_interaction_bus_path_override) as AeroUiInteractionBus
+
+	var fallback_bus := get_node_or_null(HYBRID_BUS_PATH) as AeroUiInteractionBus
+	if fallback_bus != null:
+		return fallback_bus
+
+	var ancestor: Node = self
+	while ancestor != null:
+		var bus := ancestor.get_node_or_null(HYBRID_BUS_NODE_NAME) as AeroUiInteractionBus
+		if bus != null:
+			return bus
+		ancestor = ancestor.get_parent()
+	return null
 
 
 func set_background_mode(mode: int) -> void:
