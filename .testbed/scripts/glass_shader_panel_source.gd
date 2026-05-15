@@ -3,9 +3,9 @@ extends Control
 const BACKGROUND_IMAGE_PATH := "res://assets/images/perfect-hue-may-08-2026-hd.png"
 const FRAME_ALPHA_BOOST := 0.18
 const TOGGLE_ON_ACCENT := Color(0.4, 0.82, 1.0, 1.0)
-const HYBRID_SURFACE_ID: StringName = &"hybrid_glass_panel"
-const HYBRID_BUS_PATH := NodePath("../../../AeroUiInteractionBus")
-const HYBRID_BUS_NODE_NAME := ^"AeroUiInteractionBus"
+const DEFAULT_INTERACTION_SURFACE_ID: StringName = &"hybrid_glass_panel"
+const DEFAULT_INTERACTION_BUS_PATH := NodePath("../../../AeroUiInteractionBus")
+const INTERACTION_BUS_NODE_NAME := ^"AeroUiInteractionBus"
 
 const BACKGROUND_MODE_IMAGE := 0
 const BACKGROUND_MODE_DEBUG := 1
@@ -171,6 +171,10 @@ var _last_interaction_event: AeroUiInteractionEvent = null
 var _ui_interactable: AeroUiInteractable
 var _ui_listener: AeroUiInteractionListener
 var _interaction_bus_path_override: NodePath = NodePath()
+var _interaction_surface_id: StringName = DEFAULT_INTERACTION_SURFACE_ID
+var _contract_surface_type_label := "hybrid_3d_gui"
+var _contract_host_summary := "Hybrid world hits now feed AeroUiInteractionBus through HybridSubViewportInputAdapter. This card reacts to normalized phases instead of raw gui_input parsing."
+var _contract_host_mode_label := "Hybrid contract proof"
 
 
 func _ready() -> void:
@@ -248,8 +252,8 @@ func _setup_contract_consumers() -> void:
 		add_child(_ui_listener)
 
 	for consumer in [_ui_interactable, _ui_listener]:
-		consumer.bus_path = HYBRID_BUS_PATH
-		consumer.surface_id_filter = HYBRID_SURFACE_ID
+		consumer.bus_path = DEFAULT_INTERACTION_BUS_PATH
+		consumer.surface_id_filter = _interaction_surface_id
 		consumer.target_path_filter = target_path
 
 	_bind_contract_consumers_to_runtime_bus()
@@ -273,6 +277,26 @@ func set_interaction_bus_path(bus_path: NodePath) -> void:
 	_bind_contract_consumers_to_runtime_bus()
 
 
+func configure_interaction_contract(config: Dictionary) -> void:
+	if config.has("surface_id"):
+		_interaction_surface_id = StringName(config["surface_id"])
+	if config.has("surface_type_label"):
+		_contract_surface_type_label = str(config["surface_type_label"])
+	if config.has("host_summary"):
+		_contract_host_summary = str(config["host_summary"])
+	if config.has("mode_label"):
+		_contract_host_mode_label = str(config["mode_label"])
+	if config.has("interaction_bus_path"):
+		set_interaction_bus_path(config["interaction_bus_path"])
+
+	for consumer in [_ui_interactable, _ui_listener]:
+		if is_instance_valid(consumer):
+			consumer.surface_id_filter = _interaction_surface_id
+
+	if is_node_ready():
+		_refresh_interaction_debug()
+
+
 func _bind_contract_consumers_to_runtime_bus() -> void:
 	var bus := _resolve_interaction_bus()
 	if bus == null:
@@ -291,13 +315,13 @@ func _resolve_interaction_bus() -> AeroUiInteractionBus:
 	if _interaction_bus_path_override != NodePath():
 		return get_node_or_null(_interaction_bus_path_override) as AeroUiInteractionBus
 
-	var fallback_bus := get_node_or_null(HYBRID_BUS_PATH) as AeroUiInteractionBus
+	var fallback_bus := get_node_or_null(DEFAULT_INTERACTION_BUS_PATH) as AeroUiInteractionBus
 	if fallback_bus != null:
 		return fallback_bus
 
 	var ancestor: Node = self
 	while ancestor != null:
-		var bus := ancestor.get_node_or_null(HYBRID_BUS_NODE_NAME) as AeroUiInteractionBus
+		var bus := ancestor.get_node_or_null(INTERACTION_BUS_NODE_NAME) as AeroUiInteractionBus
 		if bus != null:
 			return bus
 		ancestor = ancestor.get_parent()
@@ -540,7 +564,7 @@ func _refresh_interaction_debug() -> void:
 
 	var source_variant := _last_input_source
 	var phase_text := "idle"
-	var surface_text := String(HYBRID_SURFACE_ID)
+	var surface_text := String(_interaction_surface_id)
 	var verification_status := "waiting"
 	var verification_notes := "No normalized contract event received yet."
 	if _last_interaction_event != null:
@@ -560,13 +584,13 @@ func _refresh_interaction_debug() -> void:
 	if is_instance_valid(interaction_count_label):
 		interaction_count_label.text = "Verification: %s • %s" % [verification_status, verification_notes]
 	if is_instance_valid(preview_badge_label):
-		preview_badge_label.text = "Contract Tap Armed" if preview_button.button_pressed else "Contract Proof"
+		preview_badge_label.text = "Contract Tap Armed" if preview_button.button_pressed else _contract_host_mode_label
 	if is_instance_valid(headline_label):
 		headline_label.text = "AeroBeat INPUT CONTRACT" if preview_button.button_pressed else "AeroBeat"
 	if is_instance_valid(body_label):
-		body_label.text = "Hybrid world hits now feed AeroUiInteractionBus through HybridSubViewportInputAdapter. This card reacts to normalized phases instead of raw gui_input parsing." if preview_button.button_pressed else "Hybrid world hits now feed AeroUiInteractionBus through HybridSubViewportInputAdapter. This card reacts to normalized phases instead of raw gui_input parsing."
+		body_label.text = _contract_host_summary
 	if is_instance_valid(hint_label):
-		hint_label.text = "Counts: press %d • release %d • drag %d • hover %s • pressed %s" % [_press_count, _release_count, _drag_count, "YES" if _hover_active else "NO", "YES" if _press_active else "NO"]
+		hint_label.text = "Counts: press %d • release %d • drag %d • hover %s • pressed %s • surface %s (%s)" % [_press_count, _release_count, _drag_count, "YES" if _hover_active else "NO", "YES" if _press_active else "NO", surface_text, _contract_surface_type_label]
 	_sync_preview_shell()
 
 

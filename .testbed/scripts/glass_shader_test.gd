@@ -5,27 +5,53 @@ const PRESET_SOURCE_SCENE_PATH := "res://scenes/glass-shader-test.tscn"
 const PRESET_DIALOG_DIRECTORY := "res://presets/glass/2d"
 const DEFAULT_PRESET_FILENAME := "glass-shader-2d-preset.json"
 const BUNDLED_DEFAULT_PRESET_PATH := "res://presets/glass/2d/default.json"
+const SCREEN_SURFACE_ID: StringName = &"screen_glass_panel"
+const SCREEN_SURFACE_TYPE: StringName = AeroUiInteractionTypes.SURFACE_TYPE_SCREEN_2D
+const PREVIEW_BUTTON_PATH := NodePath("PreviewCenter/PreviewStack/PreviewButton")
 const PanelSourceScript = preload("res://scripts/glass_shader_panel_source.gd")
 const PresetIO = preload("res://scripts/glass_shader_preset_io.gd")
 
 @onready var controls_list: VBoxContainer = get_node_or_null("SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll/ControlsList") as VBoxContainer
 @onready var panel_source_host: Control = get_node_or_null("SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost") as Control
+@onready var interaction_bus: AeroUiInteractionBus = get_node_or_null("SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus") as AeroUiInteractionBus
+@onready var screen_input_adapter: ScreenUiInputAdapter = get_node_or_null("SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/ScreenUiInputAdapter") as ScreenUiInputAdapter
 
 var _panel_source: Control
+var _proof_button: Control
 var _background_mode_selector: OptionButton
 var _float_sliders: Dictionary = {}
 var _color_pickers: Dictionary = {}
 var _preset_status_label: Label
+var _contract_status_label: RichTextLabel
 var _save_dialog: FileDialog
 var _load_dialog: FileDialog
+var _mouse_card_capture := false
+var _mouse_hover_active := false
+var _active_touch_capture: Dictionary = {}
+var _last_forwarded_panel_event := "waiting for normalized panel input"
+var _last_contract_phase := "waiting"
+var _last_contract_source_variant := "waiting"
+var _last_contract_surface_id := String(SCREEN_SURFACE_ID)
+var _last_contract_verification_status := "waiting"
+var _last_contract_verification_notes := "No normalized interaction published yet."
+var _last_contract_target_path := ""
 
 
 func _ready() -> void:
 	_mount_panel_source()
+	_ensure_interaction_contract_nodes()
+	_configure_panel_source_contract()
 	_build_controls()
 	_setup_preset_dialogs()
 	_load_startup_default_preset()
 	call_deferred("_sync_controls_from_panel")
+	call_deferred("_refresh_contract_status")
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if _forward_screen_panel_input(event):
+		get_viewport().set_input_as_handled()
+		_refresh_contract_status()
 
 
 func set_background_mode(mode: int) -> void:
@@ -54,8 +80,11 @@ func get_shader_parameter(parameter_name: String) -> Variant:
 
 
 func _mount_panel_source() -> void:
-	for child in panel_source_host.get_children():
-		child.queue_free()
+	_detach_contract_nodes_from_panel_source()
+	if is_instance_valid(_panel_source):
+		_panel_source.queue_free()
+		_panel_source = null
+	_proof_button = null
 
 	var packed: PackedScene = load(SOURCE_SCENE_PATH)
 	if packed == null:
@@ -69,6 +98,209 @@ func _mount_panel_source() -> void:
 
 	panel_source_host.add_child(_panel_source)
 	_panel_source.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_proof_button = _panel_source.get_node_or_null(PREVIEW_BUTTON_PATH) as Control
+	_attach_contract_nodes_to_proof_button()
+
+
+func _detach_contract_nodes_from_panel_source() -> void:
+	for contract_node in [screen_input_adapter, interaction_bus]:
+		if not is_instance_valid(contract_node):
+			continue
+		var parent: Node = contract_node.get_parent()
+		if parent != null and parent != panel_source_host:
+			parent.remove_child(contract_node)
+			panel_source_host.add_child(contract_node)
+
+
+func _attach_contract_nodes_to_proof_button() -> void:
+	if not is_instance_valid(_proof_button) or not is_instance_valid(screen_input_adapter):
+		return
+	var parent: Node = screen_input_adapter.get_parent()
+	if parent != _proof_button:
+		if parent != null:
+			parent.remove_child(screen_input_adapter)
+		_proof_button.add_child(screen_input_adapter)
+	if is_instance_valid(interaction_bus):
+		screen_input_adapter.bus_path = interaction_bus.get_path()
+
+
+func _ensure_interaction_contract_nodes() -> void:
+	if interaction_bus == null:
+		interaction_bus = AeroUiInteractionBus.new()
+		interaction_bus.name = "AeroUiInteractionBus"
+		panel_source_host.add_child(interaction_bus)
+	if screen_input_adapter == null:
+		screen_input_adapter = ScreenUiInputAdapter.new()
+		screen_input_adapter.name = "ScreenUiInputAdapter"
+		panel_source_host.add_child(screen_input_adapter)
+
+	screen_input_adapter.bus_path = interaction_bus.get_path()
+	screen_input_adapter.surface_id = SCREEN_SURFACE_ID
+	screen_input_adapter.surface_type = SCREEN_SURFACE_TYPE
+	screen_input_adapter.drag_threshold_pixels = 12.0
+	screen_input_adapter.emit_hover_events = true
+	_attach_contract_nodes_to_proof_button()
+
+	if not interaction_bus.interaction_event.is_connected(_on_contract_interaction_event):
+		interaction_bus.interaction_event.connect(_on_contract_interaction_event)
+
+
+func _configure_panel_source_contract() -> void:
+	if not is_instance_valid(_panel_source):
+		return
+	if is_instance_valid(interaction_bus) and _panel_source.has_method("set_interaction_bus_path"):
+		_panel_source.call("set_interaction_bus_path", interaction_bus.get_path())
+	if _panel_source.has_method("configure_interaction_contract"):
+		_panel_source.call("configure_interaction_contract", {
+			"surface_id": SCREEN_SURFACE_ID,
+			"surface_type_label": String(SCREEN_SURFACE_TYPE),
+			"mode_label": "Screen contract proof",
+			"host_summary": "Screen-space host routing now feeds AeroUiInteractionBus through ScreenUiInputAdapter. This card reacts to normalized hover / press / drag / tap phases instead of raw gui_input parsing.",
+		})
+
+
+func _forward_screen_panel_input(event: InputEvent) -> bool:
+	if screen_input_adapter == null or not is_instance_valid(_proof_button):
+		return false
+
+	if event is InputEventMouseButton:
+		return _publish_mouse_button_to_contract(event)
+	if event is InputEventMouseMotion:
+		return _publish_mouse_motion_to_contract(event)
+	if event is InputEventScreenTouch:
+		return _publish_screen_touch_to_contract(event)
+	if event is InputEventScreenDrag:
+		return _publish_screen_drag_to_contract(event)
+	return false
+
+
+func _publish_mouse_button_to_contract(event: InputEventMouseButton) -> bool:
+	var inside_card := _is_screen_position_inside_proof_card(event.position)
+	if event.pressed and not inside_card:
+		return false
+	if not event.pressed and not inside_card and not _mouse_card_capture:
+		return false
+
+	var published := _publish_to_screen_adapter(event, {
+		"host_surface": "screen_2d_card",
+		"target_resolution": "preview_button_path",
+		"capture_continuity": _mouse_card_capture,
+	})
+	if not published:
+		return false
+
+	if event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed and inside_card:
+			_mouse_card_capture = true
+		elif not event.pressed:
+			_mouse_card_capture = false
+			if not inside_card:
+				_mouse_hover_active = false
+
+	_last_forwarded_panel_event = "publish mouse %s -> proof card%s" % ["press" if event.pressed else "release", " (captured)" if _mouse_card_capture and not inside_card else ""]
+	return true
+
+
+func _publish_mouse_motion_to_contract(event: InputEventMouseMotion) -> bool:
+	var inside_card := _is_screen_position_inside_proof_card(event.position)
+	if not inside_card and not _mouse_card_capture and not _mouse_hover_active:
+		return false
+
+	var published := _publish_to_screen_adapter(event, {
+		"host_surface": "screen_2d_card",
+		"target_resolution": "preview_button_path",
+		"capture_continuity": _mouse_card_capture,
+	})
+	if not published:
+		return false
+
+	if inside_card:
+		_mouse_hover_active = true
+	elif not _mouse_card_capture:
+		_mouse_hover_active = false
+
+	_last_forwarded_panel_event = "publish mouse motion -> proof card%s" % (" (captured)" if _mouse_card_capture and not inside_card else "")
+	return true
+
+
+func _publish_screen_touch_to_contract(event: InputEventScreenTouch) -> bool:
+	var pointer_id := event.index
+	var has_capture := _active_touch_capture.has(pointer_id)
+	var inside_card := _is_screen_position_inside_proof_card(event.position)
+	if event.pressed and not inside_card:
+		return false
+	if not event.pressed and not inside_card and not has_capture:
+		return false
+
+	var published := _publish_to_screen_adapter(event, {
+		"host_surface": "screen_2d_card",
+		"target_resolution": "preview_button_path",
+		"capture_continuity": has_capture,
+	})
+	if not published:
+		return false
+
+	if event.pressed:
+		_active_touch_capture[pointer_id] = true
+	else:
+		_active_touch_capture.erase(pointer_id)
+
+	_last_forwarded_panel_event = "publish touch %s #%d -> proof card%s" % ["press" if event.pressed else "release", event.index, " (captured)" if has_capture and not inside_card else ""]
+	return true
+
+
+func _publish_screen_drag_to_contract(event: InputEventScreenDrag) -> bool:
+	var pointer_id := event.index
+	if not _active_touch_capture.has(pointer_id):
+		return false
+
+	var inside_card := _is_screen_position_inside_proof_card(event.position)
+	var published := _publish_to_screen_adapter(event, {
+		"host_surface": "screen_2d_card",
+		"target_resolution": "preview_button_path",
+		"capture_continuity": true,
+		"inside_card": inside_card,
+	})
+	if not published:
+		return false
+
+	_last_forwarded_panel_event = "publish touch drag #%d -> proof card%s" % [event.index, " (captured)" if not inside_card else ""]
+	return true
+
+
+func _publish_to_screen_adapter(event: InputEvent, metadata: Dictionary = {}) -> bool:
+	if screen_input_adapter == null or not is_instance_valid(_proof_button):
+		return false
+	return screen_input_adapter.publish_input_event(event, _proof_button.get_path(), metadata)
+
+
+func _is_screen_position_inside_proof_card(screen_position: Vector2) -> bool:
+	if not is_instance_valid(_proof_button):
+		return false
+	return _proof_button.get_global_rect().has_point(screen_position)
+
+
+func _on_contract_interaction_event(event: AeroUiInteractionEvent) -> void:
+	if event.surface_id != SCREEN_SURFACE_ID:
+		return
+
+	_last_contract_phase = str(event.phase)
+	_last_contract_source_variant = str(event.source_variant)
+	_last_contract_surface_id = str(event.surface_id)
+	_last_contract_verification_status = str(event.verification_status)
+	_last_contract_verification_notes = str(event.verification_notes)
+	_last_contract_target_path = str(event.target_path)
+	_last_forwarded_panel_event = "%s • %s • %s" % [event.source_variant, event.phase, event.verification_status]
+
+	match event.phase:
+		AeroUiInteractionTypes.PHASE_HOVER_ENTER:
+			_mouse_hover_active = true
+		AeroUiInteractionTypes.PHASE_HOVER_EXIT, AeroUiInteractionTypes.PHASE_CANCEL:
+			_mouse_hover_active = false
+		_:
+			pass
+
+	_refresh_contract_status()
 
 
 func _build_controls() -> void:
@@ -79,7 +311,9 @@ func _build_controls() -> void:
 	_color_pickers.clear()
 	_background_mode_selector = null
 	_preset_status_label = null
+	_contract_status_label = null
 
+	controls_list.add_child(_make_contract_status_block())
 	controls_list.add_child(_make_background_mode_control())
 	controls_list.add_child(_make_preset_actions_block())
 
@@ -96,6 +330,29 @@ func _build_controls() -> void:
 	var tail_spacer := Control.new()
 	tail_spacer.custom_minimum_size = Vector2(0.0, 8.0)
 	controls_list.add_child(tail_spacer)
+
+	_refresh_contract_status()
+
+
+func _make_contract_status_block() -> Control:
+	var wrapper := VBoxContainer.new()
+	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	wrapper.add_theme_constant_override("separation", 8)
+
+	var title := Label.new()
+	title.text = "screen_input_contract"
+	wrapper.add_child(title)
+
+	var status := RichTextLabel.new()
+	status.fit_content = true
+	status.scroll_active = false
+	status.bbcode_enabled = false
+	status.custom_minimum_size = Vector2(0.0, 164.0)
+	status.modulate = Color(1.0, 1.0, 1.0, 0.86)
+	wrapper.add_child(status)
+	_contract_status_label = status
+
+	return wrapper
 
 
 func _make_background_mode_control() -> Control:
@@ -365,6 +622,30 @@ func _select_background_mode(mode: int) -> void:
 		if _background_mode_selector.get_item_id(index) == mode:
 			_background_mode_selector.select(index)
 			return
+
+
+func _refresh_contract_status() -> void:
+	if not is_instance_valid(_contract_status_label):
+		return
+
+	var lines := [
+		"Screen 2D Glass Panel / Input-Core Contract Proof",
+		"",
+		"Source variant: %s" % _last_contract_source_variant,
+		"Phase: %s" % _last_contract_phase,
+		"Surface ID: %s" % _last_contract_surface_id,
+		"Surface type: %s" % String(SCREEN_SURFACE_TYPE),
+		"Verification: %s" % _last_contract_verification_status,
+		"Verification notes: %s" % _last_contract_verification_notes,
+		"Target path: %s" % (_last_contract_target_path if _last_contract_target_path != "" else "waiting"),
+		"Mouse capture: %s" % ("ON" if _mouse_card_capture else "OFF"),
+		"Hover active: %s" % ("YES" if _mouse_hover_active else "NO"),
+		"Active touches: %d" % _active_touch_capture.size(),
+		"Last contract publish: %s" % _last_forwarded_panel_event,
+		"",
+		"Host-owned truth stays small here: mount the shared panel, resolve the PreviewButton path, publish screen mouse / touch through ScreenUiInputAdapter, and allow minimal continuity only for interactions that begin on the proof card.",
+	]
+	_contract_status_label.text = "\n".join(lines)
 
 
 func _join_string_array(values: Array) -> String:

@@ -1,6 +1,8 @@
 [gd_scene format=3 uid="uid://dla1q2cmackis"]
 
 [ext_resource type="Script" path="res://scripts/glass_shader_test.gd" id="1_script"]
+[ext_resource type="Script" path="res://addons/aerobeat-input-core/src/ui/ui_interaction_bus.gd" id="2_bus"]
+[ext_resource type="Script" path="res://addons/aerobeat-input-core/src/ui/adapters/screen_ui_input_adapter.gd" id="3_screen_adapter"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_controls_panel"]
 resource_local_to_scene = true
@@ -89,3 +91,14 @@ custom_minimum_size = Vector2(760, 560)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
+
+[node name="AeroUiInteractionBus" type="Node" parent="SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost"]
+script = ExtResource("2_bus")
+
+[node name="ScreenUiInputAdapter" type="Node" parent="SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost"]
+script = ExtResource("3_screen_adapter")
+bus_path = NodePath("../AeroUiInteractionBus")
+surface_id = &"screen_glass_panel"
+surface_type = &"screen_2d"
+drag_threshold_pixels = 12.0
+emit_hover_events = true
