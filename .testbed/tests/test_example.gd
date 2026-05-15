@@ -8,9 +8,10 @@ func test_hidden_testbed_manifest_stays_ui_kit_focused() -> void:
 	assert_ne(manifest_text, "", "Expected the hidden testbed manifest to be readable")
 	assert_string_contains(manifest_text, '"aerobeat-ui-core"', "Expected the hidden testbed to pin aerobeat-ui-core for shared UI-kit validation")
 	assert_false(manifest_text.contains('"aerobeat-core"'), "Hidden testbed must not pin aerobeat-core for this UI-kit-focused repo")
+	assert_string_contains(manifest_text, '"aerobeat-input-core"', "Hybrid contract proof should pin aerobeat-input-core in the hidden testbed")
 
 	var addon_keys := _extract_addon_keys(manifest_text)
-	assert_eq(addon_keys, ["aerobeat-ui-core", "gut"], "Hidden testbed should only declare ui-kit-scoped dependencies")
+	assert_eq(addon_keys, ["aerobeat-ui-core", "aerobeat-input-core", "gut"], "Hidden testbed should only declare UI-kit-scoped and approved shared interaction-contract dependencies")
 
 func _extract_addon_keys(manifest_text: String) -> Array[String]:
 	var keys: Array[String] = []

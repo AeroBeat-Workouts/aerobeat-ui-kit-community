@@ -3,6 +3,8 @@ extends Control
 const BACKGROUND_IMAGE_PATH := "res://assets/images/perfect-hue-may-08-2026-hd.png"
 const FRAME_ALPHA_BOOST := 0.18
 const TOGGLE_ON_ACCENT := Color(0.4, 0.82, 1.0, 1.0)
+const HYBRID_SURFACE_ID: StringName = &"hybrid_glass_panel"
+const HYBRID_BUS_PATH := NodePath("../../../AeroUiInteractionBus")
 
 const BACKGROUND_MODE_IMAGE := 0
 const BACKGROUND_MODE_DEBUG := 1
@@ -155,6 +157,7 @@ var _hybrid_badge_border_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_bord
 var _hybrid_badge_label_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_label_alpha"])
 var _hover_active := false
 var _press_active := false
+var _drag_active := false
 var _last_input_source := "waiting"
 var _last_pointer_summary := "idle"
 var _press_count := 0
@@ -163,6 +166,9 @@ var _drag_count := 0
 var _toggle_count := 0
 var _mouse_event_count := 0
 var _touch_event_count := 0
+var _last_interaction_event: AeroUiInteractionEvent = null
+var _ui_interactable: AeroUiInteractable
+var _ui_listener: AeroUiInteractionListener
 
 
 func _ready() -> void:
@@ -180,7 +186,7 @@ func _ready() -> void:
 	_mask_style = hybrid_mask_panel.get_theme_stylebox("panel") as StyleBoxFlat
 
 	_configure_preview_button()
-	_connect_preview_button_signals()
+	_setup_contract_consumers()
 	_sync_shell_state_from_shader()
 	_apply_visual_state()
 	preview_button.resized.connect(_sync_preview_shell)
@@ -205,7 +211,9 @@ func _load_background_texture() -> Texture2D:
 func _configure_preview_button() -> void:
 	preview_button.flat = true
 	preview_button.toggle_mode = true
-	preview_button.focus_mode = Control.FOCUS_ALL
+	preview_button.button_pressed = false
+	preview_button.focus_mode = Control.FOCUS_NONE
+	preview_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	preview_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	preview_button.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.96))
 	preview_button.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0, 0.96))
@@ -222,19 +230,37 @@ func _configure_preview_button() -> void:
 	preview_button.add_theme_stylebox_override("disabled", empty)
 
 
-func _connect_preview_button_signals() -> void:
-	if not preview_button.mouse_entered.is_connected(_on_preview_button_mouse_entered):
-		preview_button.mouse_entered.connect(_on_preview_button_mouse_entered)
-	if not preview_button.mouse_exited.is_connected(_on_preview_button_mouse_exited):
-		preview_button.mouse_exited.connect(_on_preview_button_mouse_exited)
-	if not preview_button.button_down.is_connected(_on_preview_button_button_down):
-		preview_button.button_down.connect(_on_preview_button_button_down)
-	if not preview_button.button_up.is_connected(_on_preview_button_button_up):
-		preview_button.button_up.connect(_on_preview_button_button_up)
-	if not preview_button.toggled.is_connected(_on_preview_button_toggled):
-		preview_button.toggled.connect(_on_preview_button_toggled)
-	if not preview_button.gui_input.is_connected(_on_preview_button_gui_input):
-		preview_button.gui_input.connect(_on_preview_button_gui_input)
+func _setup_contract_consumers() -> void:
+	if not is_instance_valid(preview_button):
+		return
+
+	var target_path := preview_button.get_path()
+	if _ui_interactable == null:
+		_ui_interactable = AeroUiInteractable.new()
+		_ui_interactable.name = "AeroUiInteractable"
+		add_child(_ui_interactable)
+	if _ui_listener == null:
+		_ui_listener = AeroUiInteractionListener.new()
+		_ui_listener.name = "AeroUiInteractionListener"
+		add_child(_ui_listener)
+
+	for consumer in [_ui_interactable, _ui_listener]:
+		consumer.bus_path = HYBRID_BUS_PATH
+		consumer.surface_id_filter = HYBRID_SURFACE_ID
+		consumer.target_path_filter = target_path
+
+	if not _ui_interactable.hovered_changed.is_connected(_on_interactable_hovered_changed):
+		_ui_interactable.hovered_changed.connect(_on_interactable_hovered_changed)
+	if not _ui_interactable.pressed_changed.is_connected(_on_interactable_pressed_changed):
+		_ui_interactable.pressed_changed.connect(_on_interactable_pressed_changed)
+	if not _ui_interactable.dragging_changed.is_connected(_on_interactable_dragging_changed):
+		_ui_interactable.dragging_changed.connect(_on_interactable_dragging_changed)
+	if not _ui_interactable.canceled.is_connected(_on_interactable_canceled):
+		_ui_interactable.canceled.connect(_on_interactable_canceled)
+	if not _ui_listener.interaction_event.is_connected(_on_listener_interaction_event):
+		_ui_listener.interaction_event.connect(_on_listener_interaction_event)
+	if not _ui_listener.tapped.is_connected(_on_listener_tapped):
+		_ui_listener.tapped.connect(_on_listener_tapped)
 
 
 func set_background_mode(mode: int) -> void:
@@ -455,6 +481,8 @@ func _apply_interaction_accent() -> void:
 		accent_strength = 1.0
 	elif _press_active:
 		accent_strength = 0.78
+	elif _drag_active:
+		accent_strength = 0.64
 	elif _hover_active:
 		accent_strength = 0.4
 
@@ -469,100 +497,96 @@ func _refresh_interaction_debug() -> void:
 	if not is_node_ready():
 		return
 
+	var source_variant := _last_input_source
+	var phase_text := "idle"
+	var surface_text := String(HYBRID_SURFACE_ID)
+	var verification_status := "waiting"
+	var verification_notes := "No normalized contract event received yet."
+	if _last_interaction_event != null:
+		source_variant = str(_last_interaction_event.source_variant)
+		phase_text = str(_last_interaction_event.phase)
+		surface_text = str(_last_interaction_event.surface_id)
+		verification_status = str(_last_interaction_event.verification_status)
+		verification_notes = str(_last_interaction_event.verification_notes)
+
 	var source_suffix := "mouse %d • touch %d" % [_mouse_event_count, _touch_event_count]
 	if is_instance_valid(interaction_source_label):
-		interaction_source_label.text = "Source: %s (%s)" % [_last_input_source, source_suffix]
+		interaction_source_label.text = "Source: %s (%s)" % [source_variant, source_suffix]
 	if is_instance_valid(interaction_pointer_label):
-		interaction_pointer_label.text = "Pointer: %s%s%s" % [
-			_last_pointer_summary,
-			" • hover" if _hover_active else "",
-			" • pressed" if _press_active else ""
-		]
+		interaction_pointer_label.text = "Phase: %s • %s" % [phase_text, _last_pointer_summary]
 	if is_instance_valid(interaction_toggle_label):
-		interaction_toggle_label.text = "Toggle: %s • toggled %d times" % ["ON" if preview_button.button_pressed else "OFF", _toggle_count]
+		interaction_toggle_label.text = "Surface: %s • Toggle: %s • taps %d" % [surface_text, "ON" if preview_button.button_pressed else "OFF", _toggle_count]
 	if is_instance_valid(interaction_count_label):
-		interaction_count_label.text = "Counts: press %d • release %d • drag %d" % [_press_count, _release_count, _drag_count]
+		interaction_count_label.text = "Verification: %s • %s" % [verification_status, verification_notes]
 	if is_instance_valid(preview_badge_label):
-		preview_badge_label.text = "Touch Proof Armed" if preview_button.button_pressed else "Input Proof"
+		preview_badge_label.text = "Contract Tap Armed" if preview_button.button_pressed else "Contract Proof"
 	if is_instance_valid(headline_label):
-		headline_label.text = "AeroBeat INPUT LIVE" if preview_button.button_pressed else "AeroBeat"
+		headline_label.text = "AeroBeat INPUT CONTRACT" if preview_button.button_pressed else "AeroBeat"
 	if is_instance_valid(body_label):
-		body_label.text = "Mouse or touch the world-space card. Native forwarded events should toggle this card and keep the readout live." if preview_button.button_pressed else "Mouse or touch the world-space card. The card itself is the input-proof toggle."
+		body_label.text = "Hybrid world hits now feed AeroUiInteractionBus through HybridSubViewportInputAdapter. This card reacts to normalized phases instead of raw gui_input parsing." if preview_button.button_pressed else "Hybrid world hits now feed AeroUiInteractionBus through HybridSubViewportInputAdapter. This card reacts to normalized phases instead of raw gui_input parsing."
 	if is_instance_valid(hint_label):
-		hint_label.text = "Last pointer: %s" % _last_pointer_summary
+		hint_label.text = "Counts: press %d • release %d • drag %d • hover %s • pressed %s" % [_press_count, _release_count, _drag_count, "YES" if _hover_active else "NO", "YES" if _press_active else "NO"]
 	_sync_preview_shell()
 
 
-func _on_preview_button_mouse_entered() -> void:
-	_hover_active = true
-	if _last_input_source == "waiting":
-		_last_input_source = "mouse"
-	_last_pointer_summary = "hover enter"
+func _on_interactable_hovered_changed(is_hovered: bool, event: AeroUiInteractionEvent) -> void:
+	_hover_active = is_hovered
+	_last_interaction_event = event
 	_refresh_interaction_debug()
 
 
-func _on_preview_button_mouse_exited() -> void:
+func _on_interactable_pressed_changed(is_pressed: bool, event: AeroUiInteractionEvent) -> void:
+	_press_active = is_pressed
+	_last_interaction_event = event
+	_refresh_interaction_debug()
+
+
+func _on_interactable_dragging_changed(is_dragging: bool, event: AeroUiInteractionEvent) -> void:
+	_drag_active = is_dragging
+	_last_interaction_event = event
+	_refresh_interaction_debug()
+
+
+func _on_interactable_canceled(event: AeroUiInteractionEvent) -> void:
 	_hover_active = false
-	_last_pointer_summary = "hover exit"
-	_refresh_interaction_debug()
-
-
-func _on_preview_button_button_down() -> void:
-	_press_active = true
-	if _last_pointer_summary == "idle":
-		_last_pointer_summary = "button down"
-	_refresh_interaction_debug()
-
-
-func _on_preview_button_button_up() -> void:
 	_press_active = false
-	_last_pointer_summary = "button up"
+	_drag_active = false
+	_last_interaction_event = event
+	_last_pointer_summary = "cancel @ %.0f, %.0f" % [event.surface_position.x, event.surface_position.y]
 	_refresh_interaction_debug()
 
 
-func _on_preview_button_toggled(pressed: bool) -> void:
-	_toggle_count += 1
-	_last_pointer_summary = "toggle %s" % ("on" if pressed else "off")
-	_refresh_interaction_debug()
+func _on_listener_interaction_event(event: AeroUiInteractionEvent) -> void:
+	_last_interaction_event = event
+	_last_input_source = str(event.source_variant)
+	_last_pointer_summary = "%s @ %.0f, %.0f" % [event.phase, event.surface_position.x, event.surface_position.y]
 
+	match event.source_type:
+		AeroUiInteractionTypes.SOURCE_TYPE_MOUSE:
+			_mouse_event_count += 1
+		AeroUiInteractionTypes.SOURCE_TYPE_TOUCH:
+			_touch_event_count += 1
+		_:
+			pass
 
-func _on_preview_button_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseMotion:
-		_mouse_event_count += 1
-		_last_input_source = "mouse"
-		_hover_active = true
-		if event.button_mask != 0:
+	match event.phase:
+		AeroUiInteractionTypes.PHASE_PRESS_BEGIN:
+			_press_count += 1
+		AeroUiInteractionTypes.PHASE_PRESS_END:
+			_release_count += 1
+		AeroUiInteractionTypes.PHASE_DRAG_BEGIN, AeroUiInteractionTypes.PHASE_DRAG_MOVE:
 			_drag_count += 1
-			_press_active = true
-		_last_pointer_summary = "mouse move %.0f, %.0f" % [event.position.x, event.position.y]
-	elif event is InputEventMouseButton:
-		_mouse_event_count += 1
-		_last_input_source = "mouse"
-		_last_pointer_summary = "mouse %s %.0f, %.0f" % ["press" if event.pressed else "release", event.position.x, event.position.y]
-		if event.pressed:
-			_press_count += 1
-			_press_active = true
-		else:
-			_release_count += 1
-			_press_active = false
-	elif event is InputEventScreenTouch:
-		_touch_event_count += 1
-		_last_input_source = "touch"
-		_last_pointer_summary = "touch %s #%d @ %.0f, %.0f" % ["press" if event.pressed else "release", event.index, event.position.x, event.position.y]
-		if event.pressed:
-			_press_count += 1
-			_press_active = true
-		else:
-			_release_count += 1
-			_press_active = false
-	elif event is InputEventScreenDrag:
-		_touch_event_count += 1
-		_last_input_source = "touch"
-		_drag_count += 1
-		_press_active = true
-		_last_pointer_summary = "touch drag #%d @ %.0f, %.0f" % [event.index, event.position.x, event.position.y]
-	else:
-		return
+		_:
+			pass
+
+	_refresh_interaction_debug()
+
+
+func _on_listener_tapped(event: AeroUiInteractionEvent) -> void:
+	_toggle_count += 1
+	preview_button.button_pressed = not preview_button.button_pressed
+	_last_interaction_event = event
+	_last_pointer_summary = "tapped @ %.0f, %.0f" % [event.surface_position.x, event.surface_position.y]
 	_refresh_interaction_debug()
 
 

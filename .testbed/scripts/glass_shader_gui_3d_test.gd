@@ -7,6 +7,10 @@ const PRESET_SOURCE_SCENE_PATH := "res://scenes/glass-shader-gui-3d-test.tscn"
 const PRESET_DIALOG_DIRECTORY := "res://presets/glass/hybrid"
 const DEFAULT_PRESET_FILENAME := "glass-shader-hybrid-3d-preset.json"
 const BUNDLED_DEFAULT_PRESET_PATH := "res://presets/glass/hybrid/default.json"
+const HYBRID_SURFACE_ID: StringName = &"hybrid_glass_panel"
+const HYBRID_SURFACE_TYPE: StringName = AeroUiInteractionTypes.SURFACE_TYPE_HYBRID_3D_GUI
+const HYBRID_POINTER_MOUSE: StringName = &"mouse_0"
+const PREVIEW_BUTTON_PATH := NodePath("PreviewCenter/PreviewStack/PreviewButton")
 const PanelSourceScript = preload("res://scripts/glass_shader_panel_source.gd")
 const PresetIO = preload("res://scripts/glass_shader_preset_io.gd")
 
@@ -311,6 +315,8 @@ const PARAMETER_ALIASES := {
 @onready var panel_input_surface: Area3D = get_node_or_null("PanelPivot/PanelInputSurface") as Area3D
 @onready var controls_list: VBoxContainer = get_node_or_null("CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll/ControlsList") as VBoxContainer
 @onready var status_label: RichTextLabel = get_node_or_null("CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/StatusPanel/StatusPadding/StatusLabel") as RichTextLabel
+@onready var interaction_bus: AeroUiInteractionBus = get_node_or_null("AeroUiInteractionBus") as AeroUiInteractionBus
+@onready var hybrid_input_adapter: HybridSubViewportInputAdapter = get_node_or_null("HybridInputAdapter") as HybridSubViewportInputAdapter
 
 var _panel_ui: Control
 var _mask_ui: Control
@@ -327,9 +333,15 @@ var _save_dialog: FileDialog
 var _load_dialog: FileDialog
 var _mouse_panel_capture := false
 var _mouse_hover_active := false
-var _last_mouse_viewport_position := Vector2.ZERO
-var _active_touch_positions: Dictionary = {}
-var _last_forwarded_panel_event := "waiting for panel input"
+var _last_mouse_projected_data: Dictionary = {}
+var _active_touch_projected: Dictionary = {}
+var _last_forwarded_panel_event := "waiting for normalized panel input"
+var _last_contract_phase := "waiting"
+var _last_contract_source_variant := "waiting"
+var _last_contract_surface_id := String(HYBRID_SURFACE_ID)
+var _last_contract_verification_status := "waiting"
+var _last_contract_verification_notes := "No normalized interaction published yet."
+var _last_contract_target_path := ""
 
 
 func _ready() -> void:
@@ -342,6 +354,7 @@ func _ready() -> void:
 	_configure_subviewport(mask_viewport)
 	_mount_source_2d_scenes()
 	_configure_panel_sources_for_hybrid()
+	_ensure_interaction_contract_nodes()
 	_apply_panel_materials()
 	_build_controls()
 	_setup_preset_dialogs()
@@ -388,136 +401,170 @@ func _unhandled_input(event: InputEvent) -> void:
 		_refresh_status()
 
 
+func _ensure_interaction_contract_nodes() -> void:
+	if interaction_bus == null:
+		interaction_bus = AeroUiInteractionBus.new()
+		interaction_bus.name = "AeroUiInteractionBus"
+		add_child(interaction_bus)
+	if hybrid_input_adapter == null:
+		hybrid_input_adapter = HybridSubViewportInputAdapter.new()
+		hybrid_input_adapter.name = "HybridInputAdapter"
+		hybrid_input_adapter.bus_path = NodePath("../AeroUiInteractionBus")
+		hybrid_input_adapter.surface_id = HYBRID_SURFACE_ID
+		hybrid_input_adapter.surface_type = HYBRID_SURFACE_TYPE
+		hybrid_input_adapter.drag_threshold_pixels = 12.0
+		add_child(hybrid_input_adapter)
+	hybrid_input_adapter.surface_pixel_size = Vector2(panel_viewport.size)
+	if not interaction_bus.interaction_event.is_connected(_on_contract_interaction_event):
+		interaction_bus.interaction_event.connect(_on_contract_interaction_event)
+
+
 func _forward_world_panel_input(event: InputEvent) -> bool:
-	if panel_viewport == null or panel_input_surface == null or camera_3d == null:
+	if hybrid_input_adapter == null or panel_input_surface == null or camera_3d == null:
 		return false
 
 	if event is InputEventMouseButton:
-		return _forward_mouse_button_to_panel(event)
+		return _publish_mouse_button_to_contract(event)
 	if event is InputEventMouseMotion:
-		return _forward_mouse_motion_to_panel(event)
+		return _publish_mouse_motion_to_contract(event)
 	if event is InputEventScreenTouch:
-		return _forward_screen_touch_to_panel(event)
+		return _publish_screen_touch_to_contract(event)
 	if event is InputEventScreenDrag:
-		return _forward_screen_drag_to_panel(event)
+		return _publish_screen_drag_to_contract(event)
 	return false
 
 
-func _forward_mouse_button_to_panel(event: InputEventMouseButton) -> bool:
+func _publish_mouse_button_to_contract(event: InputEventMouseButton) -> bool:
 	var hit := _screen_position_to_panel_hit(event.position)
-	var should_forward: bool = bool(hit.get("hit", false)) or _mouse_panel_capture
-	if not should_forward:
+	var has_hit: bool = bool(hit.get("hit", false))
+	if event.pressed and not has_hit:
+		return false
+	if not event.pressed and not has_hit and not _mouse_panel_capture:
 		return false
 
-	var viewport_position: Vector2 = hit.get("viewport_position", _get_offscreen_panel_position())
-	var forwarded := InputEventMouseButton.new()
-	forwarded.position = viewport_position
-	forwarded.global_position = viewport_position
-	forwarded.button_index = event.button_index
-	forwarded.pressed = event.pressed
-	forwarded.double_click = event.double_click
-	forwarded.factor = event.factor
-	forwarded.alt_pressed = event.alt_pressed
-	forwarded.shift_pressed = event.shift_pressed
-	forwarded.ctrl_pressed = event.ctrl_pressed
-	forwarded.meta_pressed = event.meta_pressed
-	forwarded.device = event.device
-	panel_viewport.push_input(forwarded, true)
+	if has_hit and not _mouse_hover_active:
+		_publish_hover_phase(AeroUiInteractionTypes.PHASE_HOVER_ENTER, HYBRID_POINTER_MOUSE, event.position, hit, _last_mouse_projected_data)
+		_mouse_hover_active = true
 
-	_last_mouse_viewport_position = viewport_position
-	_mouse_hover_active = bool(hit.get("hit", false))
-	if event.pressed and hit.get("hit", false):
+	var projected_data := _build_projected_data(event.position, hit, _last_mouse_projected_data)
+	hybrid_input_adapter.publish_from_input_event(event, projected_data, {"pointer_id": HYBRID_POINTER_MOUSE})
+	_last_mouse_projected_data = projected_data
+	if event.pressed and has_hit and event.button_index == MOUSE_BUTTON_LEFT:
 		_mouse_panel_capture = true
 	if not event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		_mouse_panel_capture = false
-		if not hit.get("hit", false):
+		if not has_hit and _mouse_hover_active:
+			_publish_hover_phase(AeroUiInteractionTypes.PHASE_HOVER_EXIT, HYBRID_POINTER_MOUSE, event.position, {}, _last_mouse_projected_data)
 			_mouse_hover_active = false
-
-	_last_forwarded_panel_event = "mouse %s -> %.0f, %.0f" % ["press" if event.pressed else "release", viewport_position.x, viewport_position.y]
+	_last_forwarded_panel_event = "publish mouse %s -> %.0f, %.0f" % ["press" if event.pressed else "release", projected_data["surface_position"].x, projected_data["surface_position"].y]
 	return true
 
 
-func _forward_mouse_motion_to_panel(event: InputEventMouseMotion) -> bool:
+func _publish_mouse_motion_to_contract(event: InputEventMouseMotion) -> bool:
 	var hit := _screen_position_to_panel_hit(event.position)
-	var should_forward: bool = bool(hit.get("hit", false)) or _mouse_panel_capture or _mouse_hover_active
-	if not should_forward:
+	var has_hit: bool = bool(hit.get("hit", false))
+	if not has_hit and not _mouse_panel_capture and not _mouse_hover_active:
 		return false
 
-	var viewport_position: Vector2 = hit.get("viewport_position", _get_offscreen_panel_position())
-	var forwarded := InputEventMouseMotion.new()
-	forwarded.position = viewport_position
-	forwarded.global_position = viewport_position
-	forwarded.relative = viewport_position - _last_mouse_viewport_position
-	forwarded.velocity = event.velocity
-	forwarded.pressure = event.pressure
-	forwarded.pen_inverted = event.pen_inverted
-	forwarded.tilt = event.tilt
-	forwarded.alt_pressed = event.alt_pressed
-	forwarded.shift_pressed = event.shift_pressed
-	forwarded.ctrl_pressed = event.ctrl_pressed
-	forwarded.meta_pressed = event.meta_pressed
-	forwarded.device = event.device
-	panel_viewport.push_input(forwarded, true)
+	if has_hit and not _mouse_hover_active:
+		_publish_hover_phase(AeroUiInteractionTypes.PHASE_HOVER_ENTER, HYBRID_POINTER_MOUSE, event.position, hit, _last_mouse_projected_data)
+		_mouse_hover_active = true
+	elif not has_hit and _mouse_hover_active and not _mouse_panel_capture:
+		_publish_hover_phase(AeroUiInteractionTypes.PHASE_HOVER_EXIT, HYBRID_POINTER_MOUSE, event.position, {}, _last_mouse_projected_data)
+		_mouse_hover_active = false
+		_last_forwarded_panel_event = "publish hover_exit"
+		return true
 
-	_last_mouse_viewport_position = viewport_position
-	_mouse_hover_active = bool(hit.get("hit", false))
-	_last_forwarded_panel_event = "mouse move -> %.0f, %.0f%s" % [
-		viewport_position.x,
-		viewport_position.y,
-		" (captured)" if _mouse_panel_capture and not hit.get("hit", false) else ""
+	var projected_data := _build_projected_data(event.position, hit, _last_mouse_projected_data)
+	hybrid_input_adapter.publish_from_input_event(event, projected_data, {"pointer_id": HYBRID_POINTER_MOUSE})
+	_last_mouse_projected_data = projected_data
+	_last_forwarded_panel_event = "publish mouse motion -> %.0f, %.0f%s" % [
+		projected_data["surface_position"].x,
+		projected_data["surface_position"].y,
+		" (captured)" if _mouse_panel_capture and not has_hit else ""
 	]
 	return true
 
 
-func _forward_screen_touch_to_panel(event: InputEventScreenTouch) -> bool:
+func _publish_screen_touch_to_contract(event: InputEventScreenTouch) -> bool:
+	var pointer_id := StringName("touch_%s" % event.index)
+	var previous_projected: Dictionary = _active_touch_projected.get(pointer_id, {})
+	if event.canceled:
+		if previous_projected.is_empty():
+			return false
+		_publish_projected_phase(AeroUiInteractionTypes.PHASE_CANCEL, pointer_id, previous_projected, {
+			"source_type": AeroUiInteractionTypes.SOURCE_TYPE_TOUCH,
+			"source_variant": AeroUiInteractionTypes.SOURCE_VARIANT_SCREEN_TOUCH,
+			"button": AeroUiInteractionTypes.BUTTON_CONTACT,
+			"primary": event.index == 0,
+			"pressed": false,
+			"raw_event_class": &"InputEventScreenTouch",
+			"raw_metadata": {"index": event.index, "canceled": true}
+		})
+		_active_touch_projected.erase(pointer_id)
+		_last_forwarded_panel_event = "publish touch cancel #%d" % event.index
+		return true
+
 	var hit := _screen_position_to_panel_hit(event.position)
-	var touch_key := str(event.index)
-	var is_active := _active_touch_positions.has(touch_key)
-	var should_forward: bool = bool(hit.get("hit", false)) or is_active
-	if not should_forward:
+	var has_hit: bool = bool(hit.get("hit", false))
+	if event.pressed and not has_hit:
+		return false
+	if not event.pressed and not has_hit and previous_projected.is_empty():
 		return false
 
-	var viewport_position: Vector2 = hit.get("viewport_position", _active_touch_positions.get(touch_key, _get_offscreen_panel_position()))
-	var forwarded := InputEventScreenTouch.new()
-	forwarded.position = viewport_position
-	forwarded.index = event.index
-	forwarded.pressed = event.pressed
-	forwarded.double_tap = event.double_tap
-	forwarded.canceled = event.canceled
-	forwarded.device = event.device
-	panel_viewport.push_input(forwarded, true)
-
+	var projected_data := _build_projected_data(event.position, hit, previous_projected)
+	hybrid_input_adapter.publish_from_input_event(event, projected_data, {"pointer_id": pointer_id})
 	if event.pressed:
-		_active_touch_positions[touch_key] = viewport_position
+		_active_touch_projected[pointer_id] = projected_data
 	else:
-		_active_touch_positions.erase(touch_key)
-
-	_last_forwarded_panel_event = "touch %s #%d -> %.0f, %.0f" % ["press" if event.pressed else "release", event.index, viewport_position.x, viewport_position.y]
+		_active_touch_projected.erase(pointer_id)
+	_last_forwarded_panel_event = "publish touch %s #%d -> %.0f, %.0f" % ["press" if event.pressed else "release", event.index, projected_data["surface_position"].x, projected_data["surface_position"].y]
 	return true
 
 
-func _forward_screen_drag_to_panel(event: InputEventScreenDrag) -> bool:
-	var touch_key := str(event.index)
-	if not _active_touch_positions.has(touch_key):
+func _publish_screen_drag_to_contract(event: InputEventScreenDrag) -> bool:
+	var pointer_id := StringName("touch_%s" % event.index)
+	var previous_projected: Dictionary = _active_touch_projected.get(pointer_id, {})
+	if previous_projected.is_empty():
 		return false
 
 	var hit := _screen_position_to_panel_hit(event.position)
-	var previous_position: Vector2 = _active_touch_positions.get(touch_key, _get_offscreen_panel_position())
-	var viewport_position: Vector2 = hit.get("viewport_position", previous_position)
-	var forwarded := InputEventScreenDrag.new()
-	forwarded.position = viewport_position
-	forwarded.relative = viewport_position - previous_position
-	forwarded.velocity = event.velocity
-	forwarded.pressure = event.pressure
-	forwarded.tilt = event.tilt
-	forwarded.pen_inverted = event.pen_inverted
-	forwarded.index = event.index
-	forwarded.device = event.device
-	panel_viewport.push_input(forwarded, true)
-
-	_active_touch_positions[touch_key] = viewport_position
-	_last_forwarded_panel_event = "touch drag #%d -> %.0f, %.0f" % [event.index, viewport_position.x, viewport_position.y]
+	var projected_data := _build_projected_data(event.position, hit, previous_projected)
+	hybrid_input_adapter.publish_from_input_event(event, projected_data, {"pointer_id": pointer_id})
+	_active_touch_projected[pointer_id] = projected_data
+	_last_forwarded_panel_event = "publish touch drag #%d -> %.0f, %.0f" % [event.index, projected_data["surface_position"].x, projected_data["surface_position"].y]
 	return true
+
+
+func _publish_hover_phase(
+	phase: StringName,
+	pointer_id: StringName,
+	screen_position: Vector2,
+	hit: Dictionary,
+	previous_projected: Dictionary
+) -> void:
+	var projected_data := _build_projected_data(screen_position, hit, previous_projected)
+	_publish_projected_phase(phase, pointer_id, projected_data, {
+		"source_type": AeroUiInteractionTypes.SOURCE_TYPE_MOUSE,
+		"source_variant": AeroUiInteractionTypes.SOURCE_VARIANT_SCREEN_MOUSE,
+		"button": AeroUiInteractionTypes.BUTTON_PRIMARY,
+		"primary": true,
+		"pressed": false,
+		"raw_event_class": &"HybridHoverProjection",
+		"raw_metadata": {
+			"host_phase": str(phase),
+			"hover_continuity": "world_ray_projection"
+		}
+	})
+
+
+func _publish_projected_phase(
+	phase: StringName,
+	pointer_id: StringName,
+	projected_data: Dictionary,
+	overrides: Dictionary
+) -> AeroUiInteractionEvent:
+	return hybrid_input_adapter.publish_projected_phase(phase, pointer_id, projected_data, overrides)
 
 
 func _screen_position_to_panel_hit(screen_position: Vector2) -> Dictionary:
@@ -529,36 +576,100 @@ func _screen_position_to_panel_hit(screen_position: Vector2) -> Dictionary:
 
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
 	if hit.is_empty() or hit.get("collider") != panel_input_surface:
-		return {"hit": false}
+		return {
+			"hit": false,
+			"screen_position": screen_position,
+			"world_direction": ray_direction,
+		}
 
 	var local_hit: Vector3 = panel_input_surface.to_local(hit["position"])
 	var panel_size := _get_panel_surface_size()
 	if panel_size.x <= 0.0 or panel_size.y <= 0.0:
-		return {"hit": false}
+		return {"hit": false, "screen_position": screen_position, "world_direction": ray_direction}
 
 	var uv := Vector2(
 		(local_hit.x / panel_size.x) + 0.5,
 		0.5 - (local_hit.y / panel_size.y)
 	)
 	if uv.x < 0.0 or uv.x > 1.0 or uv.y < 0.0 or uv.y > 1.0:
-		return {"hit": false}
+		return {"hit": false, "screen_position": screen_position, "world_direction": ray_direction}
 
 	return {
 		"hit": true,
+		"screen_position": screen_position,
 		"viewport_position": Vector2(uv.x * panel_viewport.size.x, uv.y * panel_viewport.size.y),
 		"uv": uv,
 		"local_hit": local_hit,
+		"world_position": hit["position"],
+		"world_normal": hit.get("normal", Vector3.ZERO),
+		"world_direction": ray_direction,
+		"surface_size": panel_size,
 	}
+
+
+func _build_projected_data(screen_position: Vector2, hit: Dictionary, previous_projected: Dictionary = {}) -> Dictionary:
+	var projected_data: Dictionary = previous_projected.duplicate(true)
+	var has_hit: bool = bool(hit.get("hit", false))
+	var target_path := _resolve_panel_target_path()
+	if target_path != NodePath():
+		projected_data["target_path"] = target_path
+
+	projected_data["screen_position"] = screen_position
+	if has_hit:
+		projected_data["surface_normalized_position"] = hit.get("uv", Vector2.ZERO)
+		projected_data["surface_position"] = hit.get("viewport_position", Vector2.ZERO)
+		projected_data["world_position"] = hit.get("world_position", Vector3.ZERO)
+		projected_data["world_normal"] = hit.get("world_normal", Vector3.ZERO)
+		projected_data["world_direction"] = hit.get("world_direction", Vector3.ZERO)
+		projected_data["raw_metadata"] = {
+			"host_surface": "PanelInputSurface",
+			"uv": hit.get("uv", Vector2.ZERO),
+			"local_hit": hit.get("local_hit", Vector3.ZERO),
+			"surface_size": hit.get("surface_size", _get_panel_surface_size()),
+			"target_resolution": "preview_button_path",
+		}
+	else:
+		if not projected_data.has("surface_normalized_position"):
+			projected_data["surface_normalized_position"] = Vector2.ZERO
+		if not projected_data.has("surface_position"):
+			projected_data["surface_position"] = Vector2.ZERO
+		if not projected_data.has("world_position"):
+			projected_data["world_position"] = Vector3.ZERO
+		if not projected_data.has("world_normal"):
+			projected_data["world_normal"] = Vector3.ZERO
+		projected_data["world_direction"] = hit.get("world_direction", projected_data.get("world_direction", Vector3.ZERO))
+		var raw_metadata: Dictionary = projected_data.get("raw_metadata", {}).duplicate(true)
+		raw_metadata["off_surface_continuation"] = true
+		raw_metadata["target_resolution"] = "preview_button_path"
+		projected_data["raw_metadata"] = raw_metadata
+	return projected_data
+
+
+func _resolve_panel_target_path() -> NodePath:
+	if not is_instance_valid(_panel_ui):
+		return NodePath()
+	var preview_button := _panel_ui.get_node_or_null(PREVIEW_BUTTON_PATH)
+	if preview_button == null:
+		return NodePath()
+	return preview_button.get_path()
+
+
+func _on_contract_interaction_event(event: AeroUiInteractionEvent) -> void:
+	if event.surface_id != HYBRID_SURFACE_ID:
+		return
+	_last_contract_phase = str(event.phase)
+	_last_contract_source_variant = str(event.source_variant)
+	_last_contract_surface_id = str(event.surface_id)
+	_last_contract_verification_status = str(event.verification_status)
+	_last_contract_verification_notes = str(event.verification_notes)
+	_last_contract_target_path = str(event.target_path)
+	_last_forwarded_panel_event = "%s • %s • %s" % [event.source_variant, event.phase, event.verification_status]
 
 
 func _get_panel_surface_size() -> Vector2:
 	if panel_display != null and panel_display.mesh is QuadMesh:
 		return (panel_display.mesh as QuadMesh).size
 	return Vector2(2.93, 1.8)
-
-
-func _get_offscreen_panel_position() -> Vector2:
-	return Vector2(-128.0, -128.0)
 
 
 func set_auto_rotate_enabled(value: bool) -> void:
@@ -690,6 +801,8 @@ func _configure_subviewport(viewport: SubViewport) -> void:
 	viewport.msaa_2d = Viewport.MSAA_4X
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	viewport.size = Vector2i(1600, 900)
+	if viewport == panel_viewport and hybrid_input_adapter != null:
+		hybrid_input_adapter.surface_pixel_size = Vector2(viewport.size)
 
 
 func _mount_source_2d_scenes() -> void:
@@ -1096,21 +1209,27 @@ func _refresh_status() -> void:
 		return
 
 	var lines := [
-		"[b]Hybrid 3D Glass Panel / Mask-Aware World Shader[/b]",
+		"[b]Hybrid 3D Glass Panel / Input-Core Contract Proof[/b]",
 		"[color=#cbd5e1]Space[/color] auto rotation: %s" % ("ON" if auto_rotate else "OFF"),
 		"[color=#cbd5e1]WASD / Arrows[/color] pitch and yaw the wrapper",
 		"[color=#cbd5e1]R[/color] reset wrapper rotation",
 		"[color=#cbd5e1]1 / 2 / 3 / 4[/color] source viewport background: %s" % _background_mode_name(get_preview_background_mode()),
-		"[color=#cbd5e1]Mouse / touch[/color] are ray-picked against PanelInputSurface and forwarded into PanelViewport only.",
+		"[color=#cbd5e1]Mouse / touch[/color] are ray-picked locally, projected into the panel surface, then published through HybridSubViewportInputAdapter.",
 		"",
 		"Pitch: %.1f°" % panel_pivot.rotation_degrees.x,
 		"Yaw: %.1f°" % panel_pivot.rotation_degrees.y,
 		"Mouse capture: %s" % ("ON" if _mouse_panel_capture else "OFF"),
 		"Hover active: %s" % ("YES" if _mouse_hover_active else "NO"),
-		"Active touches: %d" % _active_touch_positions.size(),
-		"Last panel event: %s" % _last_forwarded_panel_event,
+		"Active touches: %d" % _active_touch_projected.size(),
+		"Target path: %s" % (_last_contract_target_path if _last_contract_target_path != "" else "waiting"),
+		"Source variant: %s" % _last_contract_source_variant,
+		"Phase: %s" % _last_contract_phase,
+		"Surface ID: %s" % _last_contract_surface_id,
+		"Verification: %s" % _last_contract_verification_status,
+		"Verification notes: %s" % _last_contract_verification_notes,
+		"Last contract publish: %s" % _last_forwarded_panel_event,
 		"",
-		"This proof slice keeps the existing hybrid render architecture intact: the mask viewport remains display-only, while a dedicated pick surface maps world hits into the authored panel viewport for observable mouse and touch state changes."
+		"Host-owned truth stays here: world ray picking, local hit -> UV -> viewport mapping, hover/capture continuity, and preview-button target resolution. Normalized semantics now live on the shared input-core bus/adapter contract."
 	]
 	status_label.text = "\n".join(lines)
 
