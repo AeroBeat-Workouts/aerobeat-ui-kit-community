@@ -302,11 +302,13 @@ const PARAMETER_ALIASES := {
 @export_range(0.0, 90.0, 0.1) var auto_rotate_speed_deg := 36.0
 @export_range(0.0, 120.0, 0.1) var manual_rotate_speed_deg := 54.0
 
+@onready var camera_3d: Camera3D = get_node_or_null("Camera3D") as Camera3D
 @onready var panel_pivot: Node3D = get_node_or_null("PanelPivot") as Node3D
 @onready var panel_viewport: SubViewport = get_node_or_null("PanelPivot/PanelViewport") as SubViewport
 @onready var mask_viewport: SubViewport = get_node_or_null("PanelPivot/MaskViewport") as SubViewport
 @onready var panel_display: MeshInstance3D = get_node_or_null("PanelPivot/PanelDisplay") as MeshInstance3D
 @onready var panel_ui_overlay: MeshInstance3D = get_node_or_null("PanelPivot/PanelUiOverlay") as MeshInstance3D
+@onready var panel_input_surface: Area3D = get_node_or_null("PanelPivot/PanelInputSurface") as Area3D
 @onready var controls_list: VBoxContainer = get_node_or_null("CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll/ControlsList") as VBoxContainer
 @onready var status_label: RichTextLabel = get_node_or_null("CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/StatusPanel/StatusPadding/StatusLabel") as RichTextLabel
 
@@ -323,10 +325,15 @@ var _color_pickers: Dictionary = {}
 var _preset_status_label: Label
 var _save_dialog: FileDialog
 var _load_dialog: FileDialog
+var _mouse_panel_capture := false
+var _mouse_hover_active := false
+var _last_mouse_viewport_position := Vector2.ZERO
+var _active_touch_positions: Dictionary = {}
+var _last_forwarded_panel_event := "waiting for panel input"
 
 
 func _ready() -> void:
-	if panel_pivot == null or panel_viewport == null or mask_viewport == null or panel_display == null or panel_ui_overlay == null:
+	if camera_3d == null or panel_pivot == null or panel_viewport == null or mask_viewport == null or panel_display == null or panel_ui_overlay == null or panel_input_surface == null:
 		push_error("3D GUI glass test scene is missing one or more required nodes.")
 		return
 
@@ -357,6 +364,11 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _forward_world_panel_input(event):
+		get_viewport().set_input_as_handled()
+		_refresh_status()
+		return
+
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
 			KEY_SPACE:
@@ -374,6 +386,179 @@ func _unhandled_input(event: InputEvent) -> void:
 			_:
 				return
 		_refresh_status()
+
+
+func _forward_world_panel_input(event: InputEvent) -> bool:
+	if panel_viewport == null or panel_input_surface == null or camera_3d == null:
+		return false
+
+	if event is InputEventMouseButton:
+		return _forward_mouse_button_to_panel(event)
+	if event is InputEventMouseMotion:
+		return _forward_mouse_motion_to_panel(event)
+	if event is InputEventScreenTouch:
+		return _forward_screen_touch_to_panel(event)
+	if event is InputEventScreenDrag:
+		return _forward_screen_drag_to_panel(event)
+	return false
+
+
+func _forward_mouse_button_to_panel(event: InputEventMouseButton) -> bool:
+	var hit := _screen_position_to_panel_hit(event.position)
+	var should_forward: bool = bool(hit.get("hit", false)) or _mouse_panel_capture
+	if not should_forward:
+		return false
+
+	var viewport_position: Vector2 = hit.get("viewport_position", _get_offscreen_panel_position())
+	var forwarded := InputEventMouseButton.new()
+	forwarded.position = viewport_position
+	forwarded.global_position = viewport_position
+	forwarded.button_index = event.button_index
+	forwarded.pressed = event.pressed
+	forwarded.double_click = event.double_click
+	forwarded.factor = event.factor
+	forwarded.alt_pressed = event.alt_pressed
+	forwarded.shift_pressed = event.shift_pressed
+	forwarded.ctrl_pressed = event.ctrl_pressed
+	forwarded.meta_pressed = event.meta_pressed
+	forwarded.device = event.device
+	panel_viewport.push_input(forwarded, true)
+
+	_last_mouse_viewport_position = viewport_position
+	_mouse_hover_active = bool(hit.get("hit", false))
+	if event.pressed and hit.get("hit", false):
+		_mouse_panel_capture = true
+	if not event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_mouse_panel_capture = false
+		if not hit.get("hit", false):
+			_mouse_hover_active = false
+
+	_last_forwarded_panel_event = "mouse %s -> %.0f, %.0f" % ["press" if event.pressed else "release", viewport_position.x, viewport_position.y]
+	return true
+
+
+func _forward_mouse_motion_to_panel(event: InputEventMouseMotion) -> bool:
+	var hit := _screen_position_to_panel_hit(event.position)
+	var should_forward: bool = bool(hit.get("hit", false)) or _mouse_panel_capture or _mouse_hover_active
+	if not should_forward:
+		return false
+
+	var viewport_position: Vector2 = hit.get("viewport_position", _get_offscreen_panel_position())
+	var forwarded := InputEventMouseMotion.new()
+	forwarded.position = viewport_position
+	forwarded.global_position = viewport_position
+	forwarded.relative = viewport_position - _last_mouse_viewport_position
+	forwarded.velocity = event.velocity
+	forwarded.pressure = event.pressure
+	forwarded.pen_inverted = event.pen_inverted
+	forwarded.tilt = event.tilt
+	forwarded.alt_pressed = event.alt_pressed
+	forwarded.shift_pressed = event.shift_pressed
+	forwarded.ctrl_pressed = event.ctrl_pressed
+	forwarded.meta_pressed = event.meta_pressed
+	forwarded.device = event.device
+	panel_viewport.push_input(forwarded, true)
+
+	_last_mouse_viewport_position = viewport_position
+	_mouse_hover_active = bool(hit.get("hit", false))
+	_last_forwarded_panel_event = "mouse move -> %.0f, %.0f%s" % [
+		viewport_position.x,
+		viewport_position.y,
+		" (captured)" if _mouse_panel_capture and not hit.get("hit", false) else ""
+	]
+	return true
+
+
+func _forward_screen_touch_to_panel(event: InputEventScreenTouch) -> bool:
+	var hit := _screen_position_to_panel_hit(event.position)
+	var touch_key := str(event.index)
+	var is_active := _active_touch_positions.has(touch_key)
+	var should_forward: bool = bool(hit.get("hit", false)) or is_active
+	if not should_forward:
+		return false
+
+	var viewport_position: Vector2 = hit.get("viewport_position", _active_touch_positions.get(touch_key, _get_offscreen_panel_position()))
+	var forwarded := InputEventScreenTouch.new()
+	forwarded.position = viewport_position
+	forwarded.index = event.index
+	forwarded.pressed = event.pressed
+	forwarded.double_tap = event.double_tap
+	forwarded.canceled = event.canceled
+	forwarded.device = event.device
+	panel_viewport.push_input(forwarded, true)
+
+	if event.pressed:
+		_active_touch_positions[touch_key] = viewport_position
+	else:
+		_active_touch_positions.erase(touch_key)
+
+	_last_forwarded_panel_event = "touch %s #%d -> %.0f, %.0f" % ["press" if event.pressed else "release", event.index, viewport_position.x, viewport_position.y]
+	return true
+
+
+func _forward_screen_drag_to_panel(event: InputEventScreenDrag) -> bool:
+	var touch_key := str(event.index)
+	if not _active_touch_positions.has(touch_key):
+		return false
+
+	var hit := _screen_position_to_panel_hit(event.position)
+	var previous_position: Vector2 = _active_touch_positions.get(touch_key, _get_offscreen_panel_position())
+	var viewport_position: Vector2 = hit.get("viewport_position", previous_position)
+	var forwarded := InputEventScreenDrag.new()
+	forwarded.position = viewport_position
+	forwarded.relative = viewport_position - previous_position
+	forwarded.velocity = event.velocity
+	forwarded.pressure = event.pressure
+	forwarded.tilt = event.tilt
+	forwarded.pen_inverted = event.pen_inverted
+	forwarded.index = event.index
+	forwarded.device = event.device
+	panel_viewport.push_input(forwarded, true)
+
+	_active_touch_positions[touch_key] = viewport_position
+	_last_forwarded_panel_event = "touch drag #%d -> %.0f, %.0f" % [event.index, viewport_position.x, viewport_position.y]
+	return true
+
+
+func _screen_position_to_panel_hit(screen_position: Vector2) -> Dictionary:
+	var ray_origin := camera_3d.project_ray_origin(screen_position)
+	var ray_direction := camera_3d.project_ray_normal(screen_position)
+	var query := PhysicsRayQueryParameters3D.create(ray_origin, ray_origin + ray_direction * camera_3d.far)
+	query.collide_with_areas = true
+	query.collide_with_bodies = false
+
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	if hit.is_empty() or hit.get("collider") != panel_input_surface:
+		return {"hit": false}
+
+	var local_hit: Vector3 = panel_input_surface.to_local(hit["position"])
+	var panel_size := _get_panel_surface_size()
+	if panel_size.x <= 0.0 or panel_size.y <= 0.0:
+		return {"hit": false}
+
+	var uv := Vector2(
+		(local_hit.x / panel_size.x) + 0.5,
+		0.5 - (local_hit.y / panel_size.y)
+	)
+	if uv.x < 0.0 or uv.x > 1.0 or uv.y < 0.0 or uv.y > 1.0:
+		return {"hit": false}
+
+	return {
+		"hit": true,
+		"viewport_position": Vector2(uv.x * panel_viewport.size.x, uv.y * panel_viewport.size.y),
+		"uv": uv,
+		"local_hit": local_hit,
+	}
+
+
+func _get_panel_surface_size() -> Vector2:
+	if panel_display != null and panel_display.mesh is QuadMesh:
+		return (panel_display.mesh as QuadMesh).size
+	return Vector2(2.93, 1.8)
+
+
+func _get_offscreen_panel_position() -> Vector2:
+	return Vector2(-128.0, -128.0)
 
 
 func set_auto_rotate_enabled(value: bool) -> void:
@@ -916,11 +1101,16 @@ func _refresh_status() -> void:
 		"[color=#cbd5e1]WASD / Arrows[/color] pitch and yaw the wrapper",
 		"[color=#cbd5e1]R[/color] reset wrapper rotation",
 		"[color=#cbd5e1]1 / 2 / 3 / 4[/color] source viewport background: %s" % _background_mode_name(get_preview_background_mode()),
+		"[color=#cbd5e1]Mouse / touch[/color] are ray-picked against PanelInputSurface and forwarded into PanelViewport only.",
 		"",
 		"Pitch: %.1f°" % panel_pivot.rotation_degrees.x,
 		"Yaw: %.1f°" % panel_pivot.rotation_degrees.y,
+		"Mouse capture: %s" % ("ON" if _mouse_panel_capture else "OFF"),
+		"Hover active: %s" % ("YES" if _mouse_hover_active else "NO"),
+		"Active touches: %d" % _active_touch_positions.size(),
+		"Last panel event: %s" % _last_forwarded_panel_event,
 		"",
-		"This parity pass keeps the shared 2D source scene, but now separates the frosted body from the authored frame/inner-border overlay. The body shader uses the authored mask for frost and subtle world lift, while the front overlay preserves the sharp white rim, crisp inner line, and UI clarity from the 2D card."
+		"This proof slice keeps the existing hybrid render architecture intact: the mask viewport remains display-only, while a dedicated pick surface maps world hits into the authored panel viewport for observable mouse and touch state changes."
 	]
 	status_label.text = "\n".join(lines)
 

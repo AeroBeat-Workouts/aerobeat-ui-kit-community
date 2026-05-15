@@ -230,7 +230,51 @@ vertical_alignment = 1
 modulate = Color(1, 1, 1, 0.82)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "Switch to Debug Pattern or Hybrid Overlay\nto inspect blur, warp, and strength live."
+text = "Mouse or touch the world-space card. The card itself is the input-proof toggle."
+autowrap_mode = 3
+
+[node name="InteractionStatePanel" type="PanelContainer" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
+custom_minimum_size = Vector2(0, 124)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="InteractionStatePadding" type="MarginContainer" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/InteractionStatePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="InteractionStateColumn" type="VBoxContainer" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="InteractionTitle" type="Label" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Input Proof Readout"
+
+[node name="InteractionSourceLabel" type="Label" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn"]
+modulate = Color(1, 1, 1, 0.88)
+layout_mode = 2
+text = "Source: waiting"
+
+[node name="InteractionPointerLabel" type="Label" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn"]
+modulate = Color(1, 1, 1, 0.88)
+layout_mode = 2
+text = "Pointer: idle"
+
+[node name="InteractionToggleLabel" type="Label" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn"]
+modulate = Color(1, 1, 1, 0.88)
+layout_mode = 2
+text = "Toggle: OFF"
+
+[node name="InteractionCountLabel" type="Label" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn"]
+modulate = Color(1, 1, 1, 0.72)
+layout_mode = 2
+text = "Counts: press 0 • release 0 • drag 0"
+
 autowrap_mode = 3
 
 [node name="BottomSpacer" type="Control" parent="PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn"]
@@ -241,5 +285,5 @@ size_flags_vertical = 3
 modulate = Color(1, 1, 1, 0.66)
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
-text = "The glass should visibly distort the blocks and lines behind it."
+text = "Expected proof: hover lights the card, press/release updates the readout, and each successful click/tap toggles the card ON/OFF."
 autowrap_mode = 3

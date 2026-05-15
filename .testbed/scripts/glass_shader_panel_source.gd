@@ -2,6 +2,7 @@ extends Control
 
 const BACKGROUND_IMAGE_PATH := "res://assets/images/perfect-hue-may-08-2026-hd.png"
 const FRAME_ALPHA_BOOST := 0.18
+const TOGGLE_ON_ACCENT := Color(0.4, 0.82, 1.0, 1.0)
 
 const BACKGROUND_MODE_IMAGE := 0
 const BACKGROUND_MODE_DEBUG := 1
@@ -125,6 +126,13 @@ const HYBRID_SHELL_DEFAULTS := {
 @onready var preview_inner_border: Panel = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/InnerBorderInset/PreviewInnerBorder") as Panel
 @onready var preview_badge: PanelContainer = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/Badge") as PanelContainer
 @onready var preview_badge_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/Badge/BadgePadding/BadgeLabel") as Label
+@onready var headline_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/Headline") as Label
+@onready var body_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/Body") as Label
+@onready var hint_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/HintLabel") as Label
+@onready var interaction_source_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn/InteractionSourceLabel") as Label
+@onready var interaction_pointer_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn/InteractionPointerLabel") as Label
+@onready var interaction_toggle_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn/InteractionToggleLabel") as Label
+@onready var interaction_count_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn/InteractionCountLabel") as Label
 @onready var content_margin: MarginContainer = get_node_or_null("PreviewCenter/PreviewStack/PreviewButton/ContentMargin") as MarginContainer
 @onready var preview_backdrop_debug: Control = get_node_or_null("PreviewCenter/PreviewStack/PreviewBackdropDebug") as Control
 
@@ -145,6 +153,16 @@ var _hybrid_inner_border_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_inner_bord
 var _hybrid_badge_fill_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_fill_alpha"])
 var _hybrid_badge_border_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_border_alpha"])
 var _hybrid_badge_label_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_label_alpha"])
+var _hover_active := false
+var _press_active := false
+var _last_input_source := "waiting"
+var _last_pointer_summary := "idle"
+var _press_count := 0
+var _release_count := 0
+var _drag_count := 0
+var _toggle_count := 0
+var _mouse_event_count := 0
+var _touch_event_count := 0
 
 
 func _ready() -> void:
@@ -162,11 +180,13 @@ func _ready() -> void:
 	_mask_style = hybrid_mask_panel.get_theme_stylebox("panel") as StyleBoxFlat
 
 	_configure_preview_button()
+	_connect_preview_button_signals()
 	_sync_shell_state_from_shader()
 	_apply_visual_state()
 	preview_button.resized.connect(_sync_preview_shell)
 	preview_inner_border.resized.connect(_sync_preview_shell)
 	call_deferred("_sync_preview_shell")
+	call_deferred("_refresh_interaction_debug")
 
 
 func _notification(what: int) -> void:
@@ -184,7 +204,8 @@ func _load_background_texture() -> Texture2D:
 
 func _configure_preview_button() -> void:
 	preview_button.flat = true
-	preview_button.focus_mode = Control.FOCUS_NONE
+	preview_button.toggle_mode = true
+	preview_button.focus_mode = Control.FOCUS_ALL
 	preview_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	preview_button.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.96))
 	preview_button.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0, 0.96))
@@ -199,6 +220,21 @@ func _configure_preview_button() -> void:
 	preview_button.add_theme_stylebox_override("pressed", empty)
 	preview_button.add_theme_stylebox_override("focus", empty)
 	preview_button.add_theme_stylebox_override("disabled", empty)
+
+
+func _connect_preview_button_signals() -> void:
+	if not preview_button.mouse_entered.is_connected(_on_preview_button_mouse_entered):
+		preview_button.mouse_entered.connect(_on_preview_button_mouse_entered)
+	if not preview_button.mouse_exited.is_connected(_on_preview_button_mouse_exited):
+		preview_button.mouse_exited.connect(_on_preview_button_mouse_exited)
+	if not preview_button.button_down.is_connected(_on_preview_button_button_down):
+		preview_button.button_down.connect(_on_preview_button_button_down)
+	if not preview_button.button_up.is_connected(_on_preview_button_button_up):
+		preview_button.button_up.connect(_on_preview_button_button_up)
+	if not preview_button.toggled.is_connected(_on_preview_button_toggled):
+		preview_button.toggled.connect(_on_preview_button_toggled)
+	if not preview_button.gui_input.is_connected(_on_preview_button_gui_input):
+		preview_button.gui_input.connect(_on_preview_button_gui_input)
 
 
 func set_background_mode(mode: int) -> void:
@@ -339,6 +375,7 @@ func _apply_visual_state() -> void:
 	preview_inner_border.visible = _presentation_mode == PRESENTATION_MODE_2D or is_hybrid_world
 	content_margin.visible = not is_mask_mode
 	hybrid_mask_panel.visible = is_mask_mode
+	_refresh_interaction_debug()
 
 
 func _sync_preview_shell() -> void:
@@ -397,6 +434,7 @@ func _sync_preview_shell() -> void:
 	_mask_style.border_width_bottom = 0
 	_mask_style.shadow_size = 0
 	_mask_style.shadow_color = Color(0.0, 0.0, 0.0, 0.0)
+	_apply_interaction_accent()
 
 
 func _sync_shell_state_from_shader() -> void:
@@ -406,6 +444,126 @@ func _sync_shell_state_from_shader() -> void:
 	_shell_edge_width = maxf(0.0, float(_shader_material.get_shader_parameter("edge_width")))
 	_shell_tint = _shader_material.get_shader_parameter("tint")
 	_shell_edge_highlight = _shader_material.get_shader_parameter("edge_highlight")
+
+
+func _apply_interaction_accent() -> void:
+	if _frame_style == null or _inner_border_style == null or _badge_style == null:
+		return
+
+	var accent_strength := 0.0
+	if preview_button.button_pressed:
+		accent_strength = 1.0
+	elif _press_active:
+		accent_strength = 0.78
+	elif _hover_active:
+		accent_strength = 0.4
+
+	if accent_strength > 0.0:
+		_frame_style.border_color = _frame_style.border_color.lerp(TOGGLE_ON_ACCENT, accent_strength * 0.65)
+		_inner_border_style.border_color = _inner_border_style.border_color.lerp(TOGGLE_ON_ACCENT, accent_strength * 0.55)
+		_badge_style.border_color = _badge_style.border_color.lerp(TOGGLE_ON_ACCENT, accent_strength * 0.55)
+		_badge_style.bg_color = _badge_style.bg_color.lerp(Color(TOGGLE_ON_ACCENT.r, TOGGLE_ON_ACCENT.g, TOGGLE_ON_ACCENT.b, 0.22), accent_strength * 0.65)
+
+
+func _refresh_interaction_debug() -> void:
+	if not is_node_ready():
+		return
+
+	var source_suffix := "mouse %d • touch %d" % [_mouse_event_count, _touch_event_count]
+	if is_instance_valid(interaction_source_label):
+		interaction_source_label.text = "Source: %s (%s)" % [_last_input_source, source_suffix]
+	if is_instance_valid(interaction_pointer_label):
+		interaction_pointer_label.text = "Pointer: %s%s%s" % [
+			_last_pointer_summary,
+			" • hover" if _hover_active else "",
+			" • pressed" if _press_active else ""
+		]
+	if is_instance_valid(interaction_toggle_label):
+		interaction_toggle_label.text = "Toggle: %s • toggled %d times" % ["ON" if preview_button.button_pressed else "OFF", _toggle_count]
+	if is_instance_valid(interaction_count_label):
+		interaction_count_label.text = "Counts: press %d • release %d • drag %d" % [_press_count, _release_count, _drag_count]
+	if is_instance_valid(preview_badge_label):
+		preview_badge_label.text = "Touch Proof Armed" if preview_button.button_pressed else "Input Proof"
+	if is_instance_valid(headline_label):
+		headline_label.text = "AeroBeat INPUT LIVE" if preview_button.button_pressed else "AeroBeat"
+	if is_instance_valid(body_label):
+		body_label.text = "Mouse or touch the world-space card. Native forwarded events should toggle this card and keep the readout live." if preview_button.button_pressed else "Mouse or touch the world-space card. The card itself is the input-proof toggle."
+	if is_instance_valid(hint_label):
+		hint_label.text = "Last pointer: %s" % _last_pointer_summary
+	_sync_preview_shell()
+
+
+func _on_preview_button_mouse_entered() -> void:
+	_hover_active = true
+	if _last_input_source == "waiting":
+		_last_input_source = "mouse"
+	_last_pointer_summary = "hover enter"
+	_refresh_interaction_debug()
+
+
+func _on_preview_button_mouse_exited() -> void:
+	_hover_active = false
+	_last_pointer_summary = "hover exit"
+	_refresh_interaction_debug()
+
+
+func _on_preview_button_button_down() -> void:
+	_press_active = true
+	if _last_pointer_summary == "idle":
+		_last_pointer_summary = "button down"
+	_refresh_interaction_debug()
+
+
+func _on_preview_button_button_up() -> void:
+	_press_active = false
+	_last_pointer_summary = "button up"
+	_refresh_interaction_debug()
+
+
+func _on_preview_button_toggled(pressed: bool) -> void:
+	_toggle_count += 1
+	_last_pointer_summary = "toggle %s" % ("on" if pressed else "off")
+	_refresh_interaction_debug()
+
+
+func _on_preview_button_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		_mouse_event_count += 1
+		_last_input_source = "mouse"
+		_hover_active = true
+		if event.button_mask != 0:
+			_drag_count += 1
+			_press_active = true
+		_last_pointer_summary = "mouse move %.0f, %.0f" % [event.position.x, event.position.y]
+	elif event is InputEventMouseButton:
+		_mouse_event_count += 1
+		_last_input_source = "mouse"
+		_last_pointer_summary = "mouse %s %.0f, %.0f" % ["press" if event.pressed else "release", event.position.x, event.position.y]
+		if event.pressed:
+			_press_count += 1
+			_press_active = true
+		else:
+			_release_count += 1
+			_press_active = false
+	elif event is InputEventScreenTouch:
+		_touch_event_count += 1
+		_last_input_source = "touch"
+		_last_pointer_summary = "touch %s #%d @ %.0f, %.0f" % ["press" if event.pressed else "release", event.index, event.position.x, event.position.y]
+		if event.pressed:
+			_press_count += 1
+			_press_active = true
+		else:
+			_release_count += 1
+			_press_active = false
+	elif event is InputEventScreenDrag:
+		_touch_event_count += 1
+		_last_input_source = "touch"
+		_drag_count += 1
+		_press_active = true
+		_last_pointer_summary = "touch drag #%d @ %.0f, %.0f" % [event.index, event.position.x, event.position.y]
+	else:
+		return
+	_refresh_interaction_debug()
 
 
 func _shader_corner_radius_to_pixels(control_size: Vector2, corner_radius: float) -> int:
