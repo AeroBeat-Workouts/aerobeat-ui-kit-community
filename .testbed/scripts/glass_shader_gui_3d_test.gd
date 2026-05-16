@@ -452,7 +452,7 @@ func _forward_world_panel_input(event: InputEvent) -> bool:
 func _publish_mouse_button_to_contract(event: InputEventMouseButton) -> bool:
 	var hit := _screen_position_to_panel_hit(event.position)
 	var has_hit: bool = bool(hit.get("hit", false))
-	var live_target_path: NodePath = _resolve_projected_target_path(hit.get("viewport_position", Vector2.ZERO)) if has_hit else NodePath()
+	var live_target_path: NodePath = _resolve_projected_target_path_from_hit(hit) if has_hit else NodePath()
 	_last_surface_hover_hit = has_hit
 	_last_live_target_path = live_target_path
 
@@ -501,7 +501,7 @@ func _publish_mouse_button_to_contract(event: InputEventMouseButton) -> bool:
 func _publish_mouse_motion_to_contract(event: InputEventMouseMotion) -> bool:
 	var hit := _screen_position_to_panel_hit(event.position)
 	var has_hit: bool = bool(hit.get("hit", false))
-	var live_target_path: NodePath = _resolve_projected_target_path(hit.get("viewport_position", Vector2.ZERO)) if has_hit else NodePath()
+	var live_target_path: NodePath = _resolve_projected_target_path_from_hit(hit) if has_hit else NodePath()
 	_last_surface_hover_hit = has_hit
 	_last_live_target_path = live_target_path
 
@@ -509,7 +509,7 @@ func _publish_mouse_motion_to_contract(event: InputEventMouseMotion) -> bool:
 		_publish_mouse_release_from_motion(event, hit, live_target_path)
 		hit = _screen_position_to_panel_hit(event.position)
 		has_hit = bool(hit.get("hit", false))
-		live_target_path = _resolve_projected_target_path(hit.get("viewport_position", Vector2.ZERO)) if has_hit else NodePath()
+		live_target_path = _resolve_projected_target_path_from_hit(hit) if has_hit else NodePath()
 		_last_surface_hover_hit = has_hit
 		_last_live_target_path = live_target_path
 
@@ -574,7 +574,7 @@ func _publish_screen_touch_to_contract(event: InputEventScreenTouch) -> bool:
 
 	var hit := _screen_position_to_panel_hit(event.position)
 	var has_hit: bool = bool(hit.get("hit", false))
-	var live_target_path: NodePath = _resolve_projected_target_path(hit.get("viewport_position", Vector2.ZERO)) if has_hit else NodePath()
+	var live_target_path: NodePath = _resolve_projected_target_path_from_hit(hit) if has_hit else NodePath()
 	if event.pressed and (not has_hit or live_target_path == NodePath()):
 		return false
 	if not event.pressed and not has_hit and previous_projected.is_empty():
@@ -614,7 +614,7 @@ func _publish_screen_drag_to_contract(event: InputEventScreenDrag) -> bool:
 	var owner_target_path: NodePath = previous_state.get("owner_target_path", NodePath())
 	var hit := _screen_position_to_panel_hit(event.position)
 	var has_hit: bool = bool(hit.get("hit", false))
-	var live_target_path: NodePath = _resolve_projected_target_path(hit.get("viewport_position", Vector2.ZERO)) if has_hit else NodePath()
+	var live_target_path: NodePath = _resolve_projected_target_path_from_hit(hit) if has_hit else NodePath()
 	var projected_data := _build_projected_data(event.position, hit, previous_projected, owner_target_path, live_target_path)
 	hybrid_input_adapter.publish_from_input_event(event, projected_data, {"pointer_id": pointer_id})
 	_active_touch_state[pointer_id] = {
@@ -747,7 +747,7 @@ func _build_projected_data(
 	var has_hit: bool = bool(hit.get("hit", false))
 	var target_path := explicit_target_path
 	if target_path == NodePath() and has_hit:
-		target_path = _resolve_projected_target_path(hit.get("viewport_position", Vector2.ZERO))
+		target_path = _resolve_projected_target_path_from_hit(hit)
 	if target_path != NodePath():
 		projected_data["target_path"] = target_path
 
@@ -788,7 +788,13 @@ func _build_projected_data(
 	return projected_data
 
 
-func _resolve_projected_target_path(surface_position: Vector2) -> NodePath:
+func _resolve_projected_target_path_from_hit(hit: Dictionary) -> NodePath:
+	var surface_position: Vector2 = hit.get("viewport_position", Vector2.ZERO)
+	var surface_uv: Vector2 = hit.get("uv", Vector2(-1.0, -1.0))
+	return _resolve_projected_target_path(surface_position, surface_uv)
+
+
+func _resolve_projected_target_path(surface_position: Vector2, surface_uv: Vector2 = Vector2(-1.0, -1.0)) -> NodePath:
 	if not is_instance_valid(_panel_ui) or not _panel_ui.has_method("get_interaction_target_specs"):
 		return NodePath()
 	for spec_variant in _panel_ui.call("get_interaction_target_specs"):
@@ -796,9 +802,21 @@ func _resolve_projected_target_path(surface_position: Vector2) -> NodePath:
 			continue
 		var spec: Dictionary = spec_variant
 		var rect: Rect2 = spec.get("rect", Rect2())
+		var normalized_rect := _normalize_panel_target_rect(rect)
+		if normalized_rect.size.x > 0.0 and normalized_rect.size.y > 0.0 and normalized_rect.has_point(surface_uv):
+			return spec.get("target_path", NodePath())
 		if rect.has_point(surface_position):
 			return spec.get("target_path", NodePath())
 	return NodePath()
+
+
+func _normalize_panel_target_rect(rect: Rect2) -> Rect2:
+	if not is_instance_valid(_panel_ui):
+		return Rect2()
+	var root_rect := _panel_ui.get_global_rect()
+	if root_rect.size.x <= 0.0 or root_rect.size.y <= 0.0:
+		return Rect2()
+	return Rect2((rect.position - root_rect.position) / root_rect.size, rect.size / root_rect.size)
 
 
 func _path_label(path: Variant) -> String:
