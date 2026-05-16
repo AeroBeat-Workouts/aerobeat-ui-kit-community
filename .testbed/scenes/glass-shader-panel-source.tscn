@@ -248,6 +248,7 @@ theme_override_constants/margin_bottom = 28
 
 [node name="ContentColumn" type="VBoxContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin"]
 layout_mode = 2
+mouse_filter = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 10
@@ -255,11 +256,13 @@ theme_override_constants/separation = 10
 [node name="Badge" type="PanelContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn"]
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
+mouse_filter = 2
 size_flags_horizontal = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_badge")
 
 [node name="BadgePadding" type="MarginContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 6
 theme_override_constants/margin_right = 12
@@ -268,11 +271,13 @@ theme_override_constants/margin_bottom = 6
 [node name="BadgeLabel" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge/BadgePadding"]
 modulate = Color(1, 1, 1, 0.78)
 layout_mode = 2
+mouse_filter = 2
 theme_override_font_sizes/font_size = 14
 text = "Shared glass panel source"
 
 [node name="Headline" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_font_sizes/font_size = 38
 text = "AeroBeat"
 vertical_alignment = 1
@@ -280,6 +285,7 @@ vertical_alignment = 1
 [node name="Body" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn"]
 modulate = Color(1, 1, 1, 0.82)
 layout_mode = 2
+mouse_filter = 2
 theme_override_font_sizes/font_size = 18
 text = "Shared glass panel source with one centered primary target visible in both the 2D and 3D test scenes."
 autowrap_mode = 3
@@ -287,6 +293,7 @@ autowrap_mode = 3
 [node name="Spacer" type="Control" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn"]
 custom_minimum_size = Vector2(0, 12)
 layout_mode = 2
+mouse_filter = 2
 
 [node name="PrimaryActionButton" type="Button" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn" unique_name_in_owner=true]
 custom_minimum_size = Vector2(0, 72)

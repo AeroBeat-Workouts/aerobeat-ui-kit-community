@@ -19,7 +19,7 @@ const PRESENTATION_MODE_HYBRID_MASK := 2
 
 const TARGET_PRIMARY := "primary"
 const TARGET_LABELS := {
-	TARGET_PRIMARY: "PrimaryCardButton",
+	TARGET_PRIMARY: "PrimaryActionButton",
 }
 
 const FLOAT_CONTROLS := [
@@ -181,6 +181,7 @@ func _ready() -> void:
 	_mask_style = hybrid_mask_panel.get_theme_stylebox("panel") as StyleBoxFlat
 
 	_configure_primary_card_button()
+	_configure_primary_action_button()
 	super._ready()
 	_sync_shell_state_from_shader()
 	_apply_visual_state()
@@ -191,12 +192,15 @@ func _ready() -> void:
 
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_THEME_CHANGED and is_instance_valid(primary_card_button):
-		_configure_primary_card_button()
+	if what == NOTIFICATION_THEME_CHANGED:
+		if is_instance_valid(primary_card_button):
+			_configure_primary_card_button()
+		if is_instance_valid(primary_action_button):
+			_configure_primary_action_button()
 
 
 func _build_contract_targets() -> void:
-	register_contract_target(TARGET_PRIMARY, primary_card_button, {
+	register_contract_target(TARGET_PRIMARY, primary_action_button, {
 		"target_label": TARGET_LABELS[TARGET_PRIMARY],
 		"user_state": {"toggle_on": false},
 	})
@@ -230,7 +234,7 @@ func _configure_primary_card_button() -> void:
 	primary_card_button.button_pressed = false
 	primary_card_button.focus_mode = Control.FOCUS_NONE
 	primary_card_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	primary_card_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	primary_card_button.mouse_default_cursor_shape = Control.CURSOR_ARROW
 	primary_card_button.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.96))
 	primary_card_button.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0, 0.96))
 	primary_card_button.add_theme_color_override("font_pressed_color", Color(1.0, 1.0, 1.0, 0.96))
@@ -244,6 +248,13 @@ func _configure_primary_card_button() -> void:
 	primary_card_button.add_theme_stylebox_override("pressed", empty)
 	primary_card_button.add_theme_stylebox_override("focus", empty)
 	primary_card_button.add_theme_stylebox_override("disabled", empty)
+
+
+func _configure_primary_action_button() -> void:
+	primary_action_button.flat = true
+	primary_action_button.focus_mode = Control.FOCUS_NONE
+	primary_action_button.mouse_filter = Control.MOUSE_FILTER_STOP
+	primary_action_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 
 
 func set_background_mode(mode: int) -> void:

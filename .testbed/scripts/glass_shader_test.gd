@@ -7,7 +7,7 @@ const DEFAULT_PRESET_FILENAME := "glass-shader-2d-preset.json"
 const BUNDLED_DEFAULT_PRESET_PATH := "res://presets/glass/2d/default.json"
 const SCREEN_SURFACE_ID: StringName = &"screen_glass_panel"
 const SCREEN_SURFACE_TYPE: StringName = AeroUiInteractionTypes.SURFACE_TYPE_SCREEN_2D
-const PREVIEW_BUTTON_PATH := NodePath("PreviewCenter/PreviewStack/PrimaryCardButton")
+const PREVIEW_BUTTON_PATH := NodePath("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton")
 const PanelSourceScript = preload("res://scripts/glass_shader_panel_source.gd")
 const PresetIO = preload("res://scripts/glass_shader_preset_io.gd")
 
