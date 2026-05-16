@@ -331,6 +331,7 @@ var _preset_status_label: Label
 var _save_dialog: FileDialog
 var _load_dialog: FileDialog
 var _mouse_panel_capture := false
+var _mouse_left_button_down := false
 var _mouse_hover_active := false
 var _mouse_hover_target_path: NodePath = NodePath()
 var _mouse_owner_target_path: NodePath = NodePath()
@@ -459,11 +460,15 @@ func _publish_mouse_button_to_contract(event: InputEventMouseButton) -> bool:
 		return false
 	if not event.pressed and not has_hit and not _mouse_panel_capture:
 		return false
+	if event.button_index == MOUSE_BUTTON_LEFT and not event.pressed and not _mouse_left_button_down:
+		_last_forwarded_panel_event = "ignore duplicate mouse release"
+		return has_hit
 
 	_update_mouse_hover_target(event.position, hit, live_target_path)
 
 	var published_target_path := live_target_path
 	if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		_mouse_left_button_down = true
 		_mouse_owner_target_path = live_target_path
 		_mouse_panel_capture = _mouse_owner_target_path != NodePath()
 		published_target_path = _mouse_owner_target_path
@@ -478,6 +483,7 @@ func _publish_mouse_button_to_contract(event: InputEventMouseButton) -> bool:
 	hybrid_input_adapter.publish_from_input_event(event, projected_data, {"pointer_id": HYBRID_POINTER_MOUSE})
 	_last_mouse_projected_data = projected_data
 	if not event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_mouse_left_button_down = false
 		_last_release_target_path = str(projected_data.get("target_path", NodePath()))
 		_mouse_panel_capture = false
 		_mouse_owner_target_path = NodePath()
@@ -498,6 +504,15 @@ func _publish_mouse_motion_to_contract(event: InputEventMouseMotion) -> bool:
 	var live_target_path: NodePath = _resolve_projected_target_path(hit.get("viewport_position", Vector2.ZERO)) if has_hit else NodePath()
 	_last_surface_hover_hit = has_hit
 	_last_live_target_path = live_target_path
+
+	if _mouse_left_button_down and (event.button_mask & MOUSE_BUTTON_MASK_LEFT) == 0:
+		_publish_mouse_release_from_motion(event, hit, live_target_path)
+		hit = _screen_position_to_panel_hit(event.position)
+		has_hit = bool(hit.get("hit", false))
+		live_target_path = _resolve_projected_target_path(hit.get("viewport_position", Vector2.ZERO)) if has_hit else NodePath()
+		_last_surface_hover_hit = has_hit
+		_last_live_target_path = live_target_path
+
 	if not has_hit and not _mouse_panel_capture and _mouse_hover_target_path == NodePath():
 		return false
 
@@ -519,6 +534,21 @@ func _publish_mouse_motion_to_contract(event: InputEventMouseMotion) -> bool:
 		" (captured)" if _mouse_panel_capture else ""
 	]
 	return true
+
+
+func _publish_mouse_release_from_motion(event: InputEventMouseMotion, hit: Dictionary, live_target_path: NodePath) -> void:
+	var synthetic_release := InputEventMouseButton.new()
+	synthetic_release.button_index = MOUSE_BUTTON_LEFT
+	synthetic_release.pressed = false
+	synthetic_release.position = event.position
+	synthetic_release.button_mask = event.button_mask
+	_publish_mouse_button_to_contract(synthetic_release)
+	_last_forwarded_panel_event = "publish mouse release (motion button mask drop) -> %.0f, %.0f • hover %s • owner %s" % [
+		Vector2(hit.get("viewport_position", _last_mouse_projected_data.get("surface_position", Vector2.ZERO))).x,
+		Vector2(hit.get("viewport_position", _last_mouse_projected_data.get("surface_position", Vector2.ZERO))).y,
+		_path_label(live_target_path),
+		_path_label(_mouse_owner_target_path)
+	]
 
 
 func _publish_screen_touch_to_contract(event: InputEventScreenTouch) -> bool:
