@@ -635,15 +635,11 @@ func _refresh_contract_status() -> void:
 		"Phase: %s" % _last_contract_phase,
 		"Surface ID: %s" % _last_contract_surface_id,
 		"Surface type: %s" % String(SCREEN_SURFACE_TYPE),
-		"Verification: %s" % _last_contract_verification_status,
-		"Verification notes: %s" % _last_contract_verification_notes,
 		"Target path: %s" % (_last_contract_target_path if _last_contract_target_path != "" else "waiting"),
 		"Mouse capture: %s" % ("ON" if _mouse_card_capture else "OFF"),
 		"Hover active: %s" % ("YES" if _mouse_hover_active else "NO"),
 		"Active touches: %d" % _active_touch_capture.size(),
 		"Last contract publish: %s" % _last_forwarded_panel_event,
-		"",
-		"Host-owned truth stays small here: mount the shared panel, resolve the PreviewButton path, publish screen mouse / touch through ScreenUiInputAdapter, and allow minimal continuity only for interactions that begin on the proof card.",
 	]
 	_contract_status_label.text = "\n".join(lines)
 

@@ -1404,11 +1404,7 @@ func _refresh_status() -> void:
 		"Source variant: %s" % _last_contract_source_variant,
 		"Phase: %s" % _last_contract_phase,
 		"Surface ID: %s" % _last_contract_surface_id,
-		"Verification: %s" % _last_contract_verification_status,
-		"Verification notes: %s" % _last_contract_verification_notes,
 		"Last contract publish: %s" % _last_forwarded_panel_event,
-		"",
-		"Host-owned truth stays here: world ray picking, local hit -> UV -> viewport mapping, sibling target lookup, hover enter/exit truth, and per-pointer owner-path continuity. Normalized semantics stay on the shared input-core bus/adapter contract."
 	]
 	status_label.text = "\n".join(lines)
 

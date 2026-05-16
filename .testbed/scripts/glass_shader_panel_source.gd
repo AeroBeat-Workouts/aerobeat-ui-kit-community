@@ -19,11 +19,9 @@ const PRESENTATION_MODE_HYBRID_MASK := 2
 
 const TARGET_PRIMARY := "primary"
 const TARGET_CHIP := "chip"
-const TARGET_STRIP := "strip"
 const TARGET_LABELS := {
 	TARGET_PRIMARY: "PrimaryCardButton",
 	TARGET_CHIP: "SecondaryToggleChip",
-	TARGET_STRIP: "DragStrip",
 }
 
 const FLOAT_CONTROLS := [
@@ -140,27 +138,12 @@ const HYBRID_SHELL_DEFAULTS := {
 @onready var preview_badge_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge/BadgePadding/BadgeLabel") as Label
 @onready var headline_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Headline") as Label
 @onready var body_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Body") as Label
-@onready var hint_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/HintLabel") as Label
-@onready var interaction_source_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn/InteractionSourceLabel") as Label
-@onready var interaction_pointer_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn/InteractionPointerLabel") as Label
-@onready var interaction_toggle_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn/InteractionToggleLabel") as Label
-@onready var interaction_count_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/InteractionStatePanel/InteractionStatePadding/InteractionStateColumn/InteractionCountLabel") as Label
 @onready var content_margin: MarginContainer = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin") as MarginContainer
 @onready var preview_backdrop_debug: Control = get_node_or_null("PreviewCenter/PreviewStack/PreviewBackdropDebug") as Control
 
 @onready var secondary_toggle_chip: Button = get_node_or_null("PreviewCenter/PreviewStack/SecondaryToggleChip") as Button
 @onready var chip_label: Label = get_node_or_null("PreviewCenter/PreviewStack/SecondaryToggleChip/ChipColumn/ChipLabel") as Label
 @onready var chip_state_label: Label = get_node_or_null("PreviewCenter/PreviewStack/SecondaryToggleChip/ChipColumn/ChipStateLabel") as Label
-@onready var drag_strip: PanelContainer = get_node_or_null("PreviewCenter/PreviewStack/DragStrip") as PanelContainer
-@onready var drag_strip_fill: ColorRect = get_node_or_null("PreviewCenter/PreviewStack/DragStrip/StripPadding/StripColumn/StripTrack/StripFill") as ColorRect
-@onready var drag_strip_handle: Panel = get_node_or_null("PreviewCenter/PreviewStack/DragStrip/StripPadding/StripColumn/StripTrack/StripHandle") as Panel
-@onready var drag_strip_state_label: Label = get_node_or_null("PreviewCenter/PreviewStack/DragStrip/StripPadding/StripColumn/StripStateLabel") as Label
-@onready var hybrid_summary_panel: PanelContainer = get_node_or_null("PreviewCenter/PreviewStack/HybridSummaryPanel") as PanelContainer
-@onready var summary_hover_label: Label = get_node_or_null("PreviewCenter/PreviewStack/HybridSummaryPanel/SummaryPadding/SummaryColumn/HoverTargetLabel") as Label
-@onready var summary_owner_label: Label = get_node_or_null("PreviewCenter/PreviewStack/HybridSummaryPanel/SummaryPadding/SummaryColumn/OwnerTargetLabel") as Label
-@onready var summary_release_label: Label = get_node_or_null("PreviewCenter/PreviewStack/HybridSummaryPanel/SummaryPadding/SummaryColumn/ReleaseTargetLabel") as Label
-@onready var summary_phase_label: Label = get_node_or_null("PreviewCenter/PreviewStack/HybridSummaryPanel/SummaryPadding/SummaryColumn/PhaseSummaryLabel") as Label
-@onready var summary_counts_label: Label = get_node_or_null("PreviewCenter/PreviewStack/HybridSummaryPanel/SummaryPadding/SummaryColumn/CountsSummaryLabel") as Label
 
 var _shader_material: ShaderMaterial
 var _frame_style: StyleBoxFlat
@@ -180,9 +163,6 @@ var _hybrid_badge_fill_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_fill_a
 var _hybrid_badge_border_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_border_alpha"])
 var _hybrid_badge_label_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_label_alpha"])
 var _last_interaction_event: AeroUiInteractionEvent = null
-var _summary_hover_target_path := ""
-var _summary_owner_target_path := ""
-var _summary_last_release_target_path := ""
 var _summary_last_phase := "idle"
 var _summary_source_variant := "waiting"
 var _summary_verification_status := "waiting"
@@ -209,14 +189,12 @@ func _ready() -> void:
 
 	_configure_primary_card_button()
 	_configure_secondary_chip()
-	_configure_drag_strip()
 	super._ready()
 	_sync_shell_state_from_shader()
 	_apply_visual_state()
 	primary_card_button.resized.connect(_sync_preview_shell)
 	preview_inner_border.resized.connect(_sync_preview_shell)
 	secondary_toggle_chip.resized.connect(_refresh_secondary_chip_visual)
-	drag_strip.resized.connect(_refresh_drag_strip_visual)
 	call_deferred("_sync_preview_shell")
 	call_deferred("_refresh_target_views")
 	call_deferred("_refresh_interaction_debug")
@@ -226,7 +204,6 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_THEME_CHANGED and is_instance_valid(primary_card_button):
 		_configure_primary_card_button()
 		_configure_secondary_chip()
-		_configure_drag_strip()
 
 
 func _build_contract_targets() -> void:
@@ -237,10 +214,6 @@ func _build_contract_targets() -> void:
 	register_contract_target(TARGET_CHIP, secondary_toggle_chip, {
 		"target_label": TARGET_LABELS[TARGET_CHIP],
 		"user_state": {"toggle_on": false},
-	})
-	register_contract_target(TARGET_STRIP, drag_strip, {
-		"target_label": TARGET_LABELS[TARGET_STRIP],
-		"user_state": {"progress": 0.12},
 	})
 
 
@@ -302,11 +275,6 @@ func _configure_secondary_chip() -> void:
 	secondary_toggle_chip.add_theme_stylebox_override("pressed", empty)
 	secondary_toggle_chip.add_theme_stylebox_override("focus", empty)
 	secondary_toggle_chip.add_theme_stylebox_override("disabled", empty)
-
-
-func _configure_drag_strip() -> void:
-	drag_strip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	drag_strip.mouse_default_cursor_shape = Control.CURSOR_HSIZE
 
 
 func set_background_mode(mode: int) -> void:
@@ -446,9 +414,6 @@ func _apply_visual_state() -> void:
 	content_margin.visible = not is_mask_mode
 	hybrid_mask_panel.visible = is_mask_mode
 	secondary_toggle_chip.visible = not is_mask_mode
-	drag_strip.visible = not is_mask_mode
-	if is_instance_valid(hybrid_summary_panel):
-		hybrid_summary_panel.visible = not is_mask_mode
 	_refresh_interaction_debug()
 
 
@@ -508,7 +473,6 @@ func _sync_preview_shell() -> void:
 	_mask_style.shadow_color = Color(0.0, 0.0, 0.0, 0.0)
 	_apply_primary_card_accent()
 	_refresh_secondary_chip_visual()
-	_refresh_drag_strip_visual()
 
 
 func _sync_shell_state_from_shader() -> void:
@@ -564,26 +528,8 @@ func _refresh_secondary_chip_visual() -> void:
 		chip_state_label.modulate = Color(1.0, 1.0, 1.0, 0.68 if not pressed else 0.9)
 
 
-func _refresh_drag_strip_visual() -> void:
-	if not is_instance_valid(drag_strip_fill) or not is_instance_valid(drag_strip_handle) or not is_instance_valid(drag_strip):
-		return
-	var state := _target_state(TARGET_STRIP)
-	var progress := clampf(float(state.get("progress", 0.12)), 0.0, 1.0)
-	var track_rect: Rect2 = (drag_strip_fill.get_parent() as Control).get_rect()
-	drag_strip_fill.size.x = track_rect.size.x * progress
-	drag_strip_handle.position.x = clampf(track_rect.size.x * progress - drag_strip_handle.size.x * 0.5, 0.0, track_rect.size.x - drag_strip_handle.size.x)
-	var dragging := bool(state.get("dragging", false))
-	var hovered := bool(state.get("hovered", false))
-	var accent := Color(0.44, 0.84, 1.0, 0.95) if dragging else Color(1.0, 1.0, 1.0, 0.78 if hovered else 0.52)
-	drag_strip_fill.color = accent
-	drag_strip_handle.modulate = Color(1.0, 1.0, 1.0, 0.96 if dragging or hovered else 0.7)
-	if is_instance_valid(drag_strip_state_label):
-		drag_strip_state_label.text = "owner test: %.0f%% • drags %d • releases %d" % [progress * 100.0, int(state.get("drag_count", 0)), int(state.get("release_count", 0))]
-
-
 func _refresh_target_views() -> void:
 	_refresh_secondary_chip_visual()
-	_refresh_drag_strip_visual()
 	_refresh_interaction_debug()
 
 
@@ -595,54 +541,19 @@ func _refresh_interaction_debug() -> void:
 	var primary_event: AeroUiInteractionEvent = primary_state.get("last_event") as AeroUiInteractionEvent
 	var phase_text := "idle"
 	var surface_text := String(interaction_surface_id)
-	var verification_status := _summary_verification_status
-	var verification_notes := "No normalized contract event received yet."
-	var source_variant := _summary_source_variant
 	if primary_event != null:
 		phase_text = str(primary_event.phase)
 		surface_text = str(primary_event.surface_id)
-		verification_status = str(primary_event.verification_status)
-		verification_notes = str(primary_event.verification_notes)
-		source_variant = str(primary_event.source_variant)
 	elif _last_interaction_event != null:
 		phase_text = str(_last_interaction_event.phase)
 		surface_text = str(_last_interaction_event.surface_id)
-		verification_status = str(_last_interaction_event.verification_status)
-		verification_notes = str(_last_interaction_event.verification_notes)
-		source_variant = str(_last_interaction_event.source_variant)
 
-	if is_instance_valid(interaction_source_label):
-		interaction_source_label.text = "Primary source: %s • hover %s" % [source_variant, "YES" if bool(primary_state.get("hovered", false)) else "NO"]
-	if is_instance_valid(interaction_pointer_label):
-		interaction_pointer_label.text = "Primary phase: %s • owner %s" % [phase_text, _display_target_name(_summary_owner_target_path)]
-	if is_instance_valid(interaction_toggle_label):
-		interaction_toggle_label.text = "Primary toggle: %s • taps %d • releases %d" % ["ON" if bool(primary_state.get("toggle_on", false)) else "OFF", int(primary_state.get("tap_count", 0)), int(primary_state.get("release_count", 0))]
-	if is_instance_valid(interaction_count_label):
-		interaction_count_label.text = "Verification: %s • %s" % [verification_status, verification_notes]
 	if is_instance_valid(preview_badge_label):
 		preview_badge_label.text = "Primary armed" if bool(primary_state.get("toggle_on", false)) else contract_mode_label
 	if is_instance_valid(headline_label):
 		headline_label.text = "AeroBeat INPUT CONTRACT" if bool(primary_state.get("toggle_on", false)) else "AeroBeat"
 	if is_instance_valid(body_label):
 		body_label.text = contract_host_summary
-	if is_instance_valid(hint_label):
-		hint_label.text = "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype."
-
-	if is_instance_valid(summary_hover_label):
-		summary_hover_label.text = "Hover target: %s" % _display_target_name(_summary_hover_target_path)
-	if is_instance_valid(summary_owner_label):
-		summary_owner_label.text = "Active owner: %s" % _display_target_name(_summary_owner_target_path)
-	if is_instance_valid(summary_release_label):
-		summary_release_label.text = "Last release: %s" % _display_target_name(_summary_last_release_target_path)
-	if is_instance_valid(summary_phase_label):
-		summary_phase_label.text = "Last phase: %s • %s • %s" % [_summary_last_phase, _summary_source_variant, _summary_verification_status]
-	if is_instance_valid(summary_counts_label):
-		summary_counts_label.text = "Primary taps %d • Chip taps %d • Strip drags %d" % [
-			int(_target_state(TARGET_PRIMARY).get("tap_count", 0)),
-			int(_target_state(TARGET_CHIP).get("tap_count", 0)),
-			int(_target_state(TARGET_STRIP).get("drag_count", 0)),
-		]
-
 	_sync_preview_shell()
 
 
@@ -653,19 +564,6 @@ func _on_contract_target_interaction(binding: AeroUiContractTargetBinding, event
 	_summary_verification_status = str(event.verification_status)
 
 	match event.phase:
-		AeroUiInteractionTypes.PHASE_PRESS_BEGIN:
-			_summary_owner_target_path = str(event.target_path)
-		AeroUiInteractionTypes.PHASE_PRESS_END:
-			_summary_last_release_target_path = str(event.target_path)
-			_summary_owner_target_path = ""
-		AeroUiInteractionTypes.PHASE_DRAG_BEGIN, AeroUiInteractionTypes.PHASE_DRAG_MOVE:
-			if binding.target_key == TARGET_STRIP:
-				_update_drag_strip_progress_from_event(binding, event)
-		AeroUiInteractionTypes.PHASE_HOVER_ENTER:
-			_summary_hover_target_path = str(event.target_path)
-		AeroUiInteractionTypes.PHASE_HOVER_EXIT:
-			if _summary_hover_target_path == str(event.target_path):
-				_summary_hover_target_path = ""
 		_:
 			pass
 	_refresh_target_visual(binding.target_key)
@@ -685,7 +583,6 @@ func _on_contract_target_tapped(binding: AeroUiContractTargetBinding, event: Aer
 
 
 func _on_contract_target_canceled(binding: AeroUiContractTargetBinding, event: AeroUiInteractionEvent) -> void:
-	_summary_owner_target_path = ""
 	_summary_last_phase = str(event.phase)
 	_summary_source_variant = str(event.source_variant)
 	_summary_verification_status = str(event.verification_status)
@@ -696,24 +593,12 @@ func _on_contract_target_state_changed(binding: AeroUiContractTargetBinding) -> 
 	_refresh_target_visual(binding.target_key)
 
 
-func _update_drag_strip_progress_from_event(binding: AeroUiContractTargetBinding, event: AeroUiInteractionEvent) -> void:
-	var rect := drag_strip.get_global_rect()
-	if rect.size.x <= 0.0:
-		return
-	var progress := clampf((event.surface_position.x - rect.position.x) / rect.size.x, 0.0, 1.0)
-	binding.user_state["progress"] = progress
-	_notify_contract_target_state_changed(binding)
-
-
 func _refresh_target_visual(target_key: String) -> void:
 	match target_key:
 		TARGET_PRIMARY:
 			_refresh_interaction_debug()
 		TARGET_CHIP:
 			_refresh_secondary_chip_visual()
-			_refresh_interaction_debug()
-		TARGET_STRIP:
-			_refresh_drag_strip_visual()
 			_refresh_interaction_debug()
 		_:
 			_refresh_interaction_debug()
