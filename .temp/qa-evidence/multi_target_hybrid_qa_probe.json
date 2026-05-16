@@ -1,0 +1,1474 @@
+{
+	"after_chip_tap": {
+		"chip_state": "hover YES • press 1 • taps 1",
+		"hint_label": "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype.",
+		"last_release_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+		"mouse_hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+		"mouse_owner_target_path": "",
+		"primary_pointer": "Primary phase: hover_exit • owner none",
+		"primary_toggle": "Primary toggle: ON • taps 1 • releases 1",
+		"strip_state": "owner test: 12% • drags 0 • releases 0",
+		"summary_counts": "Primary taps 1 • Chip taps 1 • Strip drags 0",
+		"summary_hover": "Hover target: SecondaryToggleChip",
+		"summary_owner": "Active owner: none",
+		"summary_phase": "Last phase: tapped • screen_mouse • prototype",
+		"summary_release": "Last release: SecondaryToggleChip",
+		"target_states": {
+			"chip": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": true,
+				"press_count": 1,
+				"pressed": false,
+				"progress": 0.0,
+				"release_count": 1,
+				"tap_count": 1,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"toggle_on": true
+			},
+			"primary": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": false,
+				"press_count": 1,
+				"pressed": false,
+				"progress": 0.0,
+				"release_count": 1,
+				"tap_count": 1,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"toggle_on": true
+			},
+			"strip": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": false,
+				"press_count": 0,
+				"pressed": false,
+				"progress": 0.12,
+				"release_count": 0,
+				"tap_count": 0,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"toggle_on": false
+			}
+		}
+	},
+	"after_cross_sibling_drag": {
+		"chip_state": "hover YES • press 1 • taps 1",
+		"hint_label": "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype.",
+		"last_release_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+		"mouse_hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+		"mouse_owner_target_path": "",
+		"primary_pointer": "Primary phase: hover_exit • owner none",
+		"primary_toggle": "Primary toggle: ON • taps 1 • releases 1",
+		"strip_state": "owner test: 16% • drags 2 • releases 1",
+		"summary_counts": "Primary taps 1 • Chip taps 1 • Strip drags 2",
+		"summary_hover": "Hover target: SecondaryToggleChip",
+		"summary_owner": "Active owner: none",
+		"summary_phase": "Last phase: press_end • screen_mouse • prototype",
+		"summary_release": "Last release: DragStrip",
+		"target_states": {
+			"chip": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": true,
+				"press_count": 1,
+				"pressed": false,
+				"progress": 0.0,
+				"release_count": 1,
+				"tap_count": 1,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"toggle_on": true
+			},
+			"primary": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": false,
+				"press_count": 1,
+				"pressed": false,
+				"progress": 0.0,
+				"release_count": 1,
+				"tap_count": 1,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"toggle_on": true
+			},
+			"strip": {
+				"drag_count": 2,
+				"dragging": false,
+				"hovered": false,
+				"press_count": 1,
+				"pressed": false,
+				"progress": 0.164527239118304,
+				"release_count": 1,
+				"tap_count": 0,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"toggle_on": false
+			}
+		}
+	},
+	"after_hover_chip": {
+		"chip_state": "hover YES • press 0 • taps 0",
+		"hint_label": "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype.",
+		"last_release_target_path": "",
+		"mouse_hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+		"mouse_owner_target_path": "",
+		"primary_pointer": "Primary phase: hover_move • owner none",
+		"primary_toggle": "Primary toggle: OFF • taps 0 • releases 0",
+		"strip_state": "owner test: 12% • drags 0 • releases 0",
+		"summary_counts": "Primary taps 0 • Chip taps 0 • Strip drags 0",
+		"summary_hover": "Hover target: SecondaryToggleChip",
+		"summary_owner": "Active owner: none",
+		"summary_phase": "Last phase: hover_move • screen_mouse • prototype",
+		"summary_release": "Last release: none",
+		"target_states": {
+			"chip": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": true,
+				"press_count": 0,
+				"pressed": false,
+				"progress": 0.0,
+				"release_count": 0,
+				"tap_count": 0,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"toggle_on": false
+			},
+			"primary": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": false,
+				"press_count": 0,
+				"pressed": false,
+				"progress": 0.0,
+				"release_count": 0,
+				"tap_count": 0,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"toggle_on": false
+			},
+			"strip": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": false,
+				"press_count": 0,
+				"pressed": false,
+				"progress": 0.12,
+				"release_count": 0,
+				"tap_count": 0,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"toggle_on": false
+			}
+		}
+	},
+	"after_hover_primary": {
+		"chip_state": "hover NO • press 0 • taps 0",
+		"hint_label": "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype.",
+		"last_release_target_path": "",
+		"mouse_hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+		"mouse_owner_target_path": "",
+		"primary_pointer": "Primary phase: hover_move • owner none",
+		"primary_toggle": "Primary toggle: OFF • taps 0 • releases 0",
+		"strip_state": "owner test: 12% • drags 0 • releases 0",
+		"summary_counts": "Primary taps 0 • Chip taps 0 • Strip drags 0",
+		"summary_hover": "Hover target: PrimaryCardButton",
+		"summary_owner": "Active owner: none",
+		"summary_phase": "Last phase: hover_move • screen_mouse • prototype",
+		"summary_release": "Last release: none",
+		"target_states": {
+			"chip": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": false,
+				"press_count": 0,
+				"pressed": false,
+				"progress": 0.0,
+				"release_count": 0,
+				"tap_count": 0,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"toggle_on": false
+			},
+			"primary": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": true,
+				"press_count": 0,
+				"pressed": false,
+				"progress": 0.0,
+				"release_count": 0,
+				"tap_count": 0,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"toggle_on": false
+			},
+			"strip": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": false,
+				"press_count": 0,
+				"pressed": false,
+				"progress": 0.12,
+				"release_count": 0,
+				"tap_count": 0,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"toggle_on": false
+			}
+		}
+	},
+	"after_hover_strip": {
+		"chip_state": "hover NO • press 0 • taps 0",
+		"hint_label": "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype.",
+		"last_release_target_path": "",
+		"mouse_hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+		"mouse_owner_target_path": "",
+		"primary_pointer": "Primary phase: hover_exit • owner none",
+		"primary_toggle": "Primary toggle: OFF • taps 0 • releases 0",
+		"strip_state": "owner test: 12% • drags 0 • releases 0",
+		"summary_counts": "Primary taps 0 • Chip taps 0 • Strip drags 0",
+		"summary_hover": "Hover target: DragStrip",
+		"summary_owner": "Active owner: none",
+		"summary_phase": "Last phase: hover_move • screen_mouse • prototype",
+		"summary_release": "Last release: none",
+		"target_states": {
+			"chip": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": false,
+				"press_count": 0,
+				"pressed": false,
+				"progress": 0.0,
+				"release_count": 0,
+				"tap_count": 0,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"toggle_on": false
+			},
+			"primary": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": false,
+				"press_count": 0,
+				"pressed": false,
+				"progress": 0.0,
+				"release_count": 0,
+				"tap_count": 0,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"toggle_on": false
+			},
+			"strip": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": true,
+				"press_count": 0,
+				"pressed": false,
+				"progress": 0.12,
+				"release_count": 0,
+				"tap_count": 0,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"toggle_on": false
+			}
+		}
+	},
+	"after_offsurface_release": {
+		"chip_state": "hover NO • press 1 • taps 1",
+		"hint_label": "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype.",
+		"last_release_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+		"mouse_hover_target_path": "",
+		"mouse_owner_target_path": "",
+		"primary_pointer": "Primary phase: hover_exit • owner none",
+		"primary_toggle": "Primary toggle: ON • taps 1 • releases 1",
+		"strip_state": "owner test: 82% • drags 4 • releases 2",
+		"summary_counts": "Primary taps 1 • Chip taps 1 • Strip drags 4",
+		"summary_hover": "Hover target: none",
+		"summary_owner": "Active owner: none",
+		"summary_phase": "Last phase: press_end • screen_mouse • prototype",
+		"summary_release": "Last release: DragStrip",
+		"target_states": {
+			"chip": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": false,
+				"press_count": 1,
+				"pressed": false,
+				"progress": 0.0,
+				"release_count": 1,
+				"tap_count": 1,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"toggle_on": true
+			},
+			"primary": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": false,
+				"press_count": 1,
+				"pressed": false,
+				"progress": 0.0,
+				"release_count": 1,
+				"tap_count": 1,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"toggle_on": true
+			},
+			"strip": {
+				"drag_count": 4,
+				"dragging": false,
+				"hovered": false,
+				"press_count": 2,
+				"pressed": false,
+				"progress": 0.817338562011719,
+				"release_count": 2,
+				"tap_count": 0,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"toggle_on": false
+			}
+		}
+	},
+	"after_primary_tap": {
+		"chip_state": "hover NO • press 0 • taps 0",
+		"hint_label": "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype.",
+		"last_release_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+		"mouse_hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+		"mouse_owner_target_path": "",
+		"primary_pointer": "Primary phase: press_end • owner none",
+		"primary_toggle": "Primary toggle: ON • taps 1 • releases 1",
+		"strip_state": "owner test: 12% • drags 0 • releases 0",
+		"summary_counts": "Primary taps 1 • Chip taps 0 • Strip drags 0",
+		"summary_hover": "Hover target: PrimaryCardButton",
+		"summary_owner": "Active owner: none",
+		"summary_phase": "Last phase: tapped • screen_mouse • prototype",
+		"summary_release": "Last release: PrimaryCardButton",
+		"target_states": {
+			"chip": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": false,
+				"press_count": 0,
+				"pressed": false,
+				"progress": 0.0,
+				"release_count": 0,
+				"tap_count": 0,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"toggle_on": false
+			},
+			"primary": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": true,
+				"press_count": 1,
+				"pressed": false,
+				"progress": 0.0,
+				"release_count": 1,
+				"tap_count": 1,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"toggle_on": true
+			},
+			"strip": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": false,
+				"press_count": 0,
+				"pressed": false,
+				"progress": 0.12,
+				"release_count": 0,
+				"tap_count": 0,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"toggle_on": false
+			}
+		}
+	},
+	"all_checks": {
+		"chip_tap_isolated": true,
+		"drag_hover_can_change_while_owner_stays_strip": true,
+		"dynamic_resolution_hits_all_targets": true,
+		"has_three_sibling_targets": true,
+		"hover_enter_seen_for_multiple_targets": true,
+		"hover_transitions_visible": true,
+		"offsurface_release_keeps_owner": true,
+		"offsurface_release_marks_continuation": true,
+		"primary_tap_isolated": true,
+		"raw_metadata_uses_dynamic_resolution_marker": true,
+		"release_over_different_sibling_keeps_strip_owner": true,
+		"shared_consumer_shape_still_contract_driven": true,
+		"strip_drag_no_transfer": true,
+		"verification_labels_still_conservative": true
+	},
+	"baseline": {
+		"chip_state": "hover NO • press 0 • taps 0",
+		"hint_label": "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype.",
+		"last_release_target_path": "",
+		"mouse_hover_target_path": "",
+		"mouse_owner_target_path": "",
+		"primary_pointer": "Primary phase: idle • owner none",
+		"primary_toggle": "Primary toggle: OFF • taps 0 • releases 0",
+		"strip_state": "owner test: 12% • drags 0 • releases 0",
+		"summary_counts": "Primary taps 0 • Chip taps 0 • Strip drags 0",
+		"summary_hover": "Hover target: none",
+		"summary_owner": "Active owner: none",
+		"summary_phase": "Last phase: idle • waiting • waiting",
+		"summary_release": "Last release: none",
+		"target_states": {
+			"chip": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": false,
+				"press_count": 0,
+				"pressed": false,
+				"progress": 0.0,
+				"release_count": 0,
+				"tap_count": 0,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"toggle_on": false
+			},
+			"primary": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": false,
+				"press_count": 0,
+				"pressed": false,
+				"progress": 0.0,
+				"release_count": 0,
+				"tap_count": 0,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"toggle_on": false
+			},
+			"strip": {
+				"drag_count": 0,
+				"dragging": false,
+				"hovered": false,
+				"press_count": 0,
+				"pressed": false,
+				"progress": 0.12,
+				"release_count": 0,
+				"tap_count": 0,
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"toggle_on": false
+			}
+		}
+	},
+	"binding_report": {
+		"all_connected": true,
+		"binding_count": 3,
+		"bindings": [
+			{
+				"binding_name": "PrimaryContractBinding",
+				"bus_path": "/root/GlassShaderGui3DTest/AeroUiInteractionBus",
+				"interactable_connected": true,
+				"interactable_name": "PrimaryCardButtonInteractable",
+				"listener_connected": true,
+				"listener_name": "PrimaryCardButtonListener",
+				"target_key": "primary",
+				"target_name": "PrimaryCardButton",
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton"
+			},
+			{
+				"binding_name": "ChipContractBinding",
+				"bus_path": "/root/GlassShaderGui3DTest/AeroUiInteractionBus",
+				"interactable_connected": true,
+				"interactable_name": "SecondaryToggleChipInteractable",
+				"listener_connected": true,
+				"listener_name": "SecondaryToggleChipListener",
+				"target_key": "chip",
+				"target_name": "SecondaryToggleChip",
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip"
+			},
+			{
+				"binding_name": "StripContractBinding",
+				"bus_path": "/root/GlassShaderGui3DTest/AeroUiInteractionBus",
+				"interactable_connected": true,
+				"interactable_name": "DragStripInteractable",
+				"listener_connected": true,
+				"listener_name": "DragStripListener",
+				"target_key": "strip",
+				"target_name": "DragStrip",
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip"
+			}
+		],
+		"has_required_keys": true,
+		"has_required_names": true,
+		"target_keys": [
+			"primary",
+			"chip",
+			"strip"
+		],
+		"target_names": [
+			"PrimaryCardButton",
+			"SecondaryToggleChip",
+			"DragStrip"
+		]
+	},
+	"centers": {
+		"chip": {
+			"screen_position": {
+				"x": 892.807739257812,
+				"y": 407.64453125
+			},
+			"surface_position": {
+				"x": 613.0,
+				"y": 267.0
+			},
+			"target_name": "SecondaryToggleChip",
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip"
+		},
+		"primary": {
+			"screen_position": {
+				"x": 970.788208007812,
+				"y": 500.097869873047
+			},
+			"surface_position": {
+				"x": 800.0,
+				"y": 470.0
+			},
+			"target_name": "PrimaryCardButton",
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton"
+		},
+		"strip": {
+			"screen_position": {
+				"x": 970.788208007812,
+				"y": 585.947387695312
+			},
+			"surface_position": {
+				"x": 800.0,
+				"y": 658.5
+			},
+			"target_name": "DragStrip",
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip"
+		}
+	},
+	"event_checks": {
+		"drag_hover_can_change_while_owner_stays_strip": true,
+		"hover_enter_seen_for_multiple_targets": true,
+		"offsurface_release_marks_continuation": true,
+		"raw_metadata_uses_dynamic_resolution_marker": true,
+		"release_over_different_sibling_keeps_strip_owner": true
+	},
+	"event_sample": [
+		{
+			"phase": "hover_enter",
+			"raw_metadata": {
+				"host_phase": "hover_enter",
+				"host_surface": "PanelInputSurface",
+				"hover_continuity": "world_ray_projection",
+				"hover_target_path": "",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"local_hit": "(-0.344027, 0.365277, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.382585, 0.297068)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 612.13525390625,
+				"y": 267.361267089844
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_move",
+			"raw_metadata": {
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"local_hit": "(-0.344027, 0.365277, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.382585, 0.297068)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 612.13525390625,
+				"y": 267.361267089844
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_exit",
+			"raw_metadata": {
+				"host_phase": "hover_exit",
+				"host_surface": "PanelInputSurface",
+				"hover_continuity": "world_ray_projection",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"local_hit": "(-0.002914, -0.039145, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.521747)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 469.572662353516
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_enter",
+			"raw_metadata": {
+				"host_phase": "hover_enter",
+				"host_surface": "PanelInputSurface",
+				"hover_continuity": "world_ray_projection",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"local_hit": "(-0.002914, -0.039145, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.521747)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 469.572662353516
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_move",
+			"raw_metadata": {
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"local_hit": "(-0.002914, -0.039145, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.521747)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 469.572662353516
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_exit",
+			"raw_metadata": {
+				"host_phase": "hover_exit",
+				"host_surface": "PanelInputSurface",
+				"hover_continuity": "world_ray_projection",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"local_hit": "(-0.002914, -0.414681, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.730378)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 657.340270996094
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_enter",
+			"raw_metadata": {
+				"host_phase": "hover_enter",
+				"host_surface": "PanelInputSurface",
+				"hover_continuity": "world_ray_projection",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"local_hit": "(-0.002914, -0.414681, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.730378)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 657.340270996094
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_move",
+			"raw_metadata": {
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"local_hit": "(-0.002914, -0.414681, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.730378)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 657.340270996094
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_exit",
+			"raw_metadata": {
+				"host_phase": "hover_exit",
+				"host_surface": "PanelInputSurface",
+				"hover_continuity": "world_ray_projection",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"local_hit": "(-0.002914, -0.039145, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.521747)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 469.572662353516
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_enter",
+			"raw_metadata": {
+				"host_phase": "hover_enter",
+				"host_surface": "PanelInputSurface",
+				"hover_continuity": "world_ray_projection",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"local_hit": "(-0.002914, -0.039145, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.521747)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 469.572662353516
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_move",
+			"raw_metadata": {
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"local_hit": "(-0.002914, -0.039145, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.521747)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 469.572662353516
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "press_begin",
+			"raw_metadata": {
+				"button_index": 1,
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"local_hit": "(-0.002914, -0.039145, 0.02)",
+				"owner_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.521747)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 469.572662353516
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "press_end",
+			"raw_metadata": {
+				"button_index": 1,
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"local_hit": "(-0.002914, -0.039145, 0.02)",
+				"owner_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.521747)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 469.572662353516
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_exit",
+			"raw_metadata": {
+				"host_phase": "hover_exit",
+				"host_surface": "PanelInputSurface",
+				"hover_continuity": "world_ray_projection",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"local_hit": "(-0.344027, 0.365277, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.382585, 0.297068)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 612.13525390625,
+				"y": 267.361267089844
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_enter",
+			"raw_metadata": {
+				"host_phase": "hover_enter",
+				"host_surface": "PanelInputSurface",
+				"hover_continuity": "world_ray_projection",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"local_hit": "(-0.344027, 0.365277, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.382585, 0.297068)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 612.13525390625,
+				"y": 267.361267089844
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_move",
+			"raw_metadata": {
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"local_hit": "(-0.344027, 0.365277, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.382585, 0.297068)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 612.13525390625,
+				"y": 267.361267089844
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "press_begin",
+			"raw_metadata": {
+				"button_index": 1,
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"local_hit": "(-0.344027, 0.365277, 0.02)",
+				"owner_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.382585, 0.297068)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 612.13525390625,
+				"y": 267.361267089844
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "press_end",
+			"raw_metadata": {
+				"button_index": 1,
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"local_hit": "(-0.344027, 0.365277, 0.02)",
+				"owner_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.382585, 0.297068)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 612.13525390625,
+				"y": 267.361267089844
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_exit",
+			"raw_metadata": {
+				"host_phase": "hover_exit",
+				"host_surface": "PanelInputSurface",
+				"hover_continuity": "world_ray_projection",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"local_hit": "(-0.002914, -0.414681, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.730378)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 657.340270996094
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_enter",
+			"raw_metadata": {
+				"host_phase": "hover_enter",
+				"host_surface": "PanelInputSurface",
+				"hover_continuity": "world_ray_projection",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"local_hit": "(-0.002914, -0.414681, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.730378)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 657.340270996094
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_move",
+			"raw_metadata": {
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"local_hit": "(-0.002914, -0.414681, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.730378)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 657.340270996094
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "press_begin",
+			"raw_metadata": {
+				"button_index": 1,
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"local_hit": "(-0.002914, -0.414681, 0.02)",
+				"owner_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.730378)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 657.340270996094
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_exit",
+			"raw_metadata": {
+				"host_phase": "hover_exit",
+				"host_surface": "PanelInputSurface",
+				"hover_continuity": "world_ray_projection",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"local_hit": "(-0.002914, -0.039145, 0.02)",
+				"owner_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.521747)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 469.572662353516
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_enter",
+			"raw_metadata": {
+				"host_phase": "hover_enter",
+				"host_surface": "PanelInputSurface",
+				"hover_continuity": "world_ray_projection",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"local_hit": "(-0.002914, -0.039145, 0.02)",
+				"owner_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.521747)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 469.572662353516
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "drag_begin",
+			"raw_metadata": {
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"local_hit": "(-0.002914, -0.039145, 0.02)",
+				"owner_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.521747)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 469.572662353516
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_exit",
+			"raw_metadata": {
+				"host_phase": "hover_exit",
+				"host_surface": "PanelInputSurface",
+				"hover_continuity": "world_ray_projection",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"local_hit": "(-0.344027, 0.365277, 0.02)",
+				"owner_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.382585, 0.297068)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 612.13525390625,
+				"y": 267.361267089844
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_enter",
+			"raw_metadata": {
+				"host_phase": "hover_enter",
+				"host_surface": "PanelInputSurface",
+				"hover_continuity": "world_ray_projection",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"local_hit": "(-0.344027, 0.365277, 0.02)",
+				"owner_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.382585, 0.297068)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 612.13525390625,
+				"y": 267.361267089844
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "drag_move",
+			"raw_metadata": {
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"local_hit": "(-0.344027, 0.365277, 0.02)",
+				"owner_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.382585, 0.297068)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 612.13525390625,
+				"y": 267.361267089844
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "drag_end",
+			"raw_metadata": {
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"local_hit": "(-0.344027, 0.365277, 0.02)",
+				"owner_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.382585, 0.297068)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 612.13525390625,
+				"y": 267.361267089844
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "press_end",
+			"raw_metadata": {
+				"button_index": 1,
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"local_hit": "(-0.344027, 0.365277, 0.02)",
+				"owner_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.382585, 0.297068)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 612.13525390625,
+				"y": 267.361267089844
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_exit",
+			"raw_metadata": {
+				"host_phase": "hover_exit",
+				"host_surface": "PanelInputSurface",
+				"hover_continuity": "world_ray_projection",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"local_hit": "(-0.002914, -0.414681, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.730378)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 657.340270996094
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_enter",
+			"raw_metadata": {
+				"host_phase": "hover_enter",
+				"host_surface": "PanelInputSurface",
+				"hover_continuity": "world_ray_projection",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"local_hit": "(-0.002914, -0.414681, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.730378)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 657.340270996094
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_move",
+			"raw_metadata": {
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"local_hit": "(-0.002914, -0.414681, 0.02)",
+				"owner_target_path": "",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.730378)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 657.340270996094
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "press_begin",
+			"raw_metadata": {
+				"button_index": 1,
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"local_hit": "(-0.002914, -0.414681, 0.02)",
+				"owner_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.499006, 0.730378)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 798.408813476562,
+				"y": 657.340270996094
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "drag_begin",
+			"raw_metadata": {
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"live_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"local_hit": "(0.325431, -0.414681, 0.02)",
+				"owner_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.611068, 0.730378)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 977.709594726562,
+				"y": 657.340270996094
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "hover_exit",
+			"raw_metadata": {
+				"host_phase": "hover_exit",
+				"host_surface": "PanelInputSurface",
+				"hover_continuity": "world_ray_projection",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"live_target_path": "",
+				"local_hit": "(0.325431, -0.414681, 0.02)",
+				"off_surface_continuation": true,
+				"owner_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.611068, 0.730378)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 977.709594726562,
+				"y": 657.340270996094
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "drag_move",
+			"raw_metadata": {
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"live_target_path": "",
+				"local_hit": "(0.325431, -0.414681, 0.02)",
+				"off_surface_continuation": true,
+				"owner_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.611068, 0.730378)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 977.709594726562,
+				"y": 657.340270996094
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "drag_end",
+			"raw_metadata": {
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"live_target_path": "",
+				"local_hit": "(0.325431, -0.414681, 0.02)",
+				"off_surface_continuation": true,
+				"owner_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.611068, 0.730378)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 977.709594726562,
+				"y": 657.340270996094
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"verification_status": "prototype"
+		},
+		{
+			"phase": "press_end",
+			"raw_metadata": {
+				"button_index": 1,
+				"host_surface": "PanelInputSurface",
+				"hover_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"live_target_path": "",
+				"local_hit": "(0.325431, -0.414681, 0.02)",
+				"off_surface_continuation": true,
+				"owner_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"published_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+				"surface_size": "(2.93, 1.8)",
+				"target_resolution": "multi_target_panel_rect_lookup",
+				"uv": "(0.611068, 0.730378)"
+			},
+			"source_variant": "screen_mouse",
+			"surface_position": {
+				"x": 977.709594726562,
+				"y": 657.340270996094
+			},
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"verification_status": "prototype"
+		}
+	],
+	"hit_probes": {
+		"chip": {
+			"hit": true,
+			"matches_expected": true,
+			"resolved_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip",
+			"viewport_position": {
+				"x": 612.13525390625,
+				"y": 267.361267089844
+			}
+		},
+		"primary": {
+			"hit": true,
+			"matches_expected": true,
+			"resolved_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"viewport_position": {
+				"x": 798.408813476562,
+				"y": 469.572662353516
+			}
+		},
+		"strip": {
+			"hit": true,
+			"matches_expected": true,
+			"resolved_target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip",
+			"viewport_position": {
+				"x": 798.408813476562,
+				"y": 657.340270996094
+			}
+		}
+	},
+	"ok": true,
+	"scene": "res://scenes/glass-shader-gui-3d-test.tscn",
+	"state_checks": {
+		"chip_tap_isolated": true,
+		"dynamic_resolution_hits_all_targets": true,
+		"has_three_sibling_targets": true,
+		"hover_transitions_visible": true,
+		"offsurface_release_keeps_owner": true,
+		"primary_tap_isolated": true,
+		"shared_consumer_shape_still_contract_driven": true,
+		"strip_drag_no_transfer": true,
+		"verification_labels_still_conservative": true
+	},
+	"target_names": [
+		"PrimaryCardButton",
+		"SecondaryToggleChip",
+		"DragStrip"
+	],
+	"target_specs": [
+		{
+			"rect": "[P: (540.0, 330.0), S: (520.0, 280.0)]",
+			"target_key": "primary",
+			"target_name": "PrimaryCardButton",
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton"
+		},
+		{
+			"rect": "[P: (508.0, 234.0), S: (210.0, 66.0)]",
+			"target_key": "chip",
+			"target_name": "SecondaryToggleChip",
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip"
+		},
+		{
+			"rect": "[P: (520.0, 603.0), S: (560.0, 111.0)]",
+			"target_key": "strip",
+			"target_name": "DragStrip",
+			"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip"
+		}
+	]
+}

@@ -1,0 +1,608 @@
+{
+	"scene_probe": {
+		"after_drag_outside": {
+			"active_touch_capture_size": 0,
+			"adapter_parent_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"badge_label": "Screen contract proof",
+			"binding_report": {
+				"all_connected": true,
+				"binding_count": 3,
+				"bindings": [
+					{
+						"binding_name": "PrimaryContractBinding",
+						"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "PrimaryCardButtonInteractable",
+						"listener_connected": true,
+						"listener_name": "PrimaryCardButtonListener",
+						"target_key": "primary",
+						"target_name": "PrimaryCardButton",
+						"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton"
+					},
+					{
+						"binding_name": "ChipContractBinding",
+						"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "SecondaryToggleChipInteractable",
+						"listener_connected": true,
+						"listener_name": "SecondaryToggleChipListener",
+						"target_key": "chip",
+						"target_name": "SecondaryToggleChip",
+						"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip"
+					},
+					{
+						"binding_name": "StripContractBinding",
+						"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "DragStripInteractable",
+						"listener_connected": true,
+						"listener_name": "DragStripListener",
+						"target_key": "strip",
+						"target_name": "DragStrip",
+						"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip"
+					}
+				],
+				"has_required_target_names": true,
+				"target_keys": [
+					"primary",
+					"chip",
+					"strip"
+				],
+				"target_names": [
+					"PrimaryCardButton",
+					"SecondaryToggleChip",
+					"DragStrip"
+				]
+			},
+			"body_label": "Screen-space host routing now feeds AeroUiInteractionBus through ScreenUiInputAdapter. This card reacts to normalized hover / press / drag / tap phases instead of raw gui_input parsing.",
+			"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+			"count_label": "Verification: prototype • Desktop mouse path is implemented in core, but still needs repo/scene QA confirmation.",
+			"hint_label": "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype.",
+			"mouse_capture": true,
+			"mouse_hover_active": true,
+			"pointer_label": "Primary phase: drag_begin • owner PrimaryCardButton",
+			"proof_button_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"source_label": "Primary source: screen_mouse • hover YES",
+			"status_label": "Screen 2D Glass Panel / Input-Core Contract Proof\n\nSource variant: screen_mouse\nPhase: drag_begin\nSurface ID: screen_glass_panel\nSurface type: screen_2d\nVerification: prototype\nVerification notes: Desktop mouse path is implemented in core, but still needs repo/scene QA confirmation.\nTarget path: /root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton\nMouse capture: ON\nHover active: YES\nActive touches: 0\nLast contract publish: publish mouse motion -> proof card (captured)\n\nHost-owned truth stays small here: mount the shared panel, resolve the PreviewButton path, publish screen mouse / touch through ScreenUiInputAdapter, and allow minimal continuity only for interactions that begin on the proof card.",
+			"toggle_label": "Primary toggle: OFF • taps 0 • releases 0"
+		},
+		"after_hover": {
+			"active_touch_capture_size": 0,
+			"adapter_parent_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"badge_label": "Screen contract proof",
+			"binding_report": {
+				"all_connected": true,
+				"binding_count": 3,
+				"bindings": [
+					{
+						"binding_name": "PrimaryContractBinding",
+						"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "PrimaryCardButtonInteractable",
+						"listener_connected": true,
+						"listener_name": "PrimaryCardButtonListener",
+						"target_key": "primary",
+						"target_name": "PrimaryCardButton",
+						"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton"
+					},
+					{
+						"binding_name": "ChipContractBinding",
+						"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "SecondaryToggleChipInteractable",
+						"listener_connected": true,
+						"listener_name": "SecondaryToggleChipListener",
+						"target_key": "chip",
+						"target_name": "SecondaryToggleChip",
+						"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip"
+					},
+					{
+						"binding_name": "StripContractBinding",
+						"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "DragStripInteractable",
+						"listener_connected": true,
+						"listener_name": "DragStripListener",
+						"target_key": "strip",
+						"target_name": "DragStrip",
+						"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip"
+					}
+				],
+				"has_required_target_names": true,
+				"target_keys": [
+					"primary",
+					"chip",
+					"strip"
+				],
+				"target_names": [
+					"PrimaryCardButton",
+					"SecondaryToggleChip",
+					"DragStrip"
+				]
+			},
+			"body_label": "Screen-space host routing now feeds AeroUiInteractionBus through ScreenUiInputAdapter. This card reacts to normalized hover / press / drag / tap phases instead of raw gui_input parsing.",
+			"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+			"count_label": "Verification: prototype • Desktop mouse path is implemented in core, but still needs repo/scene QA confirmation.",
+			"hint_label": "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype.",
+			"mouse_capture": false,
+			"mouse_hover_active": true,
+			"pointer_label": "Primary phase: hover_enter • owner none",
+			"proof_button_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"source_label": "Primary source: screen_mouse • hover YES",
+			"status_label": "Screen 2D Glass Panel / Input-Core Contract Proof\n\nSource variant: screen_mouse\nPhase: hover_enter\nSurface ID: screen_glass_panel\nSurface type: screen_2d\nVerification: prototype\nVerification notes: Desktop mouse path is implemented in core, but still needs repo/scene QA confirmation.\nTarget path: /root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton\nMouse capture: OFF\nHover active: YES\nActive touches: 0\nLast contract publish: publish mouse motion -> proof card\n\nHost-owned truth stays small here: mount the shared panel, resolve the PreviewButton path, publish screen mouse / touch through ScreenUiInputAdapter, and allow minimal continuity only for interactions that begin on the proof card.",
+			"toggle_label": "Primary toggle: OFF • taps 0 • releases 0"
+		},
+		"after_press": {
+			"active_touch_capture_size": 0,
+			"adapter_parent_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"badge_label": "Screen contract proof",
+			"binding_report": {
+				"all_connected": true,
+				"binding_count": 3,
+				"bindings": [
+					{
+						"binding_name": "PrimaryContractBinding",
+						"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "PrimaryCardButtonInteractable",
+						"listener_connected": true,
+						"listener_name": "PrimaryCardButtonListener",
+						"target_key": "primary",
+						"target_name": "PrimaryCardButton",
+						"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton"
+					},
+					{
+						"binding_name": "ChipContractBinding",
+						"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "SecondaryToggleChipInteractable",
+						"listener_connected": true,
+						"listener_name": "SecondaryToggleChipListener",
+						"target_key": "chip",
+						"target_name": "SecondaryToggleChip",
+						"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip"
+					},
+					{
+						"binding_name": "StripContractBinding",
+						"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "DragStripInteractable",
+						"listener_connected": true,
+						"listener_name": "DragStripListener",
+						"target_key": "strip",
+						"target_name": "DragStrip",
+						"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip"
+					}
+				],
+				"has_required_target_names": true,
+				"target_keys": [
+					"primary",
+					"chip",
+					"strip"
+				],
+				"target_names": [
+					"PrimaryCardButton",
+					"SecondaryToggleChip",
+					"DragStrip"
+				]
+			},
+			"body_label": "Screen-space host routing now feeds AeroUiInteractionBus through ScreenUiInputAdapter. This card reacts to normalized hover / press / drag / tap phases instead of raw gui_input parsing.",
+			"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+			"count_label": "Verification: prototype • Desktop mouse path is implemented in core, but still needs repo/scene QA confirmation.",
+			"hint_label": "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype.",
+			"mouse_capture": true,
+			"mouse_hover_active": true,
+			"pointer_label": "Primary phase: press_begin • owner PrimaryCardButton",
+			"proof_button_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"source_label": "Primary source: screen_mouse • hover YES",
+			"status_label": "Screen 2D Glass Panel / Input-Core Contract Proof\n\nSource variant: screen_mouse\nPhase: press_begin\nSurface ID: screen_glass_panel\nSurface type: screen_2d\nVerification: prototype\nVerification notes: Desktop mouse path is implemented in core, but still needs repo/scene QA confirmation.\nTarget path: /root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton\nMouse capture: ON\nHover active: YES\nActive touches: 0\nLast contract publish: publish mouse press -> proof card\n\nHost-owned truth stays small here: mount the shared panel, resolve the PreviewButton path, publish screen mouse / touch through ScreenUiInputAdapter, and allow minimal continuity only for interactions that begin on the proof card.",
+			"toggle_label": "Primary toggle: OFF • taps 0 • releases 0"
+		},
+		"after_release": {
+			"active_touch_capture_size": 0,
+			"adapter_parent_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"badge_label": "Screen contract proof",
+			"binding_report": {
+				"all_connected": true,
+				"binding_count": 3,
+				"bindings": [
+					{
+						"binding_name": "PrimaryContractBinding",
+						"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "PrimaryCardButtonInteractable",
+						"listener_connected": true,
+						"listener_name": "PrimaryCardButtonListener",
+						"target_key": "primary",
+						"target_name": "PrimaryCardButton",
+						"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton"
+					},
+					{
+						"binding_name": "ChipContractBinding",
+						"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "SecondaryToggleChipInteractable",
+						"listener_connected": true,
+						"listener_name": "SecondaryToggleChipListener",
+						"target_key": "chip",
+						"target_name": "SecondaryToggleChip",
+						"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip"
+					},
+					{
+						"binding_name": "StripContractBinding",
+						"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "DragStripInteractable",
+						"listener_connected": true,
+						"listener_name": "DragStripListener",
+						"target_key": "strip",
+						"target_name": "DragStrip",
+						"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip"
+					}
+				],
+				"has_required_target_names": true,
+				"target_keys": [
+					"primary",
+					"chip",
+					"strip"
+				],
+				"target_names": [
+					"PrimaryCardButton",
+					"SecondaryToggleChip",
+					"DragStrip"
+				]
+			},
+			"body_label": "Screen-space host routing now feeds AeroUiInteractionBus through ScreenUiInputAdapter. This card reacts to normalized hover / press / drag / tap phases instead of raw gui_input parsing.",
+			"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+			"count_label": "Verification: prototype • Desktop mouse path is implemented in core, but still needs repo/scene QA confirmation.",
+			"hint_label": "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype.",
+			"mouse_capture": false,
+			"mouse_hover_active": false,
+			"pointer_label": "Primary phase: press_end • owner none",
+			"proof_button_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"source_label": "Primary source: screen_mouse • hover YES",
+			"status_label": "Screen 2D Glass Panel / Input-Core Contract Proof\n\nSource variant: screen_mouse\nPhase: press_end\nSurface ID: screen_glass_panel\nSurface type: screen_2d\nVerification: prototype\nVerification notes: Desktop mouse path is implemented in core, but still needs repo/scene QA confirmation.\nTarget path: /root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton\nMouse capture: OFF\nHover active: NO\nActive touches: 0\nLast contract publish: publish mouse release -> proof card\n\nHost-owned truth stays small here: mount the shared panel, resolve the PreviewButton path, publish screen mouse / touch through ScreenUiInputAdapter, and allow minimal continuity only for interactions that begin on the proof card.",
+			"toggle_label": "Primary toggle: OFF • taps 0 • releases 1"
+		},
+		"after_touch": {
+			"active_touch_capture_size": 0,
+			"adapter_parent_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"badge_label": "Screen contract proof",
+			"binding_report": {
+				"all_connected": true,
+				"binding_count": 3,
+				"bindings": [
+					{
+						"binding_name": "PrimaryContractBinding",
+						"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "PrimaryCardButtonInteractable",
+						"listener_connected": true,
+						"listener_name": "PrimaryCardButtonListener",
+						"target_key": "primary",
+						"target_name": "PrimaryCardButton",
+						"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton"
+					},
+					{
+						"binding_name": "ChipContractBinding",
+						"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "SecondaryToggleChipInteractable",
+						"listener_connected": true,
+						"listener_name": "SecondaryToggleChipListener",
+						"target_key": "chip",
+						"target_name": "SecondaryToggleChip",
+						"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip"
+					},
+					{
+						"binding_name": "StripContractBinding",
+						"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "DragStripInteractable",
+						"listener_connected": true,
+						"listener_name": "DragStripListener",
+						"target_key": "strip",
+						"target_name": "DragStrip",
+						"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip"
+					}
+				],
+				"has_required_target_names": true,
+				"target_keys": [
+					"primary",
+					"chip",
+					"strip"
+				],
+				"target_names": [
+					"PrimaryCardButton",
+					"SecondaryToggleChip",
+					"DragStrip"
+				]
+			},
+			"body_label": "Screen-space host routing now feeds AeroUiInteractionBus through ScreenUiInputAdapter. This card reacts to normalized hover / press / drag / tap phases instead of raw gui_input parsing.",
+			"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+			"count_label": "Verification: unverified • Touch is represented in the contract, but this path is not yet validated in a real touch environment.",
+			"hint_label": "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype.",
+			"mouse_capture": false,
+			"mouse_hover_active": false,
+			"pointer_label": "Primary phase: press_end • owner none",
+			"proof_button_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"source_label": "Primary source: screen_touch • hover YES",
+			"status_label": "Screen 2D Glass Panel / Input-Core Contract Proof\n\nSource variant: screen_touch\nPhase: press_end\nSurface ID: screen_glass_panel\nSurface type: screen_2d\nVerification: unverified\nVerification notes: Touch is represented in the contract, but this path is not yet validated in a real touch environment.\nTarget path: /root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton\nMouse capture: OFF\nHover active: NO\nActive touches: 0\nLast contract publish: publish touch release #3 -> proof card (captured)\n\nHost-owned truth stays small here: mount the shared panel, resolve the PreviewButton path, publish screen mouse / touch through ScreenUiInputAdapter, and allow minimal continuity only for interactions that begin on the proof card.",
+			"toggle_label": "Primary toggle: OFF • taps 0 • releases 2"
+		},
+		"assertions": {
+			"adapter_present": true,
+			"binding_layout_matches_specs": true,
+			"bus_present": true,
+			"drag_updates_phase": true,
+			"host_glue_summary_mentions_small_scope": true,
+			"hover_updates_pointer_label": true,
+			"hover_updates_source_label": true,
+			"press_updates_phase": true,
+			"proof_button_present": true,
+			"release_host_and_card_agree_on_phase": true,
+			"release_host_and_card_agree_on_source": true,
+			"release_host_and_card_agree_on_verification": true,
+			"release_host_status_preserves_surface_id": true,
+			"release_updates_primary_release_count": true,
+			"touch_updates_source_label": true,
+			"touch_updates_verification_to_unverified": true
+		},
+		"baseline": {
+			"active_touch_capture_size": 0,
+			"adapter_parent_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"badge_label": "Screen contract proof",
+			"binding_report": {
+				"all_connected": true,
+				"binding_count": 3,
+				"bindings": [
+					{
+						"binding_name": "PrimaryContractBinding",
+						"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "PrimaryCardButtonInteractable",
+						"listener_connected": true,
+						"listener_name": "PrimaryCardButtonListener",
+						"target_key": "primary",
+						"target_name": "PrimaryCardButton",
+						"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton"
+					},
+					{
+						"binding_name": "ChipContractBinding",
+						"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "SecondaryToggleChipInteractable",
+						"listener_connected": true,
+						"listener_name": "SecondaryToggleChipListener",
+						"target_key": "chip",
+						"target_name": "SecondaryToggleChip",
+						"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip"
+					},
+					{
+						"binding_name": "StripContractBinding",
+						"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "DragStripInteractable",
+						"listener_connected": true,
+						"listener_name": "DragStripListener",
+						"target_key": "strip",
+						"target_name": "DragStrip",
+						"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip"
+					}
+				],
+				"has_required_target_names": true,
+				"target_keys": [
+					"primary",
+					"chip",
+					"strip"
+				],
+				"target_names": [
+					"PrimaryCardButton",
+					"SecondaryToggleChip",
+					"DragStrip"
+				]
+			},
+			"body_label": "Screen-space host routing now feeds AeroUiInteractionBus through ScreenUiInputAdapter. This card reacts to normalized hover / press / drag / tap phases instead of raw gui_input parsing.",
+			"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+			"count_label": "Verification: waiting • No normalized contract event received yet.",
+			"hint_label": "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype.",
+			"mouse_capture": false,
+			"mouse_hover_active": false,
+			"pointer_label": "Primary phase: idle • owner none",
+			"proof_button_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton",
+			"source_label": "Primary source: waiting • hover NO",
+			"status_label": "Screen 2D Glass Panel / Input-Core Contract Proof\n\nSource variant: waiting\nPhase: waiting\nSurface ID: screen_glass_panel\nSurface type: screen_2d\nVerification: waiting\nVerification notes: No normalized interaction published yet.\nTarget path: waiting\nMouse capture: OFF\nHover active: NO\nActive touches: 0\nLast contract publish: waiting for normalized panel input\n\nHost-owned truth stays small here: mount the shared panel, resolve the PreviewButton path, publish screen mouse / touch through ScreenUiInputAdapter, and allow minimal continuity only for interactions that begin on the proof card.",
+			"toggle_label": "Primary toggle: OFF • taps 0 • releases 0"
+		},
+		"binding_report": {
+			"all_connected": true,
+			"binding_count": 3,
+			"bindings": [
+				{
+					"binding_name": "PrimaryContractBinding",
+					"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+					"interactable_connected": true,
+					"interactable_name": "PrimaryCardButtonInteractable",
+					"listener_connected": true,
+					"listener_name": "PrimaryCardButtonListener",
+					"target_key": "primary",
+					"target_name": "PrimaryCardButton",
+					"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton"
+				},
+				{
+					"binding_name": "ChipContractBinding",
+					"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+					"interactable_connected": true,
+					"interactable_name": "SecondaryToggleChipInteractable",
+					"listener_connected": true,
+					"listener_name": "SecondaryToggleChipListener",
+					"target_key": "chip",
+					"target_name": "SecondaryToggleChip",
+					"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip"
+				},
+				{
+					"binding_name": "StripContractBinding",
+					"bus_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus",
+					"interactable_connected": true,
+					"interactable_name": "DragStripInteractable",
+					"listener_connected": true,
+					"listener_name": "DragStripListener",
+					"target_key": "strip",
+					"target_name": "DragStrip",
+					"target_path": "/root/GlassShaderTest/SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip"
+				}
+			],
+			"has_required_target_names": true,
+			"target_keys": [
+				"primary",
+				"chip",
+				"strip"
+			],
+			"target_names": [
+				"PrimaryCardButton",
+				"SecondaryToggleChip",
+				"DragStrip"
+			]
+		}
+	},
+	"shared_panel_configs": {
+		"hybrid_glass_panel": {
+			"assertions": {
+				"badge_matches_current_primary_state": true,
+				"binding_layout_matches_specs": true,
+				"body_uses_host_summary": true,
+				"count_mentions_verification": true,
+				"hint_keeps_current_guidance": true,
+				"source_mentions_mouse": true,
+				"toggle_reflects_primary_release": true
+			},
+			"badge_label": "Primary armed",
+			"binding_report": {
+				"all_connected": true,
+				"binding_count": 3,
+				"bindings": [
+					{
+						"binding_name": "PrimaryContractBinding",
+						"bus_path": "/root/Host_hybrid_glass_panel/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "PrimaryCardButtonInteractable",
+						"listener_connected": true,
+						"listener_name": "PrimaryCardButtonListener",
+						"target_key": "primary",
+						"target_name": "PrimaryCardButton",
+						"target_path": "/root/Host_hybrid_glass_panel/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton"
+					},
+					{
+						"binding_name": "ChipContractBinding",
+						"bus_path": "/root/Host_hybrid_glass_panel/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "SecondaryToggleChipInteractable",
+						"listener_connected": true,
+						"listener_name": "SecondaryToggleChipListener",
+						"target_key": "chip",
+						"target_name": "SecondaryToggleChip",
+						"target_path": "/root/Host_hybrid_glass_panel/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip"
+					},
+					{
+						"binding_name": "StripContractBinding",
+						"bus_path": "/root/Host_hybrid_glass_panel/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "DragStripInteractable",
+						"listener_connected": true,
+						"listener_name": "DragStripListener",
+						"target_key": "strip",
+						"target_name": "DragStrip",
+						"target_path": "/root/Host_hybrid_glass_panel/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip"
+					}
+				],
+				"has_required_target_names": true,
+				"target_keys": [
+					"primary",
+					"chip",
+					"strip"
+				],
+				"target_names": [
+					"PrimaryCardButton",
+					"SecondaryToggleChip",
+					"DragStrip"
+				]
+			},
+			"body_label": "Hybrid contract proof summary",
+			"count_label": "Verification: prototype • Hybrid 3D GUI mouse path is scaffolded for downstream adapters but not fully proven.",
+			"hint_label": "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype.",
+			"pointer_label": "Primary phase: press_end • owner none",
+			"resolved_bus_path": "/root/Host_hybrid_glass_panel/AeroUiInteractionBus",
+			"source_label": "Primary source: screen_mouse • hover NO",
+			"toggle_label": "Primary toggle: ON • taps 1 • releases 1"
+		},
+		"screen_glass_panel": {
+			"assertions": {
+				"badge_matches_current_primary_state": true,
+				"binding_layout_matches_specs": true,
+				"body_uses_host_summary": true,
+				"count_mentions_verification": true,
+				"hint_keeps_current_guidance": true,
+				"source_mentions_mouse": true,
+				"toggle_reflects_primary_release": true
+			},
+			"badge_label": "Primary armed",
+			"binding_report": {
+				"all_connected": true,
+				"binding_count": 3,
+				"bindings": [
+					{
+						"binding_name": "PrimaryContractBinding",
+						"bus_path": "/root/Host_screen_glass_panel/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "PrimaryCardButtonInteractable",
+						"listener_connected": true,
+						"listener_name": "PrimaryCardButtonListener",
+						"target_key": "primary",
+						"target_name": "PrimaryCardButton",
+						"target_path": "/root/Host_screen_glass_panel/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton"
+					},
+					{
+						"binding_name": "ChipContractBinding",
+						"bus_path": "/root/Host_screen_glass_panel/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "SecondaryToggleChipInteractable",
+						"listener_connected": true,
+						"listener_name": "SecondaryToggleChipListener",
+						"target_key": "chip",
+						"target_name": "SecondaryToggleChip",
+						"target_path": "/root/Host_screen_glass_panel/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip"
+					},
+					{
+						"binding_name": "StripContractBinding",
+						"bus_path": "/root/Host_screen_glass_panel/AeroUiInteractionBus",
+						"interactable_connected": true,
+						"interactable_name": "DragStripInteractable",
+						"listener_connected": true,
+						"listener_name": "DragStripListener",
+						"target_key": "strip",
+						"target_name": "DragStrip",
+						"target_path": "/root/Host_screen_glass_panel/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip"
+					}
+				],
+				"has_required_target_names": true,
+				"target_keys": [
+					"primary",
+					"chip",
+					"strip"
+				],
+				"target_names": [
+					"PrimaryCardButton",
+					"SecondaryToggleChip",
+					"DragStrip"
+				]
+			},
+			"body_label": "Screen contract proof summary",
+			"count_label": "Verification: prototype • Desktop mouse path is implemented in core, but still needs repo/scene QA confirmation.",
+			"hint_label": "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype.",
+			"pointer_label": "Primary phase: press_end • owner none",
+			"resolved_bus_path": "/root/Host_screen_glass_panel/AeroUiInteractionBus",
+			"source_label": "Primary source: screen_mouse • hover NO",
+			"toggle_label": "Primary toggle: ON • taps 1 • releases 1"
+		}
+	}
+}

@@ -1,0 +1,198 @@
+{
+	"after_drag": {
+		"badge_label": "Primary armed",
+		"button_pressed": true,
+		"headline_label": "AeroBeat INPUT CONTRACT",
+		"hint_label": "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype.",
+		"pointer_label": "Primary phase: press_end • owner none",
+		"source_label": "Primary source: screen_mouse • hover YES",
+		"status_label": "[b]Hybrid 3D Glass Panel / Input-Core Contract Proof[/b]\n[color=#cbd5e1]Space[/color] auto rotation: ON\n[color=#cbd5e1]WASD / Arrows[/color] pitch and yaw the wrapper\n[color=#cbd5e1]R[/color] reset wrapper rotation\n[color=#cbd5e1]1 / 2 / 3 / 4[/color] source viewport background: No background\n[color=#cbd5e1]Mouse / touch[/color] are ray-picked locally, projected into the panel surface, then published through HybridSubViewportInputAdapter.\n\nPitch: 10.0°\nYaw: 24.1°\nMouse capture: OFF\nHover active: NO\nSurface currently hit: NO\nHover target path: none\nActive owner path: none\nLive projected target: none\nLast release target: none\nActive touches: 0\nPublished target path: /root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton\nSource variant: screen_mouse\nPhase: press_end\nSurface ID: hybrid_glass_panel\nVerification: prototype\nVerification notes: Hybrid 3D GUI mouse path is scaffolded for downstream adapters but not fully proven.\nLast contract publish: screen_mouse • press_end • prototype\n\nHost-owned truth stays here: world ray picking, local hit -> UV -> viewport mapping, sibling target lookup, hover enter/exit truth, and per-pointer owner-path continuity. Normalized semantics stay on the shared input-core bus/adapter contract.",
+		"toggle_label": "Primary toggle: ON • taps 1 • releases 2",
+		"verification_label": "Verification: prototype • Hybrid 3D GUI mouse path is scaffolded for downstream adapters but not fully proven."
+	},
+	"after_tap": {
+		"badge_label": "Primary armed",
+		"button_pressed": true,
+		"headline_label": "AeroBeat INPUT CONTRACT",
+		"hint_label": "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype.",
+		"pointer_label": "Primary phase: press_end • owner none",
+		"source_label": "Primary source: screen_mouse • hover YES",
+		"status_label": "[b]Hybrid 3D Glass Panel / Input-Core Contract Proof[/b]\n[color=#cbd5e1]Space[/color] auto rotation: ON\n[color=#cbd5e1]WASD / Arrows[/color] pitch and yaw the wrapper\n[color=#cbd5e1]R[/color] reset wrapper rotation\n[color=#cbd5e1]1 / 2 / 3 / 4[/color] source viewport background: No background\n[color=#cbd5e1]Mouse / touch[/color] are ray-picked locally, projected into the panel surface, then published through HybridSubViewportInputAdapter.\n\nPitch: 10.0°\nYaw: 23.6°\nMouse capture: OFF\nHover active: NO\nSurface currently hit: NO\nHover target path: none\nActive owner path: none\nLive projected target: none\nLast release target: none\nActive touches: 0\nPublished target path: /root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton\nSource variant: screen_mouse\nPhase: press_end\nSurface ID: hybrid_glass_panel\nVerification: prototype\nVerification notes: Hybrid 3D GUI mouse path is scaffolded for downstream adapters but not fully proven.\nLast contract publish: screen_mouse • press_end • prototype\n\nHost-owned truth stays here: world ray picking, local hit -> UV -> viewport mapping, sibling target lookup, hover enter/exit truth, and per-pointer owner-path continuity. Normalized semantics stay on the shared input-core bus/adapter contract.",
+		"toggle_label": "Primary toggle: ON • taps 1 • releases 1",
+		"verification_label": "Verification: prototype • Hybrid 3D GUI mouse path is scaffolded for downstream adapters but not fully proven."
+	},
+	"baseline": {
+		"badge_label": "Hybrid multi-target contract proof",
+		"button_pressed": false,
+		"headline_label": "AeroBeat",
+		"hint_label": "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype.",
+		"pointer_label": "Primary phase: idle • owner none",
+		"source_label": "Primary source: waiting • hover NO",
+		"status_label": "[b]Hybrid 3D Glass Panel / Input-Core Contract Proof[/b]\n[color=#cbd5e1]Space[/color] auto rotation: ON\n[color=#cbd5e1]WASD / Arrows[/color] pitch and yaw the wrapper\n[color=#cbd5e1]R[/color] reset wrapper rotation\n[color=#cbd5e1]1 / 2 / 3 / 4[/color] source viewport background: No background\n[color=#cbd5e1]Mouse / touch[/color] are ray-picked locally, projected into the panel surface, then published through HybridSubViewportInputAdapter.\n\nPitch: 10.0°\nYaw: 23.4°\nMouse capture: OFF\nHover active: NO\nSurface currently hit: NO\nHover target path: none\nActive owner path: none\nLive projected target: none\nLast release target: none\nActive touches: 0\nPublished target path: waiting\nSource variant: waiting\nPhase: waiting\nSurface ID: hybrid_glass_panel\nVerification: waiting\nVerification notes: No normalized interaction published yet.\nLast contract publish: waiting for normalized panel input\n\nHost-owned truth stays here: world ray picking, local hit -> UV -> viewport mapping, sibling target lookup, hover enter/exit truth, and per-pointer owner-path continuity. Normalized semantics stay on the shared input-core bus/adapter contract.",
+		"toggle_label": "Primary toggle: OFF • taps 0 • releases 0",
+		"verification_label": "Verification: waiting • No normalized contract event received yet."
+	},
+	"checks": {
+		"bus_resolved_to_scene_bus": true,
+		"drag_did_not_increment_taps": true,
+		"mask_bindings_match_specs": true,
+		"mask_consumers_connected": true,
+		"panel_badge_changed": true,
+		"panel_bindings_match_specs": true,
+		"panel_consumers_connected": true,
+		"panel_drag_counts_changed": true,
+		"panel_headline_changed": true,
+		"panel_pointer_label_changed": true,
+		"panel_source_label_changed": true,
+		"panel_toggle_label_changed": true,
+		"panel_verification_label_changed": true
+	},
+	"connection_report": {
+		"mask_bindings": {
+			"all_connected": true,
+			"binding_count": 3,
+			"bindings": [
+				{
+					"binding_name": "PrimaryContractBinding",
+					"bus_path": "/root/GlassShaderGui3DTest/AeroUiInteractionBus",
+					"interactable_connected": true,
+					"interactable_name": "PrimaryCardButtonInteractable",
+					"listener_connected": true,
+					"listener_name": "PrimaryCardButtonListener",
+					"target_key": "primary",
+					"target_name": "PrimaryCardButton",
+					"target_path": "/root/GlassShaderGui3DTest/PanelPivot/MaskViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton"
+				},
+				{
+					"binding_name": "ChipContractBinding",
+					"bus_path": "/root/GlassShaderGui3DTest/AeroUiInteractionBus",
+					"interactable_connected": true,
+					"interactable_name": "SecondaryToggleChipInteractable",
+					"listener_connected": true,
+					"listener_name": "SecondaryToggleChipListener",
+					"target_key": "chip",
+					"target_name": "SecondaryToggleChip",
+					"target_path": "/root/GlassShaderGui3DTest/PanelPivot/MaskViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip"
+				},
+				{
+					"binding_name": "StripContractBinding",
+					"bus_path": "/root/GlassShaderGui3DTest/AeroUiInteractionBus",
+					"interactable_connected": true,
+					"interactable_name": "DragStripInteractable",
+					"listener_connected": true,
+					"listener_name": "DragStripListener",
+					"target_key": "strip",
+					"target_name": "DragStrip",
+					"target_path": "/root/GlassShaderGui3DTest/PanelPivot/MaskViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip"
+				}
+			],
+			"has_required_target_names": true,
+			"target_keys": [
+				"primary",
+				"chip",
+				"strip"
+			],
+			"target_names": [
+				"PrimaryCardButton",
+				"SecondaryToggleChip",
+				"DragStrip"
+			]
+		},
+		"mask_override_bus_path": "/root/GlassShaderGui3DTest/AeroUiInteractionBus",
+		"mask_target_specs": [
+			{
+				"rect": "[P: (540.0, 330.0), S: (520.0, 280.0)]",
+				"target_key": "primary",
+				"target_name": "PrimaryCardButton",
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/MaskViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton"
+			},
+			{
+				"rect": "[P: (508.0, 234.0), S: (210.0, 66.0)]",
+				"target_key": "chip",
+				"target_name": "SecondaryToggleChip",
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/MaskViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip"
+			},
+			{
+				"rect": "[P: (520.0, 603.0), S: (560.0, 111.0)]",
+				"target_key": "strip",
+				"target_name": "DragStrip",
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/MaskViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip"
+			}
+		],
+		"panel_bindings": {
+			"all_connected": true,
+			"binding_count": 3,
+			"bindings": [
+				{
+					"binding_name": "PrimaryContractBinding",
+					"bus_path": "/root/GlassShaderGui3DTest/AeroUiInteractionBus",
+					"interactable_connected": true,
+					"interactable_name": "PrimaryCardButtonInteractable",
+					"listener_connected": true,
+					"listener_name": "PrimaryCardButtonListener",
+					"target_key": "primary",
+					"target_name": "PrimaryCardButton",
+					"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton"
+				},
+				{
+					"binding_name": "ChipContractBinding",
+					"bus_path": "/root/GlassShaderGui3DTest/AeroUiInteractionBus",
+					"interactable_connected": true,
+					"interactable_name": "SecondaryToggleChipInteractable",
+					"listener_connected": true,
+					"listener_name": "SecondaryToggleChipListener",
+					"target_key": "chip",
+					"target_name": "SecondaryToggleChip",
+					"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip"
+				},
+				{
+					"binding_name": "StripContractBinding",
+					"bus_path": "/root/GlassShaderGui3DTest/AeroUiInteractionBus",
+					"interactable_connected": true,
+					"interactable_name": "DragStripInteractable",
+					"listener_connected": true,
+					"listener_name": "DragStripListener",
+					"target_key": "strip",
+					"target_name": "DragStrip",
+					"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip"
+				}
+			],
+			"has_required_target_names": true,
+			"target_keys": [
+				"primary",
+				"chip",
+				"strip"
+			],
+			"target_names": [
+				"PrimaryCardButton",
+				"SecondaryToggleChip",
+				"DragStrip"
+			]
+		},
+		"panel_override_bus_path": "/root/GlassShaderGui3DTest/AeroUiInteractionBus",
+		"panel_resolved_bus_path": "/root/GlassShaderGui3DTest/AeroUiInteractionBus",
+		"panel_target_specs": [
+			{
+				"rect": "[P: (540.0, 330.0), S: (520.0, 280.0)]",
+				"target_key": "primary",
+				"target_name": "PrimaryCardButton",
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/PrimaryCardButton"
+			},
+			{
+				"rect": "[P: (508.0, 234.0), S: (210.0, 66.0)]",
+				"target_key": "chip",
+				"target_name": "SecondaryToggleChip",
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/SecondaryToggleChip"
+			},
+			{
+				"rect": "[P: (520.0, 603.0), S: (560.0, 111.0)]",
+				"target_key": "strip",
+				"target_name": "DragStrip",
+				"target_path": "/root/GlassShaderGui3DTest/PanelPivot/PanelViewport/GlassShaderPanelSource/PreviewCenter/PreviewStack/DragStrip"
+			}
+		],
+		"scene_bus_path": "/root/GlassShaderGui3DTest/AeroUiInteractionBus"
+	},
+	"ok": true,
+	"scene": "res://scenes/glass-shader-gui-3d-test.tscn"
+}
