@@ -536,12 +536,6 @@ func _refresh_interaction_debug() -> void:
 		phase_text = str(_last_interaction_event.phase)
 		surface_text = str(_last_interaction_event.surface_id)
 
-	if is_instance_valid(preview_badge_label):
-		preview_badge_label.text = contract_mode_label
-	if is_instance_valid(headline_label):
-		headline_label.text = "AeroBeat"
-	if is_instance_valid(body_label):
-		body_label.text = contract_host_summary
 	_sync_preview_shell()
 
 
