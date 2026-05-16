@@ -4,7 +4,7 @@
     // The hidden testbed stays focused on shared UI-kit development.
     "aerobeat-ui-core": {
       "url": "git@github.com:AeroBeat-Workouts/aerobeat-ui-core.git",
-      "checkout": "v0.1.1",
+      "checkout": "b5c6222",
       "subfolder": "/"
     },
     "aerobeat-input-core": {

@@ -1,4 +1,4 @@
-extends Control
+extends AeroContractConsumerViewBase
 
 const BACKGROUND_IMAGE_PATH := "res://assets/images/perfect-hue-may-08-2026-hd.png"
 const FRAME_ALPHA_BOOST := 0.18
@@ -180,13 +180,6 @@ var _hybrid_badge_fill_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_fill_a
 var _hybrid_badge_border_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_border_alpha"])
 var _hybrid_badge_label_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_label_alpha"])
 var _last_interaction_event: AeroUiInteractionEvent = null
-var _interaction_bus_path_override: NodePath = NodePath()
-var _interaction_surface_id: StringName = DEFAULT_INTERACTION_SURFACE_ID
-var _contract_surface_type_label := "hybrid_3d_gui"
-var _contract_host_summary := "Hybrid world hits now feed AeroUiInteractionBus through HybridSubViewportInputAdapter. Multiple sibling controls stay bus-driven without raw gui_input parsing."
-var _contract_host_mode_label := "Hybrid multi-target contract proof"
-var _target_states: Dictionary = {}
-var _path_to_target_key: Dictionary = {}
 var _summary_hover_target_path := ""
 var _summary_owner_target_path := ""
 var _summary_last_release_target_path := ""
@@ -196,6 +189,11 @@ var _summary_verification_status := "waiting"
 
 
 func _ready() -> void:
+	interaction_surface_id = DEFAULT_INTERACTION_SURFACE_ID
+	interaction_surface_type_label = "hybrid_3d_gui"
+	contract_host_summary = "Hybrid world hits now feed AeroUiInteractionBus through HybridSubViewportInputAdapter. Multiple sibling controls stay bus-driven without raw gui_input parsing."
+	contract_mode_label = "Hybrid multi-target contract proof"
+
 	_background_texture = _load_background_texture()
 	background.texture = _background_texture
 
@@ -212,8 +210,7 @@ func _ready() -> void:
 	_configure_primary_card_button()
 	_configure_secondary_chip()
 	_configure_drag_strip()
-	_setup_contract_consumers()
-	call_deferred("_bind_contract_consumers_to_runtime_bus")
+	super._ready()
 	_sync_shell_state_from_shader()
 	_apply_visual_state()
 	primary_card_button.resized.connect(_sync_preview_shell)
@@ -230,6 +227,35 @@ func _notification(what: int) -> void:
 		_configure_primary_card_button()
 		_configure_secondary_chip()
 		_configure_drag_strip()
+
+
+func _build_contract_targets() -> void:
+	register_contract_target(TARGET_PRIMARY, primary_card_button, {
+		"target_label": TARGET_LABELS[TARGET_PRIMARY],
+		"user_state": {"toggle_on": false},
+	})
+	register_contract_target(TARGET_CHIP, secondary_toggle_chip, {
+		"target_label": TARGET_LABELS[TARGET_CHIP],
+		"user_state": {"toggle_on": false},
+	})
+	register_contract_target(TARGET_STRIP, drag_strip, {
+		"target_label": TARGET_LABELS[TARGET_STRIP],
+		"user_state": {"progress": 0.12},
+	})
+
+
+func configure_interaction_contract(config: Dictionary) -> void:
+	super.configure_interaction_contract(config)
+	if is_node_ready():
+		_refresh_interaction_debug()
+
+
+func _get_default_interaction_bus_path() -> NodePath:
+	return DEFAULT_INTERACTION_BUS_PATH
+
+
+func _get_interaction_bus_node_path() -> NodePath:
+	return INTERACTION_BUS_NODE_NAME
 
 
 func _load_background_texture() -> Texture2D:
@@ -283,122 +309,6 @@ func _configure_drag_strip() -> void:
 	drag_strip.mouse_default_cursor_shape = Control.CURSOR_HSIZE
 
 
-func _setup_contract_consumers() -> void:
-	_target_states.clear()
-	_path_to_target_key.clear()
-	_register_target_contract(TARGET_PRIMARY, primary_card_button)
-	_register_target_contract(TARGET_CHIP, secondary_toggle_chip)
-	_register_target_contract(TARGET_STRIP, drag_strip)
-	_bind_contract_consumers_to_runtime_bus()
-
-
-func _register_target_contract(target_key: String, control: Control) -> void:
-	if not is_instance_valid(control):
-		return
-
-	var interactable := AeroUiInteractable.new()
-	interactable.name = "%sInteractable" % TARGET_LABELS[target_key]
-	add_child(interactable)
-	var listener := AeroUiInteractionListener.new()
-	listener.name = "%sListener" % TARGET_LABELS[target_key]
-	add_child(listener)
-	var target_path := control.get_path()
-
-	for consumer in [interactable, listener]:
-		consumer.bus_path = DEFAULT_INTERACTION_BUS_PATH
-		consumer.surface_id_filter = _interaction_surface_id
-		consumer.target_path_filter = target_path
-
-	_target_states[target_key] = {
-		"control": control,
-		"interactable": interactable,
-		"listener": listener,
-		"target_path": target_path,
-		"hovered": false,
-		"pressed": false,
-		"dragging": false,
-		"press_count": 0,
-		"release_count": 0,
-		"drag_count": 0,
-		"tap_count": 0,
-		"toggle_on": false,
-		"last_event": null,
-		"last_source_variant": "waiting",
-	}
-	_path_to_target_key[str(target_path)] = target_key
-
-	if not interactable.hovered_changed.is_connected(_on_target_hovered_changed):
-		interactable.hovered_changed.connect(_on_target_hovered_changed.bind(target_key))
-	if not interactable.pressed_changed.is_connected(_on_target_pressed_changed):
-		interactable.pressed_changed.connect(_on_target_pressed_changed.bind(target_key))
-	if not interactable.dragging_changed.is_connected(_on_target_dragging_changed):
-		interactable.dragging_changed.connect(_on_target_dragging_changed.bind(target_key))
-	if not interactable.canceled.is_connected(_on_target_canceled):
-		interactable.canceled.connect(_on_target_canceled.bind(target_key))
-	if not listener.interaction_event.is_connected(_on_target_listener_interaction_event):
-		listener.interaction_event.connect(_on_target_listener_interaction_event.bind(target_key))
-	if not listener.tapped.is_connected(_on_target_listener_tapped):
-		listener.tapped.connect(_on_target_listener_tapped.bind(target_key))
-
-
-func set_interaction_bus_path(bus_path: NodePath) -> void:
-	_interaction_bus_path_override = bus_path
-	_bind_contract_consumers_to_runtime_bus()
-
-
-func configure_interaction_contract(config: Dictionary) -> void:
-	if config.has("surface_id"):
-		_interaction_surface_id = StringName(config["surface_id"])
-	if config.has("surface_type_label"):
-		_contract_surface_type_label = str(config["surface_type_label"])
-	if config.has("host_summary"):
-		_contract_host_summary = str(config["host_summary"])
-	if config.has("mode_label"):
-		_contract_host_mode_label = str(config["mode_label"])
-	if config.has("interaction_bus_path"):
-		set_interaction_bus_path(config["interaction_bus_path"])
-
-	for state in _target_states.values():
-		for consumer in [state.get("interactable"), state.get("listener")]:
-			if is_instance_valid(consumer):
-				consumer.surface_id_filter = _interaction_surface_id
-
-	if is_node_ready():
-		_refresh_interaction_debug()
-
-
-func _bind_contract_consumers_to_runtime_bus() -> void:
-	var bus := _resolve_interaction_bus()
-	if bus == null:
-		return
-
-	for state in _target_states.values():
-		for consumer in [state.get("interactable"), state.get("listener")]:
-			if not is_instance_valid(consumer):
-				continue
-			consumer.bus_path = bus.get_path()
-			var handler := Callable(consumer, "_on_bus_interaction_event")
-			if not bus.interaction_event.is_connected(handler):
-				bus.interaction_event.connect(handler)
-
-
-func _resolve_interaction_bus() -> AeroUiInteractionBus:
-	if _interaction_bus_path_override != NodePath():
-		return get_node_or_null(_interaction_bus_path_override) as AeroUiInteractionBus
-
-	var fallback_bus := get_node_or_null(DEFAULT_INTERACTION_BUS_PATH) as AeroUiInteractionBus
-	if fallback_bus != null:
-		return fallback_bus
-
-	var ancestor: Node = self
-	while ancestor != null:
-		var bus := ancestor.get_node_or_null(INTERACTION_BUS_NODE_NAME) as AeroUiInteractionBus
-		if bus != null:
-			return bus
-		ancestor = ancestor.get_parent()
-	return null
-
-
 func set_background_mode(mode: int) -> void:
 	_background_mode = clampi(mode, BACKGROUND_MODE_IMAGE, BACKGROUND_MODE_NONE)
 	if is_node_ready():
@@ -425,22 +335,6 @@ func get_preview_rect_normalized() -> Rect2:
 
 	var rect := primary_card_button.get_global_rect()
 	return Rect2(rect.position / size, rect.size / size)
-
-
-func get_interaction_target_specs() -> Array:
-	var specs: Array = []
-	for target_key in [TARGET_PRIMARY, TARGET_CHIP, TARGET_STRIP]:
-		var state: Dictionary = _target_states.get(target_key, {})
-		var control := state.get("control") as Control
-		if not is_instance_valid(control):
-			continue
-		specs.append({
-			"target_key": target_key,
-			"target_name": TARGET_LABELS[target_key],
-			"target_path": state.get("target_path", NodePath()),
-			"rect": control.get_global_rect(),
-		})
-	return specs
 
 
 func set_shader_parameter(parameter_name: String, value: Variant) -> void:
@@ -630,7 +524,7 @@ func _apply_primary_card_accent() -> void:
 	if _frame_style == null or _inner_border_style == null or _badge_style == null:
 		return
 
-	var state: Dictionary = _target_states.get(TARGET_PRIMARY, {})
+	var state := _target_state(TARGET_PRIMARY)
 	var accent_strength := 0.0
 	if bool(state.get("toggle_on", false)):
 		accent_strength = 1.0
@@ -651,7 +545,7 @@ func _apply_primary_card_accent() -> void:
 func _refresh_secondary_chip_visual() -> void:
 	if not is_instance_valid(secondary_toggle_chip):
 		return
-	var state: Dictionary = _target_states.get(TARGET_CHIP, {})
+	var state := _target_state(TARGET_CHIP)
 	var hovered := bool(state.get("hovered", false))
 	var pressed := bool(state.get("pressed", false))
 	var toggled := bool(state.get("toggle_on", false))
@@ -673,7 +567,7 @@ func _refresh_secondary_chip_visual() -> void:
 func _refresh_drag_strip_visual() -> void:
 	if not is_instance_valid(drag_strip_fill) or not is_instance_valid(drag_strip_handle) or not is_instance_valid(drag_strip):
 		return
-	var state: Dictionary = _target_states.get(TARGET_STRIP, {})
+	var state := _target_state(TARGET_STRIP)
 	var progress := clampf(float(state.get("progress", 0.12)), 0.0, 1.0)
 	var track_rect: Rect2 = (drag_strip_fill.get_parent() as Control).get_rect()
 	drag_strip_fill.size.x = track_rect.size.x * progress
@@ -697,10 +591,10 @@ func _refresh_interaction_debug() -> void:
 	if not is_node_ready():
 		return
 
-	var primary_state: Dictionary = _target_states.get(TARGET_PRIMARY, {})
+	var primary_state := _target_state(TARGET_PRIMARY)
 	var primary_event: AeroUiInteractionEvent = primary_state.get("last_event") as AeroUiInteractionEvent
 	var phase_text := "idle"
-	var surface_text := String(_interaction_surface_id)
+	var surface_text := String(interaction_surface_id)
 	var verification_status := _summary_verification_status
 	var verification_notes := "No normalized contract event received yet."
 	var source_variant := _summary_source_variant
@@ -726,11 +620,11 @@ func _refresh_interaction_debug() -> void:
 	if is_instance_valid(interaction_count_label):
 		interaction_count_label.text = "Verification: %s • %s" % [verification_status, verification_notes]
 	if is_instance_valid(preview_badge_label):
-		preview_badge_label.text = "Primary armed" if bool(primary_state.get("toggle_on", false)) else _contract_host_mode_label
+		preview_badge_label.text = "Primary armed" if bool(primary_state.get("toggle_on", false)) else contract_mode_label
 	if is_instance_valid(headline_label):
 		headline_label.text = "AeroBeat INPUT CONTRACT" if bool(primary_state.get("toggle_on", false)) else "AeroBeat"
 	if is_instance_valid(body_label):
-		body_label.text = _contract_host_summary
+		body_label.text = contract_host_summary
 	if is_instance_valid(hint_label):
 		hint_label.text = "Hover can move between siblings. Press ownership stays locked to its origin target until release. Touch remains unverified; hybrid mouse remains prototype."
 
@@ -744,70 +638,29 @@ func _refresh_interaction_debug() -> void:
 		summary_phase_label.text = "Last phase: %s • %s • %s" % [_summary_last_phase, _summary_source_variant, _summary_verification_status]
 	if is_instance_valid(summary_counts_label):
 		summary_counts_label.text = "Primary taps %d • Chip taps %d • Strip drags %d" % [
-			int(_target_states.get(TARGET_PRIMARY, {}).get("tap_count", 0)),
-			int(_target_states.get(TARGET_CHIP, {}).get("tap_count", 0)),
-			int(_target_states.get(TARGET_STRIP, {}).get("drag_count", 0)),
+			int(_target_state(TARGET_PRIMARY).get("tap_count", 0)),
+			int(_target_state(TARGET_CHIP).get("tap_count", 0)),
+			int(_target_state(TARGET_STRIP).get("drag_count", 0)),
 		]
 
 	_sync_preview_shell()
 
 
-func _on_target_hovered_changed(is_hovered: bool, event: AeroUiInteractionEvent, target_key: String) -> void:
-	var state: Dictionary = _target_states.get(target_key, {})
-	state["hovered"] = is_hovered
-	state["last_event"] = event
-	_target_states[target_key] = state
-	_refresh_target_visual(target_key)
-
-
-func _on_target_pressed_changed(is_pressed: bool, event: AeroUiInteractionEvent, target_key: String) -> void:
-	var state: Dictionary = _target_states.get(target_key, {})
-	state["pressed"] = is_pressed
-	state["last_event"] = event
-	_target_states[target_key] = state
-	_refresh_target_visual(target_key)
-
-
-func _on_target_dragging_changed(is_dragging: bool, event: AeroUiInteractionEvent, target_key: String) -> void:
-	var state: Dictionary = _target_states.get(target_key, {})
-	state["dragging"] = is_dragging
-	state["last_event"] = event
-	_target_states[target_key] = state
-	if target_key == TARGET_STRIP:
-		_update_drag_strip_progress_from_event(event)
-	_refresh_target_visual(target_key)
-
-
-func _on_target_canceled(event: AeroUiInteractionEvent, target_key: String) -> void:
-	var state: Dictionary = _target_states.get(target_key, {})
-	state["hovered"] = false
-	state["pressed"] = false
-	state["dragging"] = false
-	state["last_event"] = event
-	_target_states[target_key] = state
-	_summary_owner_target_path = ""
+func _on_contract_target_interaction(binding: AeroUiContractTargetBinding, event: AeroUiInteractionEvent) -> void:
+	_last_interaction_event = event
 	_summary_last_phase = str(event.phase)
 	_summary_source_variant = str(event.source_variant)
 	_summary_verification_status = str(event.verification_status)
-	_refresh_target_visual(target_key)
 
-
-func _on_target_listener_interaction_event(event: AeroUiInteractionEvent, target_key: String) -> void:
-	var state: Dictionary = _target_states.get(target_key, {})
-	state["last_event"] = event
-	state["last_source_variant"] = str(event.source_variant)
 	match event.phase:
 		AeroUiInteractionTypes.PHASE_PRESS_BEGIN:
-			state["press_count"] = int(state.get("press_count", 0)) + 1
 			_summary_owner_target_path = str(event.target_path)
 		AeroUiInteractionTypes.PHASE_PRESS_END:
-			state["release_count"] = int(state.get("release_count", 0)) + 1
 			_summary_last_release_target_path = str(event.target_path)
 			_summary_owner_target_path = ""
 		AeroUiInteractionTypes.PHASE_DRAG_BEGIN, AeroUiInteractionTypes.PHASE_DRAG_MOVE:
-			state["drag_count"] = int(state.get("drag_count", 0)) + 1
-			if target_key == TARGET_STRIP:
-				_update_drag_strip_progress_from_event(event)
+			if binding.target_key == TARGET_STRIP:
+				_update_drag_strip_progress_from_event(binding, event)
 		AeroUiInteractionTypes.PHASE_HOVER_ENTER:
 			_summary_hover_target_path = str(event.target_path)
 		AeroUiInteractionTypes.PHASE_HOVER_EXIT:
@@ -815,38 +668,41 @@ func _on_target_listener_interaction_event(event: AeroUiInteractionEvent, target
 				_summary_hover_target_path = ""
 		_:
 			pass
-	_target_states[target_key] = state
+	_refresh_target_visual(binding.target_key)
+
+
+func _on_contract_target_tapped(binding: AeroUiContractTargetBinding, event: AeroUiInteractionEvent) -> void:
+	if binding.target_key == TARGET_PRIMARY:
+		binding.user_state["toggle_on"] = not bool(binding.user_state.get("toggle_on", false))
+		primary_card_button.button_pressed = bool(binding.user_state["toggle_on"])
+	elif binding.target_key == TARGET_CHIP:
+		binding.user_state["toggle_on"] = not bool(binding.user_state.get("toggle_on", false))
+		secondary_toggle_chip.button_pressed = bool(binding.user_state["toggle_on"])
+	_notify_contract_target_state_changed(binding)
 	_last_interaction_event = event
+	_summary_last_phase = "tapped"
+	_refresh_target_visual(binding.target_key)
+
+
+func _on_contract_target_canceled(binding: AeroUiContractTargetBinding, event: AeroUiInteractionEvent) -> void:
+	_summary_owner_target_path = ""
 	_summary_last_phase = str(event.phase)
 	_summary_source_variant = str(event.source_variant)
 	_summary_verification_status = str(event.verification_status)
-	_refresh_target_visual(target_key)
+	_refresh_target_visual(binding.target_key)
 
 
-func _on_target_listener_tapped(event: AeroUiInteractionEvent, target_key: String) -> void:
-	var state: Dictionary = _target_states.get(target_key, {})
-	state["tap_count"] = int(state.get("tap_count", 0)) + 1
-	state["last_event"] = event
-	if target_key == TARGET_PRIMARY:
-		state["toggle_on"] = not bool(state.get("toggle_on", false))
-		primary_card_button.button_pressed = bool(state["toggle_on"])
-	elif target_key == TARGET_CHIP:
-		state["toggle_on"] = not bool(state.get("toggle_on", false))
-		secondary_toggle_chip.button_pressed = bool(state["toggle_on"])
-	_target_states[target_key] = state
-	_last_interaction_event = event
-	_summary_last_phase = "tapped"
-	_refresh_target_visual(target_key)
+func _on_contract_target_state_changed(binding: AeroUiContractTargetBinding) -> void:
+	_refresh_target_visual(binding.target_key)
 
 
-func _update_drag_strip_progress_from_event(event: AeroUiInteractionEvent) -> void:
-	var state: Dictionary = _target_states.get(TARGET_STRIP, {})
+func _update_drag_strip_progress_from_event(binding: AeroUiContractTargetBinding, event: AeroUiInteractionEvent) -> void:
 	var rect := drag_strip.get_global_rect()
 	if rect.size.x <= 0.0:
 		return
 	var progress := clampf((event.surface_position.x - rect.position.x) / rect.size.x, 0.0, 1.0)
-	state["progress"] = progress
-	_target_states[TARGET_STRIP] = state
+	binding.user_state["progress"] = progress
+	_notify_contract_target_state_changed(binding)
 
 
 func _refresh_target_visual(target_key: String) -> void:
@@ -866,10 +722,14 @@ func _refresh_target_visual(target_key: String) -> void:
 func _display_target_name(target_path_text: String) -> String:
 	if target_path_text == "":
 		return "none"
-	var target_key: String = str(_path_to_target_key.get(target_path_text, ""))
+	var target_key := str(_path_to_target_key.get(target_path_text, ""))
 	if target_key != "":
 		return str(TARGET_LABELS[target_key])
 	return target_path_text.get_file()
+
+
+func _target_state(target_key: String) -> Dictionary:
+	return _target_states.get(target_key, {}) as Dictionary
 
 
 func _shader_corner_radius_to_pixels(control_size: Vector2, corner_radius: float) -> int:
