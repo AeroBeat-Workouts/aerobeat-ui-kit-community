@@ -168,45 +168,6 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("3_script")
 
-[node name="SecondaryToggleChip" type="Button" parent="PreviewCenter/PreviewStack" unique_name_in_owner=true]
-custom_minimum_size = Vector2(210, 66)
-layout_mode = 1
-anchors_preset = 0
-offset_left = 88.0
-offset_top = 64.0
-offset_right = 298.0
-offset_bottom = 130.0
-grow_horizontal = 0
-grow_vertical = 0
-flat = true
-theme_override_styles/normal = SubResource("StyleBoxFlat_chip_panel")
-theme_override_styles/hover = SubResource("StyleBoxFlat_chip_panel")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_chip_panel")
-
-[node name="ChipColumn" type="VBoxContainer" parent="PreviewCenter/PreviewStack/SecondaryToggleChip"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 18.0
-offset_top = 14.0
-offset_right = -18.0
-offset_bottom = -12.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 2
-
-[node name="ChipLabel" type="Label" parent="PreviewCenter/PreviewStack/SecondaryToggleChip/ChipColumn"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "SECONDARY CHIP OFF"
-
-[node name="ChipStateLabel" type="Label" parent="PreviewCenter/PreviewStack/SecondaryToggleChip/ChipColumn"]
-modulate = Color(1, 1, 1, 0.7)
-layout_mode = 2
-theme_override_font_sizes/font_size = 13
-text = "hover NO • press 0 • taps 0"
-
 [node name="PrimaryCardButton" type="Button" parent="PreviewCenter/PreviewStack" unique_name_in_owner=true]
 custom_minimum_size = Vector2(520, 280)
 layout_mode = 1
@@ -308,11 +269,7 @@ theme_override_constants/margin_bottom = 6
 modulate = Color(1, 1, 1, 0.78)
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "Hybrid multi-target proof"
-
-[node name="Spacer" type="Control" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn"]
-custom_minimum_size = Vector2(0, 12)
-layout_mode = 2
+text = "Shared glass panel source"
 
 [node name="Headline" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn"]
 layout_mode = 2
@@ -324,5 +281,39 @@ vertical_alignment = 1
 modulate = Color(1, 1, 1, 0.82)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "Primary tap target. Hover can leave this card while ownership stays locked here until release."
+text = "Shared glass panel source with one centered primary target visible in both the 2D and 3D test scenes."
 autowrap_mode = 3
+
+[node name="Spacer" type="Control" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn"]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+
+[node name="PrimaryActionButton" type="Button" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn" unique_name_in_owner=true]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+flat = true
+text = "PRIMARY TARGET"
+theme_override_colors/font_color = Color(1, 1, 1, 0.92)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 0.98)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_chip_panel")
+theme_override_styles/hover = SubResource("StyleBoxFlat_chip_panel")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_chip_panel")
+
+[node name="PrimaryActionMeta" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton"]
+modulate = Color(1, 1, 1, 0.72)
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -108.0
+offset_top = 10.0
+offset_right = 108.0
+offset_bottom = 30.0
+mouse_filter = 2
+horizontal_alignment = 1
+text = "Visible center hit target"
+vertical_alignment = 1

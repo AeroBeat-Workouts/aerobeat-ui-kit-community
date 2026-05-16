@@ -18,10 +18,8 @@ const PRESENTATION_MODE_HYBRID_WORLD_SPACE := 1
 const PRESENTATION_MODE_HYBRID_MASK := 2
 
 const TARGET_PRIMARY := "primary"
-const TARGET_CHIP := "chip"
 const TARGET_LABELS := {
 	TARGET_PRIMARY: "PrimaryCardButton",
-	TARGET_CHIP: "SecondaryToggleChip",
 }
 
 const FLOAT_CONTROLS := [
@@ -136,14 +134,12 @@ const HYBRID_SHELL_DEFAULTS := {
 @onready var preview_inner_border: Panel = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/InnerBorderInset/PreviewInnerBorder") as Panel
 @onready var preview_badge: PanelContainer = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge") as PanelContainer
 @onready var preview_badge_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge/BadgePadding/BadgeLabel") as Label
+@onready var primary_action_button: Button = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton") as Button
 @onready var headline_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Headline") as Label
 @onready var body_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Body") as Label
 @onready var content_margin: MarginContainer = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin") as MarginContainer
 @onready var preview_backdrop_debug: Control = get_node_or_null("PreviewCenter/PreviewStack/PreviewBackdropDebug") as Control
 
-@onready var secondary_toggle_chip: Button = get_node_or_null("PreviewCenter/PreviewStack/SecondaryToggleChip") as Button
-@onready var chip_label: Label = get_node_or_null("PreviewCenter/PreviewStack/SecondaryToggleChip/ChipColumn/ChipLabel") as Label
-@onready var chip_state_label: Label = get_node_or_null("PreviewCenter/PreviewStack/SecondaryToggleChip/ChipColumn/ChipStateLabel") as Label
 
 var _shader_material: ShaderMaterial
 var _frame_style: StyleBoxFlat
@@ -163,16 +159,13 @@ var _hybrid_badge_fill_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_fill_a
 var _hybrid_badge_border_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_border_alpha"])
 var _hybrid_badge_label_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_label_alpha"])
 var _last_interaction_event: AeroUiInteractionEvent = null
-var _summary_last_phase := "idle"
-var _summary_source_variant := "waiting"
-var _summary_verification_status := "waiting"
 
 
 func _ready() -> void:
 	interaction_surface_id = DEFAULT_INTERACTION_SURFACE_ID
 	interaction_surface_type_label = "hybrid_3d_gui"
-	contract_host_summary = "Hybrid world hits now feed AeroUiInteractionBus through HybridSubViewportInputAdapter. Multiple sibling controls stay bus-driven without raw gui_input parsing."
-	contract_mode_label = "Hybrid multi-target contract proof"
+	contract_host_summary = "Shared glass panel source with one centered primary target visible in both the 2D and 3D test scenes."
+	contract_mode_label = "Shared glass panel source"
 
 	_background_texture = _load_background_texture()
 	background.texture = _background_texture
@@ -188,31 +181,23 @@ func _ready() -> void:
 	_mask_style = hybrid_mask_panel.get_theme_stylebox("panel") as StyleBoxFlat
 
 	_configure_primary_card_button()
-	_configure_secondary_chip()
 	super._ready()
 	_sync_shell_state_from_shader()
 	_apply_visual_state()
 	primary_card_button.resized.connect(_sync_preview_shell)
 	preview_inner_border.resized.connect(_sync_preview_shell)
-	secondary_toggle_chip.resized.connect(_refresh_secondary_chip_visual)
 	call_deferred("_sync_preview_shell")
-	call_deferred("_refresh_target_views")
 	call_deferred("_refresh_interaction_debug")
 
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_THEME_CHANGED and is_instance_valid(primary_card_button):
 		_configure_primary_card_button()
-		_configure_secondary_chip()
 
 
 func _build_contract_targets() -> void:
 	register_contract_target(TARGET_PRIMARY, primary_card_button, {
 		"target_label": TARGET_LABELS[TARGET_PRIMARY],
-		"user_state": {"toggle_on": false},
-	})
-	register_contract_target(TARGET_CHIP, secondary_toggle_chip, {
-		"target_label": TARGET_LABELS[TARGET_CHIP],
 		"user_state": {"toggle_on": false},
 	})
 
@@ -259,22 +244,6 @@ func _configure_primary_card_button() -> void:
 	primary_card_button.add_theme_stylebox_override("pressed", empty)
 	primary_card_button.add_theme_stylebox_override("focus", empty)
 	primary_card_button.add_theme_stylebox_override("disabled", empty)
-
-
-func _configure_secondary_chip() -> void:
-	secondary_toggle_chip.flat = true
-	secondary_toggle_chip.toggle_mode = true
-	secondary_toggle_chip.button_pressed = false
-	secondary_toggle_chip.focus_mode = Control.FOCUS_NONE
-	secondary_toggle_chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	secondary_toggle_chip.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	secondary_toggle_chip.add_theme_constant_override("outline_size", 0)
-	var empty := StyleBoxEmpty.new()
-	secondary_toggle_chip.add_theme_stylebox_override("normal", empty)
-	secondary_toggle_chip.add_theme_stylebox_override("hover", empty)
-	secondary_toggle_chip.add_theme_stylebox_override("pressed", empty)
-	secondary_toggle_chip.add_theme_stylebox_override("focus", empty)
-	secondary_toggle_chip.add_theme_stylebox_override("disabled", empty)
 
 
 func set_background_mode(mode: int) -> void:
@@ -413,7 +382,6 @@ func _apply_visual_state() -> void:
 	preview_inner_border.visible = _presentation_mode == PRESENTATION_MODE_2D or is_hybrid_world
 	content_margin.visible = not is_mask_mode
 	hybrid_mask_panel.visible = is_mask_mode
-	secondary_toggle_chip.visible = not is_mask_mode
 	_refresh_interaction_debug()
 
 
@@ -472,7 +440,7 @@ func _sync_preview_shell() -> void:
 	_mask_style.shadow_size = 0
 	_mask_style.shadow_color = Color(0.0, 0.0, 0.0, 0.0)
 	_apply_primary_card_accent()
-	_refresh_secondary_chip_visual()
+	_refresh_primary_action_visual()
 
 
 func _sync_shell_state_from_shader() -> void:
@@ -506,30 +474,50 @@ func _apply_primary_card_accent() -> void:
 		_badge_style.bg_color = _badge_style.bg_color.lerp(Color(TOGGLE_ON_ACCENT.r, TOGGLE_ON_ACCENT.g, TOGGLE_ON_ACCENT.b, 0.22), accent_strength * 0.65)
 
 
-func _refresh_secondary_chip_visual() -> void:
-	if not is_instance_valid(secondary_toggle_chip):
+func _refresh_primary_action_visual() -> void:
+	if not is_instance_valid(primary_action_button):
 		return
-	var state := _target_state(TARGET_CHIP)
+
+	var state := _target_state(TARGET_PRIMARY)
 	var hovered := bool(state.get("hovered", false))
 	var pressed := bool(state.get("pressed", false))
 	var toggled := bool(state.get("toggle_on", false))
-	var accent := Color(0.46, 0.86, 1.0, 1.0) if toggled else Color(1.0, 1.0, 1.0, 1.0)
-	secondary_toggle_chip.self_modulate = Color(1.0, 1.0, 1.0, 1.0)
-	secondary_toggle_chip.modulate = Color(1.0, 1.0, 1.0, 0.98)
-	secondary_toggle_chip.add_theme_color_override("font_color", accent if toggled or hovered else Color(1.0, 1.0, 1.0, 0.92))
-	secondary_toggle_chip.add_theme_color_override("font_hover_color", accent)
-	secondary_toggle_chip.add_theme_color_override("font_pressed_color", accent.lightened(0.08))
-	secondary_toggle_chip.scale = Vector2.ONE * (0.985 if pressed else 1.0)
-	if is_instance_valid(chip_label):
-		chip_label.text = "SECONDARY CHIP %s" % ("ON" if toggled else "OFF")
-		chip_label.modulate = accent if toggled or hovered else Color(1.0, 1.0, 1.0, 0.9)
-	if is_instance_valid(chip_state_label):
-		chip_state_label.text = "hover %s • press %d • taps %d" % ["YES" if hovered else "NO", int(state.get("press_count", 0)), int(state.get("tap_count", 0))]
-		chip_state_label.modulate = Color(1.0, 1.0, 1.0, 0.68 if not pressed else 0.9)
+	var active := toggled or pressed
+	var accent := TOGGLE_ON_ACCENT if active else Color(1.0, 1.0, 1.0, 1.0)
+	var fill_alpha := 0.12
+	if hovered:
+		fill_alpha = 0.16
+	if pressed:
+		fill_alpha = 0.22
+	if toggled:
+		fill_alpha = 0.26
+
+	primary_action_button.add_theme_color_override("font_color", accent if toggled or hovered or pressed else Color(1.0, 1.0, 1.0, 0.92))
+	primary_action_button.add_theme_color_override("font_hover_color", accent)
+	primary_action_button.add_theme_color_override("font_pressed_color", accent.lightened(0.08))
+	primary_action_button.add_theme_stylebox_override("normal", _build_action_stylebox(fill_alpha, accent, active))
+	primary_action_button.add_theme_stylebox_override("hover", _build_action_stylebox(maxf(fill_alpha, 0.18), accent, active or hovered))
+	primary_action_button.add_theme_stylebox_override("pressed", _build_action_stylebox(maxf(fill_alpha, 0.24), accent, true))
+	primary_action_button.scale = Vector2.ONE * (0.992 if pressed else 1.0)
+
+
+func _build_action_stylebox(fill_alpha: float, accent: Color, is_active: bool) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(_shell_tint.r, _shell_tint.g, _shell_tint.b, fill_alpha)
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.border_color = Color(accent.r, accent.g, accent.b, 0.62 if is_active else 0.34)
+	style.corner_radius_top_left = 22
+	style.corner_radius_top_right = 22
+	style.corner_radius_bottom_right = 22
+	style.corner_radius_bottom_left = 22
+	style.shadow_size = 0
+	return style
 
 
 func _refresh_target_views() -> void:
-	_refresh_secondary_chip_visual()
 	_refresh_interaction_debug()
 
 
@@ -549,9 +537,9 @@ func _refresh_interaction_debug() -> void:
 		surface_text = str(_last_interaction_event.surface_id)
 
 	if is_instance_valid(preview_badge_label):
-		preview_badge_label.text = "Primary armed" if bool(primary_state.get("toggle_on", false)) else contract_mode_label
+		preview_badge_label.text = contract_mode_label
 	if is_instance_valid(headline_label):
-		headline_label.text = "AeroBeat INPUT CONTRACT" if bool(primary_state.get("toggle_on", false)) else "AeroBeat"
+		headline_label.text = "AeroBeat"
 	if is_instance_valid(body_label):
 		body_label.text = contract_host_summary
 	_sync_preview_shell()
@@ -559,13 +547,6 @@ func _refresh_interaction_debug() -> void:
 
 func _on_contract_target_interaction(binding: AeroUiContractTargetBinding, event: AeroUiInteractionEvent) -> void:
 	_last_interaction_event = event
-	_summary_last_phase = str(event.phase)
-	_summary_source_variant = str(event.source_variant)
-	_summary_verification_status = str(event.verification_status)
-
-	match event.phase:
-		_:
-			pass
 	_refresh_target_visual(binding.target_key)
 
 
@@ -573,19 +554,12 @@ func _on_contract_target_tapped(binding: AeroUiContractTargetBinding, event: Aer
 	if binding.target_key == TARGET_PRIMARY:
 		binding.user_state["toggle_on"] = not bool(binding.user_state.get("toggle_on", false))
 		primary_card_button.button_pressed = bool(binding.user_state["toggle_on"])
-	elif binding.target_key == TARGET_CHIP:
-		binding.user_state["toggle_on"] = not bool(binding.user_state.get("toggle_on", false))
-		secondary_toggle_chip.button_pressed = bool(binding.user_state["toggle_on"])
 	_notify_contract_target_state_changed(binding)
 	_last_interaction_event = event
-	_summary_last_phase = "tapped"
 	_refresh_target_visual(binding.target_key)
 
 
 func _on_contract_target_canceled(binding: AeroUiContractTargetBinding, event: AeroUiInteractionEvent) -> void:
-	_summary_last_phase = str(event.phase)
-	_summary_source_variant = str(event.source_variant)
-	_summary_verification_status = str(event.verification_status)
 	_refresh_target_visual(binding.target_key)
 
 
@@ -596,9 +570,7 @@ func _on_contract_target_state_changed(binding: AeroUiContractTargetBinding) -> 
 func _refresh_target_visual(target_key: String) -> void:
 	match target_key:
 		TARGET_PRIMARY:
-			_refresh_interaction_debug()
-		TARGET_CHIP:
-			_refresh_secondary_chip_visual()
+			_refresh_primary_action_visual()
 			_refresh_interaction_debug()
 		_:
 			_refresh_interaction_debug()
