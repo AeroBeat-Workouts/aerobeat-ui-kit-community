@@ -321,6 +321,7 @@ var _panel_ui: Control
 var _mask_ui: Control
 var _panel_material: ShaderMaterial
 var _panel_ui_overlay_material: ShaderMaterial
+var _authored_glass_rect := Rect2(0.0, 0.0, 1.0, 1.0)
 var _manual_pitch_deg := 0.0
 var _manual_yaw_deg := 0.0
 var _base_rotation := Vector3.ZERO
@@ -716,18 +717,25 @@ func _screen_position_to_panel_hit(screen_position: Vector2) -> Dictionary:
 	if panel_size.x <= 0.0 or panel_size.y <= 0.0:
 		return {"hit": false, "screen_position": screen_position, "world_direction": ray_direction}
 
-	var uv := Vector2(
+	var panel_uv := Vector2(
 		(local_hit.x / panel_size.x) + 0.5,
 		0.5 - (local_hit.y / panel_size.y)
 	)
-	if uv.x < 0.0 or uv.x > 1.0 or uv.y < 0.0 or uv.y > 1.0:
+	if panel_uv.x < 0.0 or panel_uv.x > 1.0 or panel_uv.y < 0.0 or panel_uv.y > 1.0:
 		return {"hit": false, "screen_position": screen_position, "world_direction": ray_direction}
+
+	var authored_uv := _panel_uv_to_authored_uv(panel_uv)
+	var authored_viewport_position := Vector2(authored_uv.x * panel_viewport.size.x, authored_uv.y * panel_viewport.size.y)
 
 	return {
 		"hit": true,
 		"screen_position": screen_position,
-		"viewport_position": Vector2(uv.x * panel_viewport.size.x, uv.y * panel_viewport.size.y),
-		"uv": uv,
+		"viewport_position": authored_viewport_position,
+		"uv": authored_uv,
+		"panel_viewport_position": Vector2(panel_uv.x * panel_viewport.size.x, panel_uv.y * panel_viewport.size.y),
+		"panel_uv": panel_uv,
+		"authored_viewport_position": authored_viewport_position,
+		"authored_uv": authored_uv,
 		"local_hit": local_hit,
 		"world_position": hit["position"],
 		"world_normal": hit.get("normal", Vector3.ZERO),
@@ -753,14 +761,18 @@ func _build_projected_data(
 
 	projected_data["screen_position"] = screen_position
 	if has_hit:
-		projected_data["surface_normalized_position"] = hit.get("uv", Vector2.ZERO)
-		projected_data["surface_position"] = hit.get("viewport_position", Vector2.ZERO)
+		projected_data["surface_normalized_position"] = hit.get("authored_uv", hit.get("uv", Vector2.ZERO))
+		projected_data["surface_position"] = hit.get("authored_viewport_position", hit.get("viewport_position", Vector2.ZERO))
 		projected_data["world_position"] = hit.get("world_position", Vector3.ZERO)
 		projected_data["world_normal"] = hit.get("world_normal", Vector3.ZERO)
 		projected_data["world_direction"] = hit.get("world_direction", Vector3.ZERO)
 		projected_data["raw_metadata"] = {
 			"host_surface": "PanelInputSurface",
-			"uv": hit.get("uv", Vector2.ZERO),
+			"panel_uv": hit.get("panel_uv", hit.get("uv", Vector2.ZERO)),
+			"authored_uv": hit.get("authored_uv", hit.get("uv", Vector2.ZERO)),
+			"panel_viewport_position": hit.get("panel_viewport_position", hit.get("viewport_position", Vector2.ZERO)),
+			"authored_viewport_position": hit.get("authored_viewport_position", hit.get("viewport_position", Vector2.ZERO)),
+			"glass_rect": _authored_glass_rect,
 			"local_hit": hit.get("local_hit", Vector3.ZERO),
 			"surface_size": hit.get("surface_size", _get_panel_surface_size()),
 			"target_resolution": "multi_target_panel_rect_lookup",
@@ -789,8 +801,8 @@ func _build_projected_data(
 
 
 func _resolve_projected_target_path_from_hit(hit: Dictionary) -> NodePath:
-	var surface_position: Vector2 = hit.get("viewport_position", Vector2.ZERO)
-	var surface_uv: Vector2 = hit.get("uv", Vector2(-1.0, -1.0))
+	var surface_position: Vector2 = hit.get("authored_viewport_position", hit.get("viewport_position", Vector2.ZERO))
+	var surface_uv: Vector2 = hit.get("authored_uv", hit.get("uv", Vector2(-1.0, -1.0)))
 	return _resolve_projected_target_path(surface_position, surface_uv)
 
 
@@ -843,7 +855,7 @@ func _on_contract_interaction_event(event: AeroUiInteractionEvent) -> void:
 func _get_panel_surface_size() -> Vector2:
 	if panel_display != null and panel_display.mesh is QuadMesh:
 		return (panel_display.mesh as QuadMesh).size
-	return Vector2(2.93, 1.8)
+	return Vector2(2.93, 1.577)
 
 
 func set_auto_rotate_enabled(value: bool) -> void:
@@ -1347,16 +1359,57 @@ func _select_background_mode(mode: int) -> void:
 func _sync_authored_card_rect() -> void:
 	if _panel_material == null:
 		return
-	var source := _mask_ui if is_instance_valid(_mask_ui) else _panel_ui
-	if not is_instance_valid(source) or not source.has_method("get_preview_rect_normalized"):
-		return
-
-	var rect: Rect2 = source.call("get_preview_rect_normalized")
-	var glass_rect := Vector4(rect.position.x, rect.position.y, rect.size.x, rect.size.y)
+	_authored_glass_rect = _get_authored_glass_rect()
+	var glass_rect := Vector4(_authored_glass_rect.position.x, _authored_glass_rect.position.y, _authored_glass_rect.size.x, _authored_glass_rect.size.y)
 	_panel_material.set_shader_parameter("glass_rect", glass_rect)
 	if _panel_ui_overlay_material != null:
 		_panel_ui_overlay_material.set_shader_parameter("glass_rect", glass_rect)
+	_sync_panel_surface_aspect()
 
+
+func _get_authored_glass_rect() -> Rect2:
+	var source := _mask_ui if is_instance_valid(_mask_ui) else _panel_ui
+	if not is_instance_valid(source) or not source.has_method("get_preview_rect_normalized"):
+		return Rect2(0.0, 0.0, 1.0, 1.0)
+	return source.call("get_preview_rect_normalized")
+
+
+func _panel_uv_to_authored_uv(panel_uv: Vector2) -> Vector2:
+	var rect := _authored_glass_rect
+	return rect.position + panel_uv * rect.size
+
+
+func _sync_panel_surface_aspect() -> void:
+	var rect := _get_authored_glass_rect()
+	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
+		return
+	var authored_aspect := rect.size.x / rect.size.y
+	if authored_aspect <= 0.0:
+		return
+	var surface_width := _get_panel_surface_size().x
+	if surface_width <= 0.0:
+		return
+	var surface_height := surface_width / authored_aspect
+	_sync_quad_mesh_size(panel_display, Vector2(surface_width, surface_height))
+	_sync_quad_mesh_size(panel_ui_overlay, Vector2(surface_width, surface_height))
+	_sync_panel_input_shape(Vector2(surface_width, surface_height))
+
+
+func _sync_quad_mesh_size(instance: MeshInstance3D, size: Vector2) -> void:
+	if instance == null or not (instance.mesh is QuadMesh):
+		return
+	var mesh := instance.mesh as QuadMesh
+	mesh.size = size
+
+
+func _sync_panel_input_shape(size: Vector2) -> void:
+	if panel_input_surface == null:
+		return
+	var collision_shape := panel_input_surface.get_node_or_null("CollisionShape3D") as CollisionShape3D
+	if collision_shape == null or not (collision_shape.shape is BoxShape3D):
+		return
+	var shape := collision_shape.shape as BoxShape3D
+	shape.size = Vector3(size.x, size.y, shape.size.z)
 
 func _apply_panel_rotation() -> void:
 	if panel_pivot == null:

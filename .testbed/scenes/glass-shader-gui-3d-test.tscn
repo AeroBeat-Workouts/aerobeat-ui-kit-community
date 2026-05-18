@@ -30,13 +30,13 @@ clearcoat = 0.2
 clearcoat_roughness = 0.18
 
 [sub_resource type="BoxMesh" id="BoxMesh_shell"]
-size = Vector3(3.08, 1.96, 0.12)
+size = Vector3(3.08, 1.737692, 0.12)
 
 [sub_resource type="QuadMesh" id="QuadMesh_panel"]
-size = Vector2(2.93, 1.8)
+size = Vector2(2.93, 1.577692)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_panel_input"]
-size = Vector3(2.93, 1.8, 0.04)
+size = Vector3(2.93, 1.577692, 0.04)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_controls_panel"]
 content_margin_left = 0.0

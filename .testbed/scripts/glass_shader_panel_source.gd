@@ -135,6 +135,7 @@ const HYBRID_SHELL_DEFAULTS := {
 @onready var preview_badge: PanelContainer = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge") as PanelContainer
 @onready var preview_badge_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge/BadgePadding/BadgeLabel") as Label
 @onready var primary_action_button: Button = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton") as Button
+@onready var primary_action_meta: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionMeta") as Label
 @onready var headline_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Headline") as Label
 @onready var body_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Body") as Label
 @onready var content_margin: MarginContainer = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin") as MarginContainer
@@ -255,6 +256,8 @@ func _configure_primary_action_button() -> void:
 	primary_action_button.focus_mode = Control.FOCUS_NONE
 	primary_action_button.mouse_filter = Control.MOUSE_FILTER_STOP
 	primary_action_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	primary_action_button.add_theme_constant_override("outline_size", 2)
+	primary_action_button.add_theme_color_override("font_outline_color", Color(0.02, 0.05, 0.09, 0.5))
 
 
 func set_background_mode(mode: int) -> void:
@@ -494,37 +497,68 @@ func _refresh_primary_action_visual() -> void:
 	var pressed := bool(state.get("pressed", false))
 	var toggled := bool(state.get("toggle_on", false))
 	var active := toggled or pressed
+	var is_hybrid_world := _presentation_mode == PRESENTATION_MODE_HYBRID_WORLD_SPACE
 	var accent := TOGGLE_ON_ACCENT if active else Color(1.0, 1.0, 1.0, 1.0)
 	var fill_alpha := 0.12
-	if hovered:
-		fill_alpha = 0.16
-	if pressed:
-		fill_alpha = 0.22
-	if toggled:
+	var hover_fill_alpha := 0.18
+	var pressed_fill_alpha := 0.24
+	var border_alpha := 0.34
+	var border_width := 1
+	var shadow_alpha := 0.0
+	var shadow_size := 0
+	var font_color := Color(1.0, 1.0, 1.0, 0.92)
+	var meta_color := Color(1.0, 1.0, 1.0, 0.72)
+	if is_hybrid_world:
 		fill_alpha = 0.26
+		hover_fill_alpha = 0.32
+		pressed_fill_alpha = 0.4
+		border_alpha = 0.52
+		border_width = 2
+		shadow_alpha = 0.16
+		shadow_size = 8
+		font_color = Color(1.0, 1.0, 1.0, 0.98)
+		meta_color = Color(1.0, 1.0, 1.0, 0.84)
+	elif hovered:
+		fill_alpha = 0.16
+	if hovered:
+		font_color = Color(1.0, 1.0, 1.0, 0.98)
+	if pressed:
+		fill_alpha = pressed_fill_alpha
+	if toggled:
+		fill_alpha = maxf(fill_alpha, 0.44 if is_hybrid_world else 0.26)
 
-	primary_action_button.add_theme_color_override("font_color", accent if toggled or hovered or pressed else Color(1.0, 1.0, 1.0, 0.92))
-	primary_action_button.add_theme_color_override("font_hover_color", accent)
+	primary_action_button.add_theme_color_override("font_color", accent if toggled or hovered or pressed else font_color)
+	primary_action_button.add_theme_color_override("font_hover_color", accent if hovered or active else font_color)
 	primary_action_button.add_theme_color_override("font_pressed_color", accent.lightened(0.08))
-	primary_action_button.add_theme_stylebox_override("normal", _build_action_stylebox(fill_alpha, accent, active))
-	primary_action_button.add_theme_stylebox_override("hover", _build_action_stylebox(maxf(fill_alpha, 0.18), accent, active or hovered))
-	primary_action_button.add_theme_stylebox_override("pressed", _build_action_stylebox(maxf(fill_alpha, 0.24), accent, true))
-	primary_action_button.scale = Vector2.ONE * (0.992 if pressed else 1.0)
+	primary_action_button.add_theme_stylebox_override("normal", _build_action_stylebox(fill_alpha, accent, active, border_alpha, border_width, shadow_alpha, shadow_size, is_hybrid_world))
+	primary_action_button.add_theme_stylebox_override("hover", _build_action_stylebox(maxf(fill_alpha, hover_fill_alpha), accent, active or hovered, maxf(border_alpha, 0.66 if is_hybrid_world else 0.44), border_width, maxf(shadow_alpha, 0.22 if is_hybrid_world else 0.0), max(shadow_size, 10 if is_hybrid_world else 0), is_hybrid_world))
+	primary_action_button.add_theme_stylebox_override("pressed", _build_action_stylebox(maxf(fill_alpha, pressed_fill_alpha), accent, true, maxf(border_alpha, 0.74 if is_hybrid_world else 0.62), border_width, maxf(shadow_alpha, 0.24 if is_hybrid_world else 0.0), max(shadow_size, 10 if is_hybrid_world else 0), is_hybrid_world))
+	if is_instance_valid(primary_action_meta):
+		primary_action_meta.modulate = accent if active else meta_color
+	primary_action_button.scale = Vector2.ONE * (0.988 if pressed else 1.0)
 
 
-func _build_action_stylebox(fill_alpha: float, accent: Color, is_active: bool) -> StyleBoxFlat:
+func _build_action_stylebox(fill_alpha: float, accent: Color, is_active: bool, border_alpha: float, border_width: int, shadow_alpha: float, shadow_size: int, is_hybrid_world: bool) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(_shell_tint.r, _shell_tint.g, _shell_tint.b, fill_alpha)
-	style.border_width_left = 1
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_width_bottom = 1
-	style.border_color = Color(accent.r, accent.g, accent.b, 0.62 if is_active else 0.34)
+	var fill_color := Color(_shell_tint.r, _shell_tint.g, _shell_tint.b, fill_alpha)
+	if is_hybrid_world:
+		fill_color = fill_color.lerp(Color(1.0, 1.0, 1.0, fill_alpha), 0.42)
+	style.bg_color = fill_color
+	style.border_width_left = border_width
+	style.border_width_top = border_width
+	style.border_width_right = border_width
+	style.border_width_bottom = border_width
+	style.border_color = Color(accent.r, accent.g, accent.b, 0.62 if is_active else border_alpha)
 	style.corner_radius_top_left = 22
 	style.corner_radius_top_right = 22
 	style.corner_radius_bottom_right = 22
 	style.corner_radius_bottom_left = 22
-	style.shadow_size = 0
+	style.content_margin_left = 24
+	style.content_margin_right = 24
+	style.content_margin_top = 16
+	style.content_margin_bottom = 16
+	style.shadow_size = shadow_size
+	style.shadow_color = Color(accent.r, accent.g, accent.b, shadow_alpha)
 	return style
 
 
