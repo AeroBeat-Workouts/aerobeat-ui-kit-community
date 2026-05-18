@@ -313,7 +313,6 @@ func _build_controls() -> void:
 	_preset_status_label = null
 	_contract_status_label = null
 
-	controls_list.add_child(_make_contract_status_block())
 	controls_list.add_child(_make_background_mode_control())
 	controls_list.add_child(_make_preset_actions_block())
 
@@ -326,6 +325,8 @@ func _build_controls() -> void:
 
 	for config in PanelSourceScript.COLOR_CONTROLS:
 		controls_list.add_child(_make_color_control(config))
+
+	controls_list.add_child(_make_contract_status_block())
 
 	var tail_spacer := Control.new()
 	tail_spacer.custom_minimum_size = Vector2(0.0, 8.0)

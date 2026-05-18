@@ -313,7 +313,6 @@ const PARAMETER_ALIASES := {
 @onready var panel_ui_overlay: MeshInstance3D = get_node_or_null("PanelPivot/PanelUiOverlay") as MeshInstance3D
 @onready var panel_input_surface: Area3D = get_node_or_null("PanelPivot/PanelInputSurface") as Area3D
 @onready var controls_list: VBoxContainer = get_node_or_null("CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll/ControlsList") as VBoxContainer
-@onready var status_label: RichTextLabel = get_node_or_null("CanvasLayer/OverlayRoot/SplitRoot/ControlsPanel/Margin/ControlsColumn/StatusPanel/StatusPadding/StatusLabel") as RichTextLabel
 @onready var interaction_bus: AeroUiInteractionBus = get_node_or_null("AeroUiInteractionBus") as AeroUiInteractionBus
 @onready var hybrid_input_adapter: HybridSubViewportInputAdapter = get_node_or_null("HybridInputAdapter") as HybridSubViewportInputAdapter
 
@@ -329,6 +328,7 @@ var _background_mode_selector: OptionButton
 var _float_sliders: Dictionary = {}
 var _color_pickers: Dictionary = {}
 var _preset_status_label: Label
+var _contract_status_label: RichTextLabel
 var _save_dialog: FileDialog
 var _load_dialog: FileDialog
 var _mouse_panel_capture := false
@@ -1068,6 +1068,7 @@ func _build_controls() -> void:
 	_color_pickers.clear()
 	_background_mode_selector = null
 	_preset_status_label = null
+	_contract_status_label = null
 
 	controls_list.add_child(_make_background_mode_control())
 	controls_list.add_child(_make_preset_actions_block())
@@ -1081,6 +1082,8 @@ func _build_controls() -> void:
 
 	for config in HYBRID_COLOR_CONTROLS:
 		controls_list.add_child(_make_color_control(config))
+
+	controls_list.add_child(_make_contract_status_block())
 
 	var tail_spacer := Control.new()
 	tail_spacer.custom_minimum_size = Vector2(0.0, 8.0)
@@ -1105,6 +1108,46 @@ func _make_background_mode_control() -> Control:
 	wrapper.add_child(selector)
 	_background_mode_selector = selector
 	return wrapper
+
+
+func _make_contract_status_block() -> Control:
+	var panel := PanelContainer.new()
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var style := StyleBoxFlat.new()
+	style.content_margin_left = 0.0
+	style.content_margin_top = 0.0
+	style.content_margin_right = 0.0
+	style.content_margin_bottom = 0.0
+	style.bg_color = Color(0.04, 0.05, 0.08, 0.82)
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.border_color = Color(1, 1, 1, 0.08)
+	style.corner_radius_top_left = 14
+	style.corner_radius_top_right = 14
+	style.corner_radius_bottom_right = 14
+	style.corner_radius_bottom_left = 14
+	style.shadow_color = Color(0, 0, 0, 0.28)
+	style.shadow_size = 18
+	panel.add_theme_stylebox_override("panel", style)
+
+	var padding := MarginContainer.new()
+	padding.add_theme_constant_override("margin_left", 14)
+	padding.add_theme_constant_override("margin_top", 12)
+	padding.add_theme_constant_override("margin_right", 14)
+	padding.add_theme_constant_override("margin_bottom", 12)
+	panel.add_child(padding)
+
+	var status := RichTextLabel.new()
+	status.custom_minimum_size = Vector2(0.0, 164.0)
+	status.bbcode_enabled = true
+	status.fit_content = true
+	status.scroll_active = false
+	padding.add_child(status)
+	_contract_status_label = status
+	return panel
 
 
 func _make_preset_actions_block() -> Control:
@@ -1442,7 +1485,7 @@ func _axis_strength(negative_primary: Key, positive_primary: Key, negative_secon
 
 
 func _refresh_status() -> void:
-	if status_label == null or panel_pivot == null:
+	if _contract_status_label == null or panel_pivot == null:
 		return
 
 	var lines := [
@@ -1469,7 +1512,7 @@ func _refresh_status() -> void:
 		"Surface ID: %s" % _last_contract_surface_id,
 		"Last contract publish: %s" % _last_forwarded_panel_event,
 	]
-	status_label.text = "\n".join(lines)
+	_contract_status_label.text = "\n".join(lines)
 
 
 func _background_mode_name(mode: int) -> String:
