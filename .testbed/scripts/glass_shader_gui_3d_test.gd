@@ -1380,10 +1380,7 @@ func _panel_uv_to_authored_uv(panel_uv: Vector2) -> Vector2:
 
 
 func _sync_panel_surface_aspect() -> void:
-	var rect := _get_authored_glass_rect()
-	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
-		return
-	var authored_aspect := rect.size.x / rect.size.y
+	var authored_aspect := _get_authored_surface_aspect()
 	if authored_aspect <= 0.0:
 		return
 	var surface_width := _get_panel_surface_size().x
@@ -1393,6 +1390,19 @@ func _sync_panel_surface_aspect() -> void:
 	_sync_quad_mesh_size(panel_display, Vector2(surface_width, surface_height))
 	_sync_quad_mesh_size(panel_ui_overlay, Vector2(surface_width, surface_height))
 	_sync_panel_input_shape(Vector2(surface_width, surface_height))
+
+
+func _get_authored_surface_aspect() -> float:
+	var rect := _get_authored_glass_rect()
+	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
+		return 0.0
+	var viewport_size := Vector2(panel_viewport.size) if panel_viewport != null else Vector2.ZERO
+	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
+		return 0.0
+	var authored_size_px := Vector2(rect.size.x * viewport_size.x, rect.size.y * viewport_size.y)
+	if authored_size_px.y <= 0.0:
+		return 0.0
+	return authored_size_px.x / authored_size_px.y
 
 
 func _sync_quad_mesh_size(instance: MeshInstance3D, size: Vector2) -> void:

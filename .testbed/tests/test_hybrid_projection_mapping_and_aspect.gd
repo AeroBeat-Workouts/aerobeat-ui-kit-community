@@ -35,11 +35,14 @@ func test_panel_surface_aspect_matches_authored_card_aspect() -> void:
 	var collision_shape: CollisionShape3D = scene.panel_input_surface.get_node("CollisionShape3D") as CollisionShape3D
 	var shape: BoxShape3D = collision_shape.shape as BoxShape3D
 	var authored_rect: Rect2 = scene._get_authored_glass_rect()
-	var authored_aspect := authored_rect.size.x / authored_rect.size.y
+	var viewport_size := Vector2(scene.panel_viewport.size)
+	var authored_size_px := Vector2(authored_rect.size.x * viewport_size.x, authored_rect.size.y * viewport_size.y)
+	var authored_aspect := authored_size_px.x / authored_size_px.y
 	var display_aspect := display_mesh.size.x / display_mesh.size.y
 	var overlay_aspect := overlay_mesh.size.x / overlay_mesh.size.y
 	var collision_aspect := shape.size.x / shape.size.y
 
+	assert_almost_eq(scene._get_authored_surface_aspect(), authored_aspect, 0.0005)
 	assert_almost_eq(display_aspect, authored_aspect, 0.0005)
 	assert_almost_eq(overlay_aspect, authored_aspect, 0.0005)
 	assert_almost_eq(collision_aspect, authored_aspect, 0.0005)
