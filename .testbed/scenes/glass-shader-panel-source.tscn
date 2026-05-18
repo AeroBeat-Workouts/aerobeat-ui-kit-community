@@ -233,27 +233,54 @@ text = "Glass Shader UI Demo"
 autowrap_mode = 3
 
 [node name="PrimaryActionButton" type="Button" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn" unique_id=846262354]
-custom_minimum_size = Vector2(0, 72)
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 1, 1, 0.92)
-theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
-theme_override_colors/font_hover_color = Color(1, 1, 1, 0.98)
-theme_override_font_sizes/font_size = 20
-text = "PRIMARY TARGET"
+text = ""
 flat = true
 
-[node name="PrimaryActionMeta" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton" unique_id=735337839]
-modulate = Color(1, 1, 1, 0.8)
-layout_mode = 0
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -108.0
-offset_top = 10.0
-offset_right = 108.0
-offset_bottom = 30.0
+[node name="PrimaryActionBodyInset" type="MarginContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton" unique_id=108462623]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_right = 28
+
+[node name="PrimaryActionBodyAlign" type="CenterContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset" unique_id=640182374]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="PrimaryActionBody" type="PanelContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign" unique_id=1846262354]
+custom_minimum_size = Vector2(312, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="PrimaryActionBodyPadding" type="MarginContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody" unique_id=1262354108]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 12
+
+[node name="PrimaryActionTextColumn" type="VBoxContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody/PrimaryActionBodyPadding" unique_id=923487551]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="PrimaryActionLabel" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody/PrimaryActionBodyPadding/PrimaryActionTextColumn" unique_id=177631244]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 20
+text = "PRIMARY TARGET"
+
+[node name="PrimaryActionMeta" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody/PrimaryActionBodyPadding/PrimaryActionTextColumn" unique_id=735337839]
+modulate = Color(1, 1, 1, 0.66)
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 13
 text = "Visible center hit target"
-horizontal_alignment = 1
-vertical_alignment = 1

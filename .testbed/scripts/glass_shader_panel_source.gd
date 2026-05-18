@@ -130,23 +130,29 @@ const BADGE_BASE_FILL_ALPHA := 0.08
 const BADGE_BASE_BORDER_ALPHA := 0.14
 const BADGE_BASE_LABEL_ALPHA := 0.78
 const BADGE_BASE_RADIUS := 14
-const BADGE_ACTION_RADIUS_DELTA := 8
+const BADGE_ACTION_RADIUS_DELTA := 5
 const BADGE_ACTION_BORDER_WIDTH := 2
-const BADGE_ACTION_FILL_DELTA := 0.08
-const BADGE_ACTION_HOVER_FILL_DELTA := 0.14
-const BADGE_ACTION_PRESSED_FILL_DELTA := 0.22
-const BADGE_ACTION_BORDER_DELTA := 0.253
-const BADGE_ACTION_HOVER_BORDER_DELTA := 0.393
-const BADGE_ACTION_PRESSED_BORDER_DELTA := 0.473
-const BADGE_ACTION_TEXT_ALPHA_DELTA := 0.08
-const BADGE_ACTION_META_ALPHA_DELTA := 0.06
-const BADGE_ACTION_HYBRID_SHADOW_ALPHA := 0.16
-const BADGE_ACTION_HYBRID_SHADOW_HOVER_ALPHA := 0.22
-const BADGE_ACTION_HYBRID_SHADOW_PRESSED_ALPHA := 0.24
-const BADGE_ACTION_HYBRID_SHADOW_SIZE := 8
-const BADGE_ACTION_HYBRID_SHADOW_HOVER_SIZE := 10
-const BADGE_ACTION_HORIZONTAL_PADDING := 24
-const BADGE_ACTION_VERTICAL_PADDING := 16
+const BADGE_ACTION_SOURCE_REST_FILL_DELTA := 0.13
+const BADGE_ACTION_SOURCE_HOVER_FILL_DELTA := 0.17
+const BADGE_ACTION_SOURCE_PRESSED_FILL_DELTA := 0.22
+const BADGE_ACTION_HYBRID_REST_FILL_DELTA := 0.20
+const BADGE_ACTION_HYBRID_HOVER_FILL_DELTA := 0.25
+const BADGE_ACTION_HYBRID_PRESSED_FILL_DELTA := 0.31
+const BADGE_ACTION_SOURCE_REST_BORDER_DELTA := 0.38
+const BADGE_ACTION_SOURCE_HOVER_BORDER_DELTA := 0.46
+const BADGE_ACTION_SOURCE_PRESSED_BORDER_DELTA := 0.54
+const BADGE_ACTION_HYBRID_REST_BORDER_DELTA := 0.39
+const BADGE_ACTION_HYBRID_HOVER_BORDER_DELTA := 0.46
+const BADGE_ACTION_HYBRID_PRESSED_BORDER_DELTA := 0.50
+const BADGE_ACTION_SOURCE_TEXT_ALPHA := 0.95
+const BADGE_ACTION_HYBRID_TEXT_ALPHA := 0.98
+const BADGE_ACTION_SOURCE_META_ALPHA := 0.66
+const BADGE_ACTION_HYBRID_META_ALPHA := 0.7
+const BADGE_ACTION_HYBRID_SHADOW_ALPHA := 0.18
+const BADGE_ACTION_HYBRID_SHADOW_HOVER_ALPHA := 0.24
+const BADGE_ACTION_HYBRID_SHADOW_PRESSED_ALPHA := 0.28
+const BADGE_ACTION_HYBRID_SHADOW_SIZE := 10
+const BADGE_ACTION_HYBRID_SHADOW_HOVER_SIZE := 12
 
 @onready var background: TextureRect = get_node_or_null("Background") as TextureRect
 @onready var primary_card_button: Button = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton") as Button
@@ -157,7 +163,9 @@ const BADGE_ACTION_VERTICAL_PADDING := 16
 @onready var preview_badge: PanelContainer = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge") as PanelContainer
 @onready var preview_badge_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge/BadgePadding/BadgeLabel") as Label
 @onready var primary_action_button: Button = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton") as Button
-@onready var primary_action_meta: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionMeta") as Label
+@onready var primary_action_body: PanelContainer = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody") as PanelContainer
+@onready var primary_action_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody/PrimaryActionBodyPadding/PrimaryActionTextColumn/PrimaryActionLabel") as Label
+@onready var primary_action_meta: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody/PrimaryActionBodyPadding/PrimaryActionTextColumn/PrimaryActionMeta") as Label
 @onready var headline_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Headline") as Label
 @onready var body_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Body") as Label
 @onready var content_margin: MarginContainer = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin") as MarginContainer
@@ -278,8 +286,19 @@ func _configure_primary_action_button() -> void:
 	primary_action_button.focus_mode = Control.FOCUS_NONE
 	primary_action_button.mouse_filter = Control.MOUSE_FILTER_STOP
 	primary_action_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	primary_action_button.add_theme_constant_override("outline_size", 2)
-	primary_action_button.add_theme_color_override("font_outline_color", Color(0.02, 0.05, 0.09, 0.5))
+	primary_action_button.add_theme_constant_override("outline_size", 0)
+	primary_action_button.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.0))
+	primary_action_button.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.0))
+	primary_action_button.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0, 0.0))
+	primary_action_button.add_theme_color_override("font_pressed_color", Color(1.0, 1.0, 1.0, 0.0))
+	primary_action_button.add_theme_color_override("font_focus_color", Color(1.0, 1.0, 1.0, 0.0))
+
+	var empty := StyleBoxEmpty.new()
+	primary_action_button.add_theme_stylebox_override("normal", empty)
+	primary_action_button.add_theme_stylebox_override("hover", empty)
+	primary_action_button.add_theme_stylebox_override("pressed", empty)
+	primary_action_button.add_theme_stylebox_override("focus", empty)
+	primary_action_button.add_theme_stylebox_override("disabled", empty)
 
 
 func set_background_mode(mode: int) -> void:
@@ -511,7 +530,7 @@ func _apply_primary_card_accent() -> void:
 
 
 func _refresh_primary_action_visual() -> void:
-	if not is_instance_valid(primary_action_button):
+	if not is_instance_valid(primary_action_button) or not is_instance_valid(primary_action_body):
 		return
 
 	var state := _target_state(TARGET_PRIMARY)
@@ -522,57 +541,89 @@ func _refresh_primary_action_visual() -> void:
 	var is_hybrid_world := _presentation_mode == PRESENTATION_MODE_HYBRID_WORLD_SPACE
 	var badge_tokens := _get_badge_tokens(is_hybrid_world)
 	var accent := TOGGLE_ON_ACCENT if active else Color(1.0, 1.0, 1.0, 1.0)
-	var fill_alpha := float(badge_tokens["fill_alpha"]) + BADGE_ACTION_FILL_DELTA
-	var hover_fill_alpha := float(badge_tokens["fill_alpha"]) + BADGE_ACTION_HOVER_FILL_DELTA
-	var pressed_fill_alpha := float(badge_tokens["fill_alpha"]) + BADGE_ACTION_PRESSED_FILL_DELTA
-	var border_alpha := float(badge_tokens["border_alpha"]) + BADGE_ACTION_BORDER_DELTA
-	var hover_border_alpha := float(badge_tokens["border_alpha"]) + BADGE_ACTION_HOVER_BORDER_DELTA
-	var pressed_border_alpha := float(badge_tokens["border_alpha"]) + BADGE_ACTION_PRESSED_BORDER_DELTA
-	var font_color := Color(1.0, 1.0, 1.0, clampf(float(badge_tokens["label_alpha"]) + BADGE_ACTION_TEXT_ALPHA_DELTA, 0.0, 0.98))
-	var meta_color := Color(1.0, 1.0, 1.0, clampf(float(badge_tokens["label_alpha"]) + BADGE_ACTION_META_ALPHA_DELTA, 0.0, 0.9))
+	var fill_alpha := float(badge_tokens["fill_alpha"]) + _action_fill_delta(is_hybrid_world, "rest")
+	var border_alpha := float(badge_tokens["border_alpha"]) + _action_border_delta(is_hybrid_world, "rest")
 	var shadow_alpha := BADGE_ACTION_HYBRID_SHADOW_ALPHA if is_hybrid_world else 0.0
 	var shadow_size := BADGE_ACTION_HYBRID_SHADOW_SIZE if is_hybrid_world else 0
+
 	if hovered:
-		font_color = Color(1.0, 1.0, 1.0, 0.98)
-	if pressed:
-		fill_alpha = pressed_fill_alpha
-	if toggled:
-		fill_alpha = maxf(fill_alpha, clampf(float(badge_tokens["fill_alpha"]) + 0.26, 0.0, 0.44 if is_hybrid_world else 0.26))
+		fill_alpha = maxf(fill_alpha, float(badge_tokens["fill_alpha"]) + _action_fill_delta(is_hybrid_world, "hover"))
+		border_alpha = maxf(border_alpha, float(badge_tokens["border_alpha"]) + _action_border_delta(is_hybrid_world, "hover"))
+		shadow_alpha = maxf(shadow_alpha, BADGE_ACTION_HYBRID_SHADOW_HOVER_ALPHA if is_hybrid_world else 0.0)
+		shadow_size = max(shadow_size, BADGE_ACTION_HYBRID_SHADOW_HOVER_SIZE if is_hybrid_world else 0)
+	if pressed or toggled:
+		fill_alpha = maxf(fill_alpha, float(badge_tokens["fill_alpha"]) + _action_fill_delta(is_hybrid_world, "pressed"))
+		border_alpha = maxf(border_alpha, float(badge_tokens["border_alpha"]) + _action_border_delta(is_hybrid_world, "pressed"))
+		shadow_alpha = maxf(shadow_alpha, BADGE_ACTION_HYBRID_SHADOW_PRESSED_ALPHA if is_hybrid_world else 0.0)
+		shadow_size = max(shadow_size, BADGE_ACTION_HYBRID_SHADOW_HOVER_SIZE if is_hybrid_world else 0)
 
-	primary_action_button.add_theme_color_override("font_color", accent if toggled or hovered or pressed else font_color)
-	primary_action_button.add_theme_color_override("font_hover_color", accent if hovered or active else font_color)
-	primary_action_button.add_theme_color_override("font_pressed_color", accent.lightened(0.08))
-	primary_action_button.add_theme_stylebox_override("normal", _build_action_stylebox(fill_alpha, accent, active, border_alpha, shadow_alpha, shadow_size, is_hybrid_world, badge_tokens))
-	primary_action_button.add_theme_stylebox_override("hover", _build_action_stylebox(maxf(fill_alpha, hover_fill_alpha), accent, active or hovered, maxf(border_alpha, hover_border_alpha), maxf(shadow_alpha, BADGE_ACTION_HYBRID_SHADOW_HOVER_ALPHA if is_hybrid_world else 0.0), max(shadow_size, BADGE_ACTION_HYBRID_SHADOW_HOVER_SIZE if is_hybrid_world else 0), is_hybrid_world, badge_tokens))
-	primary_action_button.add_theme_stylebox_override("pressed", _build_action_stylebox(maxf(fill_alpha, pressed_fill_alpha), accent, true, maxf(border_alpha, pressed_border_alpha), maxf(shadow_alpha, BADGE_ACTION_HYBRID_SHADOW_PRESSED_ALPHA if is_hybrid_world else 0.0), max(shadow_size, BADGE_ACTION_HYBRID_SHADOW_HOVER_SIZE if is_hybrid_world else 0), is_hybrid_world, badge_tokens))
+	var body_style := _build_action_stylebox(fill_alpha, accent, active or hovered, border_alpha, shadow_alpha, shadow_size, is_hybrid_world, badge_tokens)
+	primary_action_body.add_theme_stylebox_override("panel", body_style)
+	if is_instance_valid(primary_action_label):
+		var label_alpha := BADGE_ACTION_HYBRID_TEXT_ALPHA if is_hybrid_world else BADGE_ACTION_SOURCE_TEXT_ALPHA
+		primary_action_label.modulate = accent if active else Color(1.0, 1.0, 1.0, 0.99 if hovered else label_alpha)
 	if is_instance_valid(primary_action_meta):
-		primary_action_meta.modulate = accent if active else meta_color
-	primary_action_button.scale = Vector2.ONE * (0.988 if pressed else 1.0)
+		var meta_alpha := BADGE_ACTION_HYBRID_META_ALPHA if is_hybrid_world else BADGE_ACTION_SOURCE_META_ALPHA
+		primary_action_meta.modulate = accent if active else Color(1.0, 1.0, 1.0, meta_alpha)
+	primary_action_button.scale = Vector2.ONE
+	primary_action_body.scale = Vector2.ONE * (0.988 if pressed else 1.0)
 
 
-func _build_action_stylebox(fill_alpha: float, accent: Color, is_active: bool, border_alpha: float, shadow_alpha: float, shadow_size: int, is_hybrid_world: bool, badge_tokens: Dictionary) -> StyleBoxFlat:
+func _build_action_stylebox(fill_alpha: float, accent: Color, is_emphasized: bool, border_alpha: float, shadow_alpha: float, shadow_size: int, is_hybrid_world: bool, badge_tokens: Dictionary) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	var fill_color := Color(1.0, 1.0, 1.0, clampf(fill_alpha, 0.0, 0.46 if is_hybrid_world else 0.28))
+	var fill_color := Color(1.0, 1.0, 1.0, clampf(fill_alpha, 0.0, 0.44 if is_hybrid_world else 0.24))
 	if not is_hybrid_world:
-		fill_color = fill_color.lerp(Color(_shell_tint.r, _shell_tint.g, _shell_tint.b, fill_color.a), 0.2)
+		fill_color = fill_color.lerp(Color(_shell_tint.r, _shell_tint.g, _shell_tint.b, fill_color.a), 0.16)
 	style.bg_color = fill_color
 	style.border_width_left = BADGE_ACTION_BORDER_WIDTH
 	style.border_width_top = BADGE_ACTION_BORDER_WIDTH
 	style.border_width_right = BADGE_ACTION_BORDER_WIDTH
 	style.border_width_bottom = BADGE_ACTION_BORDER_WIDTH
-	style.border_color = Color(accent.r, accent.g, accent.b, 0.62 if is_active else clampf(border_alpha, 0.0, 0.74))
+	style.border_color = Color(accent.r, accent.g, accent.b, 0.7 if is_emphasized else clampf(border_alpha, 0.0, 0.76))
 	var action_radius := int(badge_tokens["radius"]) + BADGE_ACTION_RADIUS_DELTA
 	style.corner_radius_top_left = action_radius
 	style.corner_radius_top_right = action_radius
 	style.corner_radius_bottom_right = action_radius
 	style.corner_radius_bottom_left = action_radius
-	style.content_margin_left = BADGE_ACTION_HORIZONTAL_PADDING
-	style.content_margin_right = BADGE_ACTION_HORIZONTAL_PADDING
-	style.content_margin_top = BADGE_ACTION_VERTICAL_PADDING
-	style.content_margin_bottom = BADGE_ACTION_VERTICAL_PADDING
 	style.shadow_size = shadow_size
 	style.shadow_color = Color(accent.r, accent.g, accent.b, shadow_alpha)
 	return style
+
+
+func _action_fill_delta(is_hybrid_world: bool, phase: String) -> float:
+	if is_hybrid_world:
+		match phase:
+			"hover":
+				return BADGE_ACTION_HYBRID_HOVER_FILL_DELTA
+			"pressed":
+				return BADGE_ACTION_HYBRID_PRESSED_FILL_DELTA
+			_:
+				return BADGE_ACTION_HYBRID_REST_FILL_DELTA
+	match phase:
+		"hover":
+			return BADGE_ACTION_SOURCE_HOVER_FILL_DELTA
+		"pressed":
+			return BADGE_ACTION_SOURCE_PRESSED_FILL_DELTA
+		_:
+			return BADGE_ACTION_SOURCE_REST_FILL_DELTA
+
+
+func _action_border_delta(is_hybrid_world: bool, phase: String) -> float:
+	if is_hybrid_world:
+		match phase:
+			"hover":
+				return BADGE_ACTION_HYBRID_HOVER_BORDER_DELTA
+			"pressed":
+				return BADGE_ACTION_HYBRID_PRESSED_BORDER_DELTA
+			_:
+				return BADGE_ACTION_HYBRID_REST_BORDER_DELTA
+	match phase:
+		"hover":
+			return BADGE_ACTION_SOURCE_HOVER_BORDER_DELTA
+		"pressed":
+			return BADGE_ACTION_SOURCE_PRESSED_BORDER_DELTA
+		_:
+			return BADGE_ACTION_SOURCE_REST_BORDER_DELTA
 
 
 func _get_badge_tokens(is_hybrid_world: bool) -> Dictionary:
