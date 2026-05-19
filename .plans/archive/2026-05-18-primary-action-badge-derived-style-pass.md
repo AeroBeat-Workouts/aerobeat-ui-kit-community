@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — Primary Action Badge-Derived Style Pass
 
 **Date:** 2026-05-18  
-**Status:** In Progress  
+**Status:** Superseded  
 **Agent:** Cookie 🍪
 
 ---
@@ -105,29 +105,29 @@ This repo already drives the action style mostly from script rather than static 
 **Prompt:** In `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-ui-kit-community`, independently audit the final badge-derived `PrimaryActionButton` styling. Confirm it clearly inherits from the `Badge` family, still reads as a real primary action button, and does not regress the hybrid scene’s overall visual clarity.
 
 **Folders Created/Deleted/Modified:**
-- `.plans/` (results only if needed)
+- `.temp/qa-evidence/primary-action-badge-derived-2026-05-18/`
 
 **Files Created/Deleted/Modified:**
-- optional audit notes if needed
+- rendered source/hybrid captures, report, and summary for the failed badge-derived pass
 
-**Status:** ⏳ Pending
+**Status:** ❌ Failed
 
-**Results:** Pending.
+**Results:** Final audit rejected this pass. The implementation succeeded at making the button badge-derived in code, but the rendered result still under-read as a primary button and did not look visibly close enough to the badge family on screen. This plan was superseded by the literal badge-button pass.
 
 ---
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ❌ Blocked / Superseded
 
-**What We Built:** Pending execution.
+**What We Built:** A badge-derived token pass that improved the code path but did not produce a strong enough on-screen family resemblance or primary-button affordance.
 
-**Reference Check:** Pending execution.
+**Reference Check:** `REF-01` through `REF-03` were only partially satisfied. The button inherited badge-family internals, but the rendered outcome did not satisfy the user’s visual intent.
 
 **Commits:**
-- Pending
+- `b37760e` - Derive primary action styling from badge tokens
 
-**Lessons Learned:** Pending execution.
+**Lessons Learned:** “Badge-derived” in implementation is not the same thing as “looks like the badge” on screen. Direct visual feedback beats an internally neat style story.
 
 ---
 

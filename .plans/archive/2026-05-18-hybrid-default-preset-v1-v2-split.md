@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — Hybrid Default Preset v1/v2 Split
 
 **Date:** 2026-05-18  
-**Status:** Draft  
+**Status:** Complete  
 **Agent:** Cookie 🍪
 
 ---
@@ -104,29 +104,32 @@ This work should stay small and reversible: identify the old commit, write `defa
 **Prompt:** In `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-ui-kit-community`, independently audit the new `default-v1.json` / `default-v2.json` split and confirm the two files represent the intended old and current preset generations accurately.
 
 **Folders Created/Deleted/Modified:**
-- `.plans/` (results only if needed)
+- `.temp/qa-evidence/`
 
 **Files Created/Deleted/Modified:**
-- optional audit notes if needed
+- `.temp/qa-evidence/aerobeat-ui-kit-community-6dt-qa.md`
+- `.temp/qa-evidence/default-v1-vs-historical.diff`
+- `.temp/qa-evidence/default-v2-vs-current.diff`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Final audit passed. `default-v1.json` exactly matches the historical preset snapshot from commit `ff6b7b71a93282f113898c6929ccad5845296f0d`, `default-v2.json` exactly matches the current `default.json` on `main`, and the current `default.json` remained untouched by the split.
 
 ---
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**What We Built:** Pending execution.
+**What We Built:** A clean historical/current preset split for the hybrid default preset family, with `default-v1.json` preserving the older frosted-glass baseline and `default-v2.json` preserving the current corrected preset while leaving `default.json` in place.
 
-**Reference Check:** Pending execution.
+**Reference Check:** `REF-01` remained the canonical current file, `REF-02` captured the retuned current generation, and `REF-03` was resolved exactly to the historical split point Derrick specified.
 
 **Commits:**
-- Pending
+- `34313e7` - Create hybrid default-v1.json and default-v2.json
+- `ce82235` - Document hybrid preset fixes and preset split plans
 
-**Lessons Learned:** Pending execution.
+**Lessons Learned:** When Derrick knows the exact historical split point, use the commit as the source of truth instead of re-litigating history discovery.
 
 ---
 

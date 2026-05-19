@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — Hybrid Glass GUI Panel Alignment and Button Parity
 
 **Date:** 2026-05-18  
-**Status:** Draft  
+**Status:** Complete  
 **Agent:** Cookie 🍪
 
 ---
@@ -146,29 +146,31 @@ Use these references for exact parity checks between the authored 2D panel and t
 **Prompt:** In `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-ui-kit-community`, independently audit the finished hybrid glass GUI changes. Confirm whether the visible primary action button styling now reads as a glass button, whether its actual interactive/clickable area matches its rendered location, and whether the hybrid 3D panel still shows any vertical stretch relative to the 2D-authored panel. Check the final diff, validation output, and QA evidence before deciding whether the bead is actually done.
 
 **Folders Created/Deleted/Modified:**
-- `.plans/` (results only if needed)
+- `.temp/qa-evidence/`
 
 **Files Created/Deleted/Modified:**
-- optional audit notes if needed
+- QA captures, reports, and summaries used to validate the final pass
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Final audit passed. The hybrid GUI scene now has authored-space click alignment, corrected aspect parity, and a primary action that reads as an actual button with matching functional hit location. QA confirmed parity in front and oblique views, and audit accepted the final result as complete.
 
 ---
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**What We Built:** Pending execution.
+**What We Built:** A repaired hybrid glass GUI test scene with authored-space hit mapping, corrected panel aspect parity, and stronger primary-action button treatment.
 
-**Reference Check:** Pending execution.
+**Reference Check:** `REF-01` through `REF-04` were satisfied by bringing the hybrid 3D scene back into visual/input parity with the authored 2D panel; `REF-05` informed the earlier input-detection history used during audit.
 
 **Commits:**
-- Pending
+- `e3038f1` - Fix hybrid GUI primary action alignment and glass-button parity
+- `8aa540e` - Fix hybrid panel aspect parity
+- `9e399b6` - Document hybrid glass GUI parity fix plan
 
-**Lessons Learned:** Pending execution.
+**Lessons Learned:** Distinguish coordinate-space bugs from aspect-ratio bugs. They can share a theme of authored-space drift without sharing the same root cause.
 
 ---
 

@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — Hybrid Button Whiteout and Debug Panel Layout
 
 **Date:** 2026-05-18  
-**Status:** In Progress  
+**Status:** Complete  
 **Agent:** Cookie 🍪
 
 ---
@@ -109,29 +109,29 @@ This slice still belongs to `aerobeat-ui-kit-community`, and it likely spans bot
 **Prompt:** In `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-ui-kit-community`, independently audit the finished fix. Confirm the hybrid button no longer whites out, the editor/debug ordering now puts shader editing before the debug printout in both scenes, and the result is genuinely verifiable on screen rather than just theoretically fixed in code.
 
 **Folders Created/Deleted/Modified:**
-- `.plans/` (results only if needed)
+- `.temp/qa-evidence/aerobeat-ui-kit-community-bq6/`
 
 **Files Created/Deleted/Modified:**
-- optional audit notes if needed
+- hybrid/2D startup, bottom, hover/press captures + results used by QA/audit
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** Final audit passed. The hybrid button no longer blows out to near-solid white, the text is readable again, the card still reads as glass, and both hybrid and 2D now place shader/preset editing controls before the debug/status block inside the scroll flow.
 
 ---
 
 ## Final Results
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**What We Built:** Pending execution.
+**What We Built:** A targeted fix for hybrid button whiteout and left-rail workflow ordering. The repair rebalanced the hybrid default preset/compositing path, moved hybrid debug/status into the scroll flow, and matched the same control-before-debug ordering in the 2D host.
 
-**Reference Check:** Pending execution.
+**Reference Check:** `REF-01`/`REF-02` were preserved by not blindly changing the shared button source, `REF-03`/`REF-04` were corrected directly in the hybrid host path, and `REF-05` remained the on-screen truth source for the failure state.
 
 **Commits:**
-- Pending
+- `7e27eeb` - Fix hybrid glass button contrast and control ordering
 
-**Lessons Learned:** Pending execution.
+**Lessons Learned:** In the hybrid testbed, presets/compositing can dominate the rendered outcome more than the shared source control styling. When the screen says “whiteout,” inspect the hybrid preset path early.
 
 ---
 
