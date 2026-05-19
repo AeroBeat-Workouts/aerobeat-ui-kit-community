@@ -1,0 +1,54 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/views/aero_ui_glass_primary_button_view.gd" id="1_script"]
+
+[node name="AeroUiGlassPrimaryButtonView" type="Button"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+size_flags_horizontal = 3
+flat = true
+script = ExtResource("1_script")
+
+[node name="PrimaryActionBodyInset" type="MarginContainer" parent="." unique_id=108462623]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_right = 28
+
+[node name="PrimaryActionBodyAlign" type="CenterContainer" parent="PrimaryActionBodyInset" unique_id=640182374]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="PrimaryActionBody" type="PanelContainer" parent="PrimaryActionBodyInset/PrimaryActionBodyAlign" unique_id=1846262354]
+custom_minimum_size = Vector2(312, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="PrimaryActionBodyPadding" type="MarginContainer" parent="PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody" unique_id=1262354108]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 12
+
+[node name="PrimaryActionTextColumn" type="VBoxContainer" parent="PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody/PrimaryActionBodyPadding" unique_id=923487551]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="PrimaryActionLabel" type="Label" parent="PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody/PrimaryActionBodyPadding/PrimaryActionTextColumn" unique_id=177631244]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "PRIMARY TARGET"
+
+[node name="PrimaryActionMeta" type="Label" parent="PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody/PrimaryActionBodyPadding/PrimaryActionTextColumn" unique_id=735337839]
+modulate = Color(1, 1, 1, 0.66)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Visible center hit target"

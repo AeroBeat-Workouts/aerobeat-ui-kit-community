@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://ui/views/aero_ui_glass_panel_view.gd" id="1_script"]
 [ext_resource type="Shader" uid="uid://cpkp0irsnrqm7" path="res://assets/shaders/glass-shader.gdshader" id="2_shader"]
 [ext_resource type="Script" uid="uid://bxhdc78obwfuk" path="res://scripts/glass_debug_backdrop.gd" id="3_script"]
+[ext_resource type="PackedScene" path="res://ui/views/aero_ui_glass_primary_button_view.tscn" id="4_primary_button_scene"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hybrid_mask"]
 resource_local_to_scene = true
@@ -233,52 +234,5 @@ theme_override_font_sizes/font_size = 18
 text = "Glass Shader UI Demo"
 autowrap_mode = 3
 
-[node name="PrimaryActionButton" type="Button" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn" unique_id=846262354]
-custom_minimum_size = Vector2(0, 64)
-layout_mode = 2
-size_flags_horizontal = 3
-flat = true
-
-[node name="PrimaryActionBodyInset" type="MarginContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton" unique_id=108462623]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_constants/margin_left = 28
-theme_override_constants/margin_right = 28
-
-[node name="PrimaryActionBodyAlign" type="CenterContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset" unique_id=640182374]
-layout_mode = 2
-mouse_filter = 2
-
-[node name="PrimaryActionBody" type="PanelContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign" unique_id=1846262354]
-custom_minimum_size = Vector2(312, 0)
-layout_mode = 2
-mouse_filter = 2
-
-[node name="PrimaryActionBodyPadding" type="MarginContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody" unique_id=1262354108]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/margin_left = 22
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 22
-theme_override_constants/margin_bottom = 12
-
-[node name="PrimaryActionTextColumn" type="VBoxContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody/PrimaryActionBodyPadding" unique_id=923487551]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 4
-
-[node name="PrimaryActionLabel" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody/PrimaryActionBodyPadding/PrimaryActionTextColumn" unique_id=177631244]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "PRIMARY TARGET"
-
-[node name="PrimaryActionMeta" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody/PrimaryActionBodyPadding/PrimaryActionTextColumn" unique_id=735337839]
-modulate = Color(1, 1, 1, 0.66)
-layout_mode = 2
-theme_override_font_sizes/font_size = 13
-text = "Visible center hit target"
+[node name="PrimaryActionButton" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn" instance=ExtResource("4_primary_button_scene")]
+unique_id = 846262354

@@ -11,6 +11,7 @@ const AeroUiGlassPanelConfigLoader := preload("res://ui/configs/loaders/aero_ui_
 const AeroUiGlassPanelConfig := preload("res://ui/configs/types/aero_ui_glass_panel_config.gd")
 const AeroUiGlassBadgeConfig := preload("res://ui/configs/types/aero_ui_glass_badge_config.gd")
 const AeroUiGlassPrimaryButtonConfig := preload("res://ui/configs/types/aero_ui_glass_primary_button_config.gd")
+const AeroUiGlassPrimaryButtonView := preload("res://ui/views/aero_ui_glass_primary_button_view.gd")
 
 const BACKGROUND_IMAGE_PATH := "res://assets/images/perfect-hue-may-08-2026-hd.png"
 const DEFAULT_PANEL_STYLE_BUNDLE_PATH := "res://ui/presets/glass/panel/primary-card-source.v1.yaml"
@@ -138,10 +139,11 @@ const COLOR_CONTROLS := [
 @onready var preview_inner_border: Panel = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/InnerBorderInset/PreviewInnerBorder") as Panel
 @onready var preview_badge: PanelContainer = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge") as PanelContainer
 @onready var preview_badge_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge/BadgePadding/BadgeLabel") as Label
-@onready var primary_action_button: Button = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton") as Button
-@onready var primary_action_body: PanelContainer = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody") as PanelContainer
-@onready var primary_action_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody/PrimaryActionBodyPadding/PrimaryActionTextColumn/PrimaryActionLabel") as Label
-@onready var primary_action_meta: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody/PrimaryActionBodyPadding/PrimaryActionTextColumn/PrimaryActionMeta") as Label
+@onready var primary_button_view: AeroUiGlassPrimaryButtonView = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton") as AeroUiGlassPrimaryButtonView
+@onready var primary_action_button: Button = primary_button_view
+@onready var primary_action_body: PanelContainer = primary_button_view.primary_action_body if is_instance_valid(primary_button_view) else null
+@onready var primary_action_label: Label = primary_button_view.primary_action_label if is_instance_valid(primary_button_view) else null
+@onready var primary_action_meta: Label = primary_button_view.primary_action_meta if is_instance_valid(primary_button_view) else null
 @onready var headline_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Headline") as Label
 @onready var body_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Body") as Label
 @onready var content_margin: MarginContainer = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin") as MarginContainer
@@ -193,7 +195,6 @@ func _ready() -> void:
 	_load_startup_panel_style_bundle()
 
 	_configure_primary_card_button()
-	_configure_primary_action_button()
 	super._ready()
 	_sync_shell_state_from_shader()
 	_apply_visual_state()
@@ -207,8 +208,6 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_THEME_CHANGED:
 		if is_instance_valid(primary_card_button):
 			_configure_primary_card_button()
-		if is_instance_valid(primary_action_button):
-			_configure_primary_action_button()
 
 
 func _build_contract_targets() -> void:
@@ -260,26 +259,6 @@ func _configure_primary_card_button() -> void:
 	primary_card_button.add_theme_stylebox_override("pressed", empty)
 	primary_card_button.add_theme_stylebox_override("focus", empty)
 	primary_card_button.add_theme_stylebox_override("disabled", empty)
-
-
-func _configure_primary_action_button() -> void:
-	primary_action_button.flat = true
-	primary_action_button.focus_mode = Control.FOCUS_NONE
-	primary_action_button.mouse_filter = Control.MOUSE_FILTER_STOP
-	primary_action_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	primary_action_button.add_theme_constant_override("outline_size", 0)
-	primary_action_button.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.0))
-	primary_action_button.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.0))
-	primary_action_button.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0, 0.0))
-	primary_action_button.add_theme_color_override("font_pressed_color", Color(1.0, 1.0, 1.0, 0.0))
-	primary_action_button.add_theme_color_override("font_focus_color", Color(1.0, 1.0, 1.0, 0.0))
-
-	var empty := StyleBoxEmpty.new()
-	primary_action_button.add_theme_stylebox_override("normal", empty)
-	primary_action_button.add_theme_stylebox_override("hover", empty)
-	primary_action_button.add_theme_stylebox_override("pressed", empty)
-	primary_action_button.add_theme_stylebox_override("focus", empty)
-	primary_action_button.add_theme_stylebox_override("disabled", empty)
 
 
 func set_background_mode(mode: int) -> void:
@@ -537,83 +516,18 @@ func _apply_primary_card_accent() -> void:
 
 
 func _refresh_primary_action_visual() -> void:
-	if not is_instance_valid(primary_action_button) or not is_instance_valid(primary_action_body):
+	if not is_instance_valid(primary_button_view):
 		return
 
-	var state := _target_state(TARGET_PRIMARY)
-	var hovered := bool(state.get("hovered", false))
-	var pressed := bool(state.get("pressed", false))
-	var toggled := bool(state.get("toggle_on", false))
-	var active := toggled or pressed
 	var is_hybrid_world := _presentation_mode == PRESENTATION_MODE_HYBRID_WORLD_SPACE
-	var badge_tokens := _get_badge_tokens(is_hybrid_world)
-	var accent := TOGGLE_ON_ACCENT if active else Color(1.0, 1.0, 1.0, 1.0)
-	var fill_alpha := float(badge_tokens["fill_alpha"]) + _action_fill_delta(is_hybrid_world, "rest")
-	var border_alpha := float(badge_tokens["border_alpha"]) + _action_border_delta(is_hybrid_world, "rest")
-	var rest_state := _primary_button_state(is_hybrid_world, "rest")
-	var shadow_alpha := float(rest_state.get("shadow_alpha", 0.0))
-	var shadow_size := int(rest_state.get("shadow_size", 0))
-
-	if hovered:
-		var hover_state := _primary_button_state(is_hybrid_world, "hover")
-		fill_alpha = maxf(fill_alpha, float(badge_tokens["fill_alpha"]) + float(hover_state.get("fill_delta", 0.0)))
-		border_alpha = maxf(border_alpha, float(badge_tokens["border_alpha"]) + float(hover_state.get("border_delta", 0.0)))
-		shadow_alpha = maxf(shadow_alpha, float(hover_state.get("shadow_alpha", 0.0)))
-		shadow_size = max(shadow_size, int(hover_state.get("shadow_size", 0)))
-	if pressed or toggled:
-		var pressed_state := _primary_button_state(is_hybrid_world, "pressed")
-		fill_alpha = maxf(fill_alpha, float(badge_tokens["fill_alpha"]) + float(pressed_state.get("fill_delta", 0.0)))
-		border_alpha = maxf(border_alpha, float(badge_tokens["border_alpha"]) + float(pressed_state.get("border_delta", 0.0)))
-		shadow_alpha = maxf(shadow_alpha, float(pressed_state.get("shadow_alpha", 0.0)))
-		shadow_size = max(shadow_size, int(pressed_state.get("shadow_size", 0)))
-
-	var body_style := _build_action_stylebox(fill_alpha, accent, active or hovered, border_alpha, shadow_alpha, shadow_size, is_hybrid_world, badge_tokens)
-	primary_action_body.add_theme_stylebox_override("panel", body_style)
-	if is_instance_valid(primary_action_label):
-		var label_alpha := _primary_button_style_config.get_label_alpha(is_hybrid_world) if _primary_button_style_config != null else (0.98 if is_hybrid_world else 0.95)
-		primary_action_label.modulate = accent if active else Color(1.0, 1.0, 1.0, 0.99 if hovered else label_alpha)
-	if is_instance_valid(primary_action_meta):
-		var meta_alpha := _primary_button_style_config.get_meta_alpha(is_hybrid_world) if _primary_button_style_config != null else (0.7 if is_hybrid_world else 0.66)
-		primary_action_meta.modulate = accent if active else Color(1.0, 1.0, 1.0, meta_alpha)
-	primary_action_button.scale = Vector2.ONE
-	primary_action_body.scale = Vector2.ONE * (0.988 if pressed else 1.0)
-
-
-func _build_action_stylebox(fill_alpha: float, accent: Color, is_emphasized: bool, border_alpha: float, shadow_alpha: float, shadow_size: int, is_hybrid_world: bool, badge_tokens: Dictionary) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	var fill_color := Color(1.0, 1.0, 1.0, clampf(fill_alpha, 0.0, 0.44 if is_hybrid_world else 0.24))
-	if not is_hybrid_world:
-		fill_color = fill_color.lerp(Color(_shell_tint.r, _shell_tint.g, _shell_tint.b, fill_color.a), 0.16)
-	style.bg_color = fill_color
-	var border_width := _primary_button_style_config.border_width if _primary_button_style_config != null else 2
-	style.border_width_left = border_width
-	style.border_width_top = border_width
-	style.border_width_right = border_width
-	style.border_width_bottom = border_width
-	style.border_color = Color(accent.r, accent.g, accent.b, 0.7 if is_emphasized else clampf(border_alpha, 0.0, 0.76))
-	var radius_delta := _primary_button_style_config.radius_delta if _primary_button_style_config != null else 5
-	var action_radius := int(badge_tokens["radius"]) + radius_delta
-	style.corner_radius_top_left = action_radius
-	style.corner_radius_top_right = action_radius
-	style.corner_radius_bottom_right = action_radius
-	style.corner_radius_bottom_left = action_radius
-	style.shadow_size = shadow_size
-	style.shadow_color = Color(accent.r, accent.g, accent.b, shadow_alpha)
-	return style
-
-
-func _primary_button_state(is_hybrid_world: bool, phase: String) -> Dictionary:
-	if _primary_button_style_config == null:
-		return {"fill_delta": 0.0, "border_delta": 0.0, "shadow_alpha": 0.0, "shadow_size": 0}
-	return _primary_button_style_config.get_state(is_hybrid_world, phase)
-
-
-func _action_fill_delta(is_hybrid_world: bool, phase: String) -> float:
-	return float(_primary_button_state(is_hybrid_world, phase).get("fill_delta", 0.0))
-
-
-func _action_border_delta(is_hybrid_world: bool, phase: String) -> float:
-	return float(_primary_button_state(is_hybrid_world, phase).get("border_delta", 0.0))
+	primary_button_view.apply_visual_state(
+		_target_state(TARGET_PRIMARY),
+		is_hybrid_world,
+		_get_badge_tokens(is_hybrid_world),
+		_primary_button_style_config,
+		_shell_tint,
+		TOGGLE_ON_ACCENT
+	)
 
 
 func _get_badge_tokens(is_hybrid_world: bool) -> Dictionary:
