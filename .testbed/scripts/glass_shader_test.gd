@@ -2,7 +2,7 @@ extends Control
 
 const PANEL_VIEW_SCENE_PATH := "res://ui/views/aero_ui_glass_panel_view.tscn"
 const PRESET_DIALOG_DIRECTORY := "res://presets/glass/2d"
-const DEFAULT_PRESET_FILENAME := "glass-shader-2d-preset.yaml"
+const DEFAULT_PRESET_FILENAME := "default.yaml"
 const SCREEN_SURFACE_ID: StringName = &"screen_glass_panel"
 const SCREEN_SURFACE_TYPE: StringName = AeroUiInteractionTypes.SURFACE_TYPE_SCREEN_2D
 const PREVIEW_BUTTON_PATH := NodePath("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton")
@@ -14,6 +14,19 @@ const ButtonConfigLoader = preload("res://ui/configs/loaders/aero_ui_glass_prima
 const PRESET_SECTION_PANEL := "panel"
 const PRESET_SECTION_BADGE := "badge"
 const PRESET_SECTION_BUTTON := "button"
+
+const BADGE_EDITOR_CONTROLS := [
+	{"name": "badge_base_fill_alpha", "label": "fill_alpha", "min": 0.0, "max": 1.0, "step": 0.01, "default": 0.08},
+	{"name": "badge_base_border_alpha", "label": "border_alpha", "min": 0.0, "max": 1.0, "step": 0.01, "default": 0.14},
+	{"name": "badge_base_label_alpha", "label": "label_alpha", "min": 0.0, "max": 1.0, "step": 0.01, "default": 0.78},
+]
+
+const BUTTON_EDITOR_CONTROLS := [
+	{"name": "button_source_label_alpha", "label": "label_alpha", "min": 0.0, "max": 1.0, "step": 0.01, "default": 0.95},
+	{"name": "button_source_meta_alpha", "label": "meta_alpha", "min": 0.0, "max": 1.0, "step": 0.01, "default": 0.66},
+	{"name": "button_border_width", "label": "border_width", "min": 0.0, "max": 8.0, "step": 1.0, "default": 2.0},
+	{"name": "button_radius_delta", "label": "radius_delta", "min": 0.0, "max": 16.0, "step": 1.0, "default": 5.0},
+]
 
 @onready var controls_list: VBoxContainer = get_node_or_null("SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll/ControlsList") as VBoxContainer
 @onready var panel_view_host: Control = get_node_or_null("SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost") as Control
@@ -317,13 +330,23 @@ func _build_controls() -> void:
 	_preset_status_label = null
 	_contract_status_label = null
 
-	controls_list.add_child(_make_background_mode_control())
-	controls_list.add_child(_make_yaml_actions_block("panel_yaml_bundle", PRESET_SECTION_PANEL, "Root panel YAML: panel shader + shell plus badge/button sibling references."))
-	controls_list.add_child(_make_parameter_section("panel_shader_parameters", PanelViewScript.FLOAT_CONTROLS, PanelViewScript.COLOR_CONTROLS))
-	controls_list.add_child(_make_yaml_actions_block("badge_yaml", PRESET_SECTION_BADGE, "Badge component YAML only."))
-	controls_list.add_child(_make_yaml_actions_block("primary_button_yaml", PRESET_SECTION_BUTTON, "Primary button component YAML only."))
-	controls_list.add_child(_make_preset_status_block())
-	controls_list.add_child(_make_contract_status_block())
+	controls_list.add_child(_make_section_block("panel", [
+		_make_background_mode_control(),
+		_make_yaml_actions_block("", PRESET_SECTION_PANEL, "Root panel YAML with badge/button references."),
+		_make_parameter_section("live shader values", PanelViewScript.FLOAT_CONTROLS, PanelViewScript.COLOR_CONTROLS),
+	]))
+	controls_list.add_child(_make_section_block("badge", [
+		_make_yaml_actions_block("", PRESET_SECTION_BADGE, "Badge component YAML."),
+		_make_float_parameter_section("live badge values", BADGE_EDITOR_CONTROLS),
+	]))
+	controls_list.add_child(_make_section_block("primary button", [
+		_make_yaml_actions_block("", PRESET_SECTION_BUTTON, "Primary button component YAML."),
+		_make_float_parameter_section("live button values", BUTTON_EDITOR_CONTROLS),
+	]))
+	controls_list.add_child(_make_section_block("input debug", [
+		_make_preset_status_block(),
+		_make_contract_status_block(),
+	]))
 
 	var tail_spacer := Control.new()
 	tail_spacer.custom_minimum_size = Vector2(0.0, 8.0)
@@ -338,7 +361,7 @@ func _make_contract_status_block() -> Control:
 	wrapper.add_theme_constant_override("separation", 8)
 
 	var title := Label.new()
-	title.text = "screen_input_contract"
+	title.text = "interaction status"
 	wrapper.add_child(title)
 
 	var status := RichTextLabel.new()
@@ -358,7 +381,7 @@ func _make_background_mode_control() -> Control:
 	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	var label := Label.new()
-	label.text = "preview_background"
+	label.text = "preview background"
 	wrapper.add_child(label)
 
 	var selector := OptionButton.new()
@@ -373,7 +396,7 @@ func _make_background_mode_control() -> Control:
 	return wrapper
 
 
-func _make_yaml_actions_block(title_text: String, section_key: String, subtitle_text: String = "") -> Control:
+func _make_section_block(title_text: String, blocks: Array) -> Control:
 	var wrapper := VBoxContainer.new()
 	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	wrapper.add_theme_constant_override("separation", 8)
@@ -381,6 +404,27 @@ func _make_yaml_actions_block(title_text: String, section_key: String, subtitle_
 	var title := Label.new()
 	title.text = title_text
 	wrapper.add_child(title)
+
+	for block in blocks:
+		if block is Control:
+			wrapper.add_child(block)
+
+	return wrapper
+
+
+func _make_float_parameter_section(title_text: String, float_configs: Array) -> Control:
+	return _make_parameter_section(title_text, float_configs, [])
+
+
+func _make_yaml_actions_block(title_text: String, section_key: String, subtitle_text: String = "") -> Control:
+	var wrapper := VBoxContainer.new()
+	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	wrapper.add_theme_constant_override("separation", 8)
+
+	if not title_text.is_empty():
+		var title := Label.new()
+		title.text = title_text
+		wrapper.add_child(title)
 
 	if not subtitle_text.is_empty():
 		var subtitle := Label.new()
@@ -414,9 +458,10 @@ func _make_parameter_section(title_text: String, float_configs: Array, color_con
 	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	wrapper.add_theme_constant_override("separation", 8)
 
-	var title := Label.new()
-	title.text = title_text
-	wrapper.add_child(title)
+	if not title_text.is_empty():
+		var title := Label.new()
+		title.text = title_text
+		wrapper.add_child(title)
 
 	for config in float_configs:
 		wrapper.add_child(_make_float_control(config))
@@ -432,13 +477,13 @@ func _make_preset_status_block() -> Control:
 	wrapper.add_theme_constant_override("separation", 4)
 
 	var title := Label.new()
-	title.text = "yaml_status"
+	title.text = "yaml status"
 	wrapper.add_child(title)
 
 	var status := Label.new()
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.modulate = Color(1.0, 1.0, 1.0, 0.6)
-	status.text = "Section buttons load or export the authored YAML files directly."
+	status.text = "Panel, badge, and primary button each load or export their authored YAML directly."
 	wrapper.add_child(status)
 	_preset_status_label = status
 
@@ -529,7 +574,7 @@ func _on_background_mode_selected(index: int, selector: OptionButton) -> void:
 
 
 func _on_float_value_changed(value: float, parameter_name: String, slider: HSlider) -> void:
-	set_shader_parameter(parameter_name, value)
+	_set_live_control_value(parameter_name, value)
 	var value_label: Label = slider.get_meta("value_label") as Label
 	if value_label:
 		value_label.text = _format_float(value)
@@ -574,7 +619,7 @@ func _export_dialog_title(section_key: String) -> String:
 		PRESET_SECTION_BUTTON:
 			return "Export AeroUiGlass Primary Button YAML"
 		_:
-			return "Export AeroUiGlass Panel YAML Bundle"
+			return "Export AeroUiGlass Panel YAML"
 
 
 func _load_dialog_title(section_key: String) -> String:
@@ -584,7 +629,7 @@ func _load_dialog_title(section_key: String) -> String:
 		PRESET_SECTION_BUTTON:
 			return "Load AeroUiGlass Primary Button YAML"
 		_:
-			return "Load AeroUiGlass Panel YAML Bundle"
+			return "Load AeroUiGlass Panel YAML"
 
 
 func _on_save_dialog_file_selected(path: String) -> void:
@@ -594,7 +639,7 @@ func _on_save_dialog_file_selected(path: String) -> void:
 		PRESET_SECTION_BUTTON:
 			_export_button_yaml_to_path(path)
 		_:
-			_export_panel_yaml_bundle_to_path(path)
+			_export_panel_yaml_to_path(path)
 
 
 func _on_load_dialog_file_selected(path: String) -> void:
@@ -604,10 +649,10 @@ func _on_load_dialog_file_selected(path: String) -> void:
 		PRESET_SECTION_BUTTON:
 			_load_button_yaml_from_path(path)
 		_:
-			_load_panel_yaml_bundle_from_path(path)
+			_load_panel_yaml_from_path(path)
 
 
-func _export_panel_yaml_bundle_to_path(path: String) -> void:
+func _export_panel_yaml_to_path(path: String) -> void:
 	if not is_instance_valid(_panel_view):
 		_set_preset_status("Panel view is not ready for YAML export.", true)
 		return
@@ -623,23 +668,23 @@ func _export_panel_yaml_bundle_to_path(path: String) -> void:
 		"panel_shader_parameters": panel_shader_parameters,
 	})
 	if result.get("ok", false):
-		_set_preset_status("Saved panel YAML bundle to %s" % result["path"], false)
+		_set_preset_status("Saved panel YAML to %s" % result["path"], false)
 	else:
-		_set_preset_status(str(result.get("error", "Failed to save panel YAML bundle.")), true)
+		_set_preset_status(str(result.get("error", "Failed to save panel YAML.")), true)
 
 
-func _load_panel_yaml_bundle_from_path(path: String) -> void:
+func _load_panel_yaml_from_path(path: String) -> void:
 	if not is_instance_valid(_panel_view):
 		_set_preset_status("Panel view is not ready for YAML import.", true)
 		return
 
 	var panel_config := _panel_view.load_panel_style_bundle_from_path(path)
 	if panel_config == null or panel_config.source_path == "":
-		_set_preset_status("Failed to load panel YAML bundle from %s" % path, true)
+		_set_preset_status("Failed to load panel YAML from %s" % path, true)
 		return
 
 	call_deferred("_sync_controls_from_panel")
-	_set_preset_status("Loaded panel YAML bundle from %s" % panel_config.source_path, false)
+	_set_preset_status("Loaded panel YAML from %s" % panel_config.source_path, false)
 
 
 func _export_badge_yaml_to_path(path: String) -> void:
@@ -734,6 +779,58 @@ func _apply_button_config_to_panel_view(panel_view: AeroUiGlassPanelView, button
 	panel_view._refresh_primary_action_visual()
 
 
+func _get_live_control_value(parameter_name: String) -> Variant:
+	match parameter_name:
+		"badge_base_fill_alpha":
+			return _panel_view.get_badge_style_config().base_fill_alpha if is_instance_valid(_panel_view) and _panel_view.get_badge_style_config() != null else null
+		"badge_base_border_alpha":
+			return _panel_view.get_badge_style_config().base_border_alpha if is_instance_valid(_panel_view) and _panel_view.get_badge_style_config() != null else null
+		"badge_base_label_alpha":
+			return _panel_view.get_badge_style_config().base_label_alpha if is_instance_valid(_panel_view) and _panel_view.get_badge_style_config() != null else null
+		"button_source_label_alpha":
+			return _panel_view.get_primary_button_style_config().source_label_alpha if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+		"button_source_meta_alpha":
+			return _panel_view.get_primary_button_style_config().source_meta_alpha if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+		"button_border_width":
+			return float(_panel_view.get_primary_button_style_config().border_width) if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+		"button_radius_delta":
+			return float(_panel_view.get_primary_button_style_config().radius_delta) if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+		_:
+			return get_shader_parameter(parameter_name)
+
+
+func _set_live_control_value(parameter_name: String, value: Variant) -> void:
+	match parameter_name:
+		"badge_base_fill_alpha", "badge_base_border_alpha", "badge_base_label_alpha":
+			var badge_config = _panel_view.get_badge_style_config() if is_instance_valid(_panel_view) else null
+			if badge_config == null:
+				return
+			match parameter_name:
+				"badge_base_fill_alpha":
+					badge_config.base_fill_alpha = float(value)
+				"badge_base_border_alpha":
+					badge_config.base_border_alpha = float(value)
+				"badge_base_label_alpha":
+					badge_config.base_label_alpha = float(value)
+			_apply_badge_config_to_panel_view(_panel_view, badge_config)
+		"button_source_label_alpha", "button_source_meta_alpha", "button_border_width", "button_radius_delta":
+			var button_config = _panel_view.get_primary_button_style_config() if is_instance_valid(_panel_view) else null
+			if button_config == null:
+				return
+			match parameter_name:
+				"button_source_label_alpha":
+					button_config.source_label_alpha = float(value)
+				"button_source_meta_alpha":
+					button_config.source_meta_alpha = float(value)
+				"button_border_width":
+					button_config.border_width = int(round(float(value)))
+				"button_radius_delta":
+					button_config.radius_delta = int(round(float(value)))
+			_apply_button_config_to_panel_view(_panel_view, button_config)
+		_:
+			set_shader_parameter(parameter_name, value)
+
+
 func _set_preset_status(message: String, is_error: bool) -> void:
 	if not is_instance_valid(_preset_status_label):
 		return
@@ -747,10 +844,14 @@ func _sync_controls_from_panel() -> void:
 		_sync_single_control_from_panel(str(config["name"]))
 	for config in PanelViewScript.COLOR_CONTROLS:
 		_sync_single_control_from_panel(str(config["name"]))
+	for config in BADGE_EDITOR_CONTROLS:
+		_sync_single_control_from_panel(str(config["name"]))
+	for config in BUTTON_EDITOR_CONTROLS:
+		_sync_single_control_from_panel(str(config["name"]))
 
 
 func _sync_single_control_from_panel(parameter_name: String) -> void:
-	var value: Variant = get_shader_parameter(parameter_name)
+	var value: Variant = _get_live_control_value(parameter_name)
 	if value == null:
 		return
 

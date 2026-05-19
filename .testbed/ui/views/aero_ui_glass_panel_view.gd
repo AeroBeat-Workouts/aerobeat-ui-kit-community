@@ -15,7 +15,7 @@ const AeroUiGlassBadgeView := preload("res://ui/views/aero_ui_glass_badge_view.g
 const AeroUiGlassPrimaryButtonView := preload("res://ui/views/aero_ui_glass_primary_button_view.gd")
 
 const BACKGROUND_IMAGE_PATH := "res://assets/images/perfect-hue-may-08-2026-hd.png"
-const DEFAULT_PANEL_STYLE_BUNDLE_PATH := "res://ui/presets/glass/panel/primary-card-source.v1.yaml"
+const DEFAULT_PANEL_STYLE_BUNDLE_PATH := "res://ui/presets/glass/panel/default.yaml"
 const TOGGLE_ON_ACCENT := Color(0.4, 0.82, 1.0, 1.0)
 const DEFAULT_INTERACTION_SURFACE_ID: StringName = &"hybrid_glass_panel"
 const DEFAULT_INTERACTION_BUS_PATH := NodePath("../../../AeroUiInteractionBus")
@@ -412,7 +412,7 @@ func _load_startup_panel_style_bundle() -> void:
 func _apply_panel_style_config(config: AeroUiGlassPanelConfig) -> void:
 	if config == null:
 		return
-	# The panel config owns the authored shell/shader contract and bundle references.
+	# The panel config owns the authored shell/shader contract and component preset references.
 	# This runtime host applies those values onto the existing scene nodes/materials.
 	_frame_alpha_boost = config.frame_alpha_boost
 	_hybrid_inner_border_brightness = config.hybrid_inner_border_brightness

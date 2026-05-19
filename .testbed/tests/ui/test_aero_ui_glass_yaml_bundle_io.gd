@@ -44,7 +44,7 @@ func test_hybrid_host_exports_hybrid_only_material_values_inside_yaml_bundle() -
 	host.set_panel_shader_parameter("ui_overlay_brightness", 1.41)
 	host.set_panel_shader_parameter("hybrid_badge_fill_alpha", 0.27)
 	var export_path := "user://gut/yaml-bundles/hybrid-panel-bundle.yaml"
-	var export_result := YamlBundleIO.export_panel_bundle(export_path, host._build_hybrid_yaml_bundle_export())
+	var export_result := YamlBundleIO.export_panel_bundle(export_path, host._build_panel_yaml_export())
 
 	assert_true(export_result.get("ok", false))
 	var loaded := YamlBundleIO.load_panel_bundle(export_path)

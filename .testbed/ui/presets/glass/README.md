@@ -8,7 +8,7 @@ This folder holds the first narrow YAML-backed seam for the glass UI family.
 - The canonical panel view composes and applies typed config objects into the existing scene/material tree.
 - `res://scripts/glass_shader_panel_source.gd` and `res://scenes/glass-shader-panel-source.tscn` remain only as transitional compatibility aliases over the canonical panel view while older paths are retired.
 - Authored style ownership now lives in YAML preset files plus the schema-specific config loaders/types under `res://ui/configs/`.
-- The panel preset is the current entrypoint and may reference badge and primary-button presets through `parts`.
+- The panel preset at `res://ui/presets/glass/panel/default.yaml` is the current entrypoint and may reference badge and primary-button presets through `parts`.
 
 ## Current loader / YAML subset limits
 

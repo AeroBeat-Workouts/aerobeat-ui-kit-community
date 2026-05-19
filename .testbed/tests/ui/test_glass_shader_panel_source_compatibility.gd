@@ -16,4 +16,4 @@ func test_legacy_panel_source_scene_remains_a_compatibility_alias_of_the_canonic
 	assert_not_null(panel.primary_button_view)
 	assert_eq(panel.badge_view.get_script().resource_path, "res://ui/views/aero_ui_glass_badge_view.gd")
 	assert_eq(panel.primary_button_view.get_script().resource_path, "res://ui/views/aero_ui_glass_primary_button_view.gd")
-	assert_eq(panel._panel_style_config.source_path, "res://ui/presets/glass/panel/primary-card-source.v1.yaml")
+	assert_eq(panel._panel_style_config.source_path, "res://ui/presets/glass/panel/default.yaml")

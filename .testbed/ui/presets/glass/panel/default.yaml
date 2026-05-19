@@ -24,4 +24,4 @@ presentation:
     inner_border_alpha: 0.312
 parts:
   badge_preset: glass/badge/default
-  primary_button_preset: glass/button/primary/literal-badge.v1
+  primary_button_preset: glass/button/primary/default

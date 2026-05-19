@@ -3,12 +3,13 @@ extends GutTest
 const SCREEN_HOST_SCENE := preload("res://scenes/glass-shader-test.tscn")
 const HYBRID_HOST_SCENE := preload("res://scenes/glass-shader-gui-3d-test.tscn")
 const CANONICAL_PANEL_VIEW_SCRIPT_PATH := "res://ui/views/aero_ui_glass_panel_view.gd"
-const PANEL_YAML_PATH := "res://ui/presets/glass/panel/primary-card-source.v1.yaml"
-const SCREEN_STATUS_TEXT := "Section buttons load or export the authored YAML files directly."
-const HYBRID_STATUS_TEXT := "Section buttons target the authored root, badge, and button YAML files directly."
+const PANEL_YAML_PATH := "res://ui/presets/glass/panel/default.yaml"
+const SCREEN_STATUS_TEXT := "Panel, badge, and primary button each load or export their authored YAML directly."
+const HYBRID_STATUS_TEXT := "Panel, badge, and primary button each target their authored YAML directly."
 const FORBIDDEN_TEXT_SNIPPETS := [
 	"Export or import an AeroUiGlass",
 	"Startup is YAML-only",
+	"bundle",
 ]
 
 

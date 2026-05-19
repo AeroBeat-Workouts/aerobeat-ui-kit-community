@@ -5,13 +5,13 @@ const BadgeLoader := preload("res://ui/configs/loaders/aero_ui_glass_badge_confi
 
 
 func test_panel_bundle_loader_materializes_typed_child_configs() -> void:
-	var config = PanelLoader.load_from_path("res://ui/presets/glass/panel/primary-card-source.v1.yaml")
+	var config = PanelLoader.load_from_path("res://ui/presets/glass/panel/default.yaml")
 
 	assert_eq(config.variant, "primary-card-source")
 	assert_eq(config.version, "v1")
-	assert_eq(config.source_path, "res://ui/presets/glass/panel/primary-card-source.v1.yaml")
+	assert_eq(config.source_path, "res://ui/presets/glass/panel/default.yaml")
 	assert_eq(config.badge_preset_path, "res://ui/presets/glass/badge/default.yaml")
-	assert_eq(config.primary_button_preset_path, "res://ui/presets/glass/button/primary/literal-badge.v1.yaml")
+	assert_eq(config.primary_button_preset_path, "res://ui/presets/glass/button/primary/default.yaml")
 	assert_not_null(config.badge_config)
 	assert_not_null(config.primary_button_config)
 	assert_eq(config.badge_config.variant, "default")
