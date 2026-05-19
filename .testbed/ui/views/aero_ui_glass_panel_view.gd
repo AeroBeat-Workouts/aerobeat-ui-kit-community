@@ -11,6 +11,7 @@ const AeroUiGlassPanelConfigLoader := preload("res://ui/configs/loaders/aero_ui_
 const AeroUiGlassPanelConfig := preload("res://ui/configs/types/aero_ui_glass_panel_config.gd")
 const AeroUiGlassBadgeConfig := preload("res://ui/configs/types/aero_ui_glass_badge_config.gd")
 const AeroUiGlassPrimaryButtonConfig := preload("res://ui/configs/types/aero_ui_glass_primary_button_config.gd")
+const AeroUiGlassBadgeView := preload("res://ui/views/aero_ui_glass_badge_view.gd")
 const AeroUiGlassPrimaryButtonView := preload("res://ui/views/aero_ui_glass_primary_button_view.gd")
 
 const BACKGROUND_IMAGE_PATH := "res://assets/images/perfect-hue-may-08-2026-hd.png"
@@ -137,8 +138,9 @@ const COLOR_CONTROLS := [
 @onready var glass_fill: ColorRect = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/GlassFill") as ColorRect
 @onready var preview_frame: Panel = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/PreviewFrame") as Panel
 @onready var preview_inner_border: Panel = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/InnerBorderInset/PreviewInnerBorder") as Panel
-@onready var preview_badge: PanelContainer = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge") as PanelContainer
-@onready var preview_badge_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge/BadgePadding/BadgeLabel") as Label
+@onready var badge_view: AeroUiGlassBadgeView = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge") as AeroUiGlassBadgeView
+@onready var preview_badge: PanelContainer = badge_view
+@onready var preview_badge_label: Label = badge_view.badge_label if is_instance_valid(badge_view) else null
 @onready var primary_button_view: AeroUiGlassPrimaryButtonView = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton") as AeroUiGlassPrimaryButtonView
 @onready var primary_action_button: Button = primary_button_view
 @onready var primary_action_body: PanelContainer = primary_button_view.primary_action_body if is_instance_valid(primary_button_view) else null
@@ -153,7 +155,6 @@ const COLOR_CONTROLS := [
 var _shader_material: ShaderMaterial
 var _frame_style: StyleBoxFlat
 var _inner_border_style: StyleBoxFlat
-var _badge_style: StyleBoxFlat
 var _mask_style: StyleBoxFlat
 var _background_texture: Texture2D
 var _background_mode := DEFAULT_BACKGROUND_MODE
@@ -190,7 +191,8 @@ func _ready() -> void:
 
 	_frame_style = preview_frame.get_theme_stylebox("panel") as StyleBoxFlat
 	_inner_border_style = preview_inner_border.get_theme_stylebox("panel") as StyleBoxFlat
-	_badge_style = preview_badge.get_theme_stylebox("panel") as StyleBoxFlat
+	if is_instance_valid(badge_view):
+		badge_view.refresh_theme()
 	_mask_style = hybrid_mask_panel.get_theme_stylebox("panel") as StyleBoxFlat
 	_load_startup_panel_style_bundle()
 
@@ -208,6 +210,8 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_THEME_CHANGED:
 		if is_instance_valid(primary_card_button):
 			_configure_primary_card_button()
+		if is_instance_valid(badge_view):
+			badge_view.refresh_theme()
 
 
 func _build_contract_targets() -> void:
@@ -371,6 +375,8 @@ func _load_startup_panel_style_bundle() -> void:
 		return
 	_badge_style_config = _panel_style_config.badge_config
 	_primary_button_style_config = _panel_style_config.primary_button_config
+	if is_instance_valid(badge_view):
+		badge_view.set_badge_config(_badge_style_config)
 	_apply_panel_style_config(_panel_style_config)
 
 
@@ -383,6 +389,8 @@ func _apply_panel_style_config(config: AeroUiGlassPanelConfig) -> void:
 	_hybrid_inner_border_brightness = config.hybrid_inner_border_brightness
 	_hybrid_inner_border_alpha = config.hybrid_inner_border_alpha
 	if config.badge_config != null:
+		if is_instance_valid(badge_view):
+			badge_view.set_badge_config(config.badge_config)
 		var hybrid_badge_tokens := config.badge_config.get_tokens(true)
 		_hybrid_badge_fill_alpha = float(hybrid_badge_tokens.get("fill_alpha", _hybrid_badge_fill_alpha))
 		_hybrid_badge_border_alpha = float(hybrid_badge_tokens.get("border_alpha", _hybrid_badge_border_alpha))
@@ -461,17 +469,10 @@ func _sync_preview_shell() -> void:
 			_hybrid_inner_border_brightness,
 			_hybrid_inner_border_alpha
 		)
-		_badge_style.bg_color = Color(1.0, 1.0, 1.0, _hybrid_badge_fill_alpha)
-		_badge_style.border_color = Color(1.0, 1.0, 1.0, _hybrid_badge_border_alpha)
-		if is_instance_valid(preview_badge_label):
-			preview_badge_label.modulate = Color(1.0, 1.0, 1.0, _hybrid_badge_label_alpha)
+		_refresh_badge_visual(true)
 	else:
-		var panel_badge_tokens_2d := _get_badge_tokens(false)
 		_inner_border_style.border_color = Color(1.0, 1.0, 1.0, clampf(0.08 + _shell_tint.a * 0.55, 0.08, 0.24))
-		_badge_style.bg_color = Color(1.0, 1.0, 1.0, float(panel_badge_tokens_2d.get("fill_alpha", 0.08)))
-		_badge_style.border_color = Color(1.0, 1.0, 1.0, float(panel_badge_tokens_2d.get("border_alpha", 0.14)))
-		if is_instance_valid(preview_badge_label):
-			preview_badge_label.modulate = Color(1.0, 1.0, 1.0, float(panel_badge_tokens_2d.get("label_alpha", 0.78)))
+		_refresh_badge_visual(false)
 
 	_mask_style.bg_color = Color(1.0, 1.0, 1.0, 1.0)
 	_mask_style.border_width_left = 0
@@ -494,7 +495,7 @@ func _sync_shell_state_from_shader() -> void:
 
 
 func _apply_primary_card_accent() -> void:
-	if _frame_style == null or _inner_border_style == null or _badge_style == null:
+	if _frame_style == null or _inner_border_style == null:
 		return
 
 	var state := _target_state(TARGET_PRIMARY)
@@ -511,8 +512,8 @@ func _apply_primary_card_accent() -> void:
 	if accent_strength > 0.0:
 		_frame_style.border_color = _frame_style.border_color.lerp(TOGGLE_ON_ACCENT, accent_strength * 0.65)
 		_inner_border_style.border_color = _inner_border_style.border_color.lerp(TOGGLE_ON_ACCENT, accent_strength * 0.55)
-		_badge_style.border_color = _badge_style.border_color.lerp(TOGGLE_ON_ACCENT, accent_strength * 0.55)
-		_badge_style.bg_color = _badge_style.bg_color.lerp(Color(TOGGLE_ON_ACCENT.r, TOGGLE_ON_ACCENT.g, TOGGLE_ON_ACCENT.b, 0.22), accent_strength * 0.65)
+		if is_instance_valid(badge_view):
+			badge_view.apply_accent(TOGGLE_ON_ACCENT, accent_strength)
 
 
 func _refresh_primary_action_visual() -> void:
@@ -530,7 +531,24 @@ func _refresh_primary_action_visual() -> void:
 	)
 
 
+func _refresh_badge_visual(is_hybrid_world: bool) -> void:
+	if not is_instance_valid(badge_view):
+		return
+	var badge_tokens := _hybrid_badge_visual_tokens() if is_hybrid_world else _get_badge_tokens(false)
+	badge_view.apply_visual_state(badge_tokens)
+
+
+func _hybrid_badge_visual_tokens() -> Dictionary:
+	var hybrid_badge_tokens := _get_badge_tokens(true).duplicate()
+	hybrid_badge_tokens["fill_alpha"] = _hybrid_badge_fill_alpha
+	hybrid_badge_tokens["border_alpha"] = _hybrid_badge_border_alpha
+	hybrid_badge_tokens["label_alpha"] = _hybrid_badge_label_alpha
+	return hybrid_badge_tokens
+
+
 func _get_badge_tokens(is_hybrid_world: bool) -> Dictionary:
+	if is_instance_valid(badge_view):
+		return badge_view.get_badge_tokens(is_hybrid_world)
 	if _badge_style_config != null:
 		return _badge_style_config.get_tokens(is_hybrid_world)
 	if is_hybrid_world:

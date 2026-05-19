@@ -4,6 +4,7 @@
 [ext_resource type="Shader" uid="uid://cpkp0irsnrqm7" path="res://assets/shaders/glass-shader.gdshader" id="2_shader"]
 [ext_resource type="Script" uid="uid://bxhdc78obwfuk" path="res://scripts/glass_debug_backdrop.gd" id="3_script"]
 [ext_resource type="PackedScene" path="res://ui/views/aero_ui_glass_primary_button_view.tscn" id="4_primary_button_scene"]
+[ext_resource type="PackedScene" path="res://ui/views/aero_ui_glass_badge_view.tscn" id="5_badge_view_scene"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hybrid_mask"]
 resource_local_to_scene = true
@@ -56,19 +57,6 @@ corner_radius_top_left = 32
 corner_radius_top_right = 32
 corner_radius_bottom_right = 32
 corner_radius_bottom_left = 32
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_badge"]
-resource_local_to_scene = true
-bg_color = Color(1, 1, 1, 0.08)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(1, 1, 1, 0.14)
-corner_radius_top_left = 14
-corner_radius_top_right = 14
-corner_radius_bottom_right = 14
-corner_radius_bottom_left = 14
 
 [node name="AeroUiGlassPanelView" type="Control" unique_id=451344346]
 layout_mode = 3
@@ -199,26 +187,9 @@ size_flags_vertical = 3
 mouse_filter = 2
 theme_override_constants/separation = 10
 
-[node name="Badge" type="PanelContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn" unique_id=1930876741]
-custom_minimum_size = Vector2(0, 32)
-layout_mode = 2
-size_flags_horizontal = 0
-mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_badge")
+[node name="Badge" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn" instance=ExtResource("5_badge_view_scene")]
+unique_id = 1930876741
 
-[node name="BadgePadding" type="MarginContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge" unique_id=1533214822]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 6
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 6
-
-[node name="BadgeLabel" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge/BadgePadding" unique_id=425131152]
-modulate = Color(1, 1, 1, 0.78)
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-text = "Shader"
 
 [node name="Headline" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn" unique_id=1195175716]
 layout_mode = 2

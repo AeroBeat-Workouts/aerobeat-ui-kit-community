@@ -1,0 +1,66 @@
+class_name AeroUiGlassBadgeView
+extends PanelContainer
+
+const AeroUiGlassBadgeConfig := preload("res://ui/configs/types/aero_ui_glass_badge_config.gd")
+
+@onready var badge_label: Label = get_node_or_null("BadgePadding/BadgeLabel") as Label
+
+var _badge_style: StyleBoxFlat
+var _badge_style_config: AeroUiGlassBadgeConfig
+
+
+func _ready() -> void:
+	refresh_theme()
+
+
+func refresh_theme() -> void:
+	_badge_style = get_theme_stylebox("panel") as StyleBoxFlat
+
+
+func set_badge_config(config: AeroUiGlassBadgeConfig) -> void:
+	_badge_style_config = config
+
+
+func get_badge_tokens(is_hybrid_world: bool) -> Dictionary:
+	if _badge_style_config != null:
+		return _badge_style_config.get_tokens(is_hybrid_world)
+	if is_hybrid_world:
+		return {
+			"fill_alpha": 0.18,
+			"border_alpha": 0.267,
+			"label_alpha": 0.9,
+			"radius": 14,
+		}
+	return {
+		"fill_alpha": 0.08,
+		"border_alpha": 0.14,
+		"label_alpha": 0.78,
+		"radius": 14,
+	}
+
+
+func apply_visual_state(tokens: Dictionary) -> void:
+	if _badge_style == null:
+		refresh_theme()
+	if _badge_style == null:
+		return
+
+	var radius := int(tokens.get("radius", 14))
+	_badge_style.bg_color = Color(1.0, 1.0, 1.0, float(tokens.get("fill_alpha", 0.08)))
+	_badge_style.border_color = Color(1.0, 1.0, 1.0, float(tokens.get("border_alpha", 0.14)))
+	_badge_style.corner_radius_top_left = radius
+	_badge_style.corner_radius_top_right = radius
+	_badge_style.corner_radius_bottom_right = radius
+	_badge_style.corner_radius_bottom_left = radius
+	if is_instance_valid(badge_label):
+		badge_label.modulate = Color(1.0, 1.0, 1.0, float(tokens.get("label_alpha", 0.78)))
+
+
+func apply_accent(accent: Color, accent_strength: float) -> void:
+	if _badge_style == null:
+		refresh_theme()
+	if _badge_style == null or accent_strength <= 0.0:
+		return
+
+	_badge_style.border_color = _badge_style.border_color.lerp(accent, accent_strength * 0.55)
+	_badge_style.bg_color = _badge_style.bg_color.lerp(Color(accent.r, accent.g, accent.b, 0.22), accent_strength * 0.65)
