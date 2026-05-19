@@ -6,7 +6,6 @@ const UI_OVERLAY_SHADER_PATH := "res://assets/shaders/glass-panel-ui-overlay-3d.
 const PRESET_SOURCE_SCENE_PATH := "res://scenes/glass-shader-gui-3d-test.tscn"
 const PRESET_DIALOG_DIRECTORY := "res://presets/glass/hybrid"
 const DEFAULT_PRESET_FILENAME := "glass-shader-hybrid-3d-preset.json"
-const BUNDLED_DEFAULT_PRESET_PATH := "res://presets/glass/hybrid/default.json"
 const HYBRID_SURFACE_ID: StringName = &"hybrid_glass_panel"
 const HYBRID_SURFACE_TYPE: StringName = AeroUiInteractionTypes.SURFACE_TYPE_HYBRID_3D_GUI
 const HYBRID_POINTER_MOUSE: StringName = &"mouse_0"
@@ -365,7 +364,6 @@ func _ready() -> void:
 	_apply_panel_materials()
 	_build_controls()
 	_setup_preset_dialogs()
-	_load_startup_default_preset()
 	call_deferred("_sync_controls_from_panel")
 	call_deferred("_sync_authored_card_rect")
 	_apply_panel_rotation()
@@ -1181,7 +1179,7 @@ func _make_preset_actions_block() -> Control:
 	var status := Label.new()
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.modulate = Color(1.0, 1.0, 1.0, 0.6)
-	status.text = "No preset loaded yet."
+	status.text = "Startup is using the YAML-backed panel defaults. Load a JSON preset to compare hybrid overrides manually."
 	wrapper.add_child(status)
 	_preset_status_label = status
 
@@ -1323,20 +1321,6 @@ func _load_preset_from_path(path: String) -> void:
 
 	call_deferred("_sync_controls_from_panel")
 	_apply_loaded_preset_status(result, path, "Loaded preset from")
-
-
-func _load_startup_default_preset() -> void:
-	var result := PresetIO.load_and_apply_preset(
-		BUNDLED_DEFAULT_PRESET_PATH,
-		PresetIO.PRESET_KIND_HYBRID_3D,
-		HYBRID_FLOAT_CONTROLS,
-		HYBRID_COLOR_CONTROLS,
-		Callable(self, "set_panel_shader_parameter")
-	)
-	if not result.get("ok", false):
-		_set_preset_status("Bundled startup preset failed (%s). Using scene fallback defaults." % str(result.get("error", "unknown error")), true)
-		return
-	_apply_loaded_preset_status(result, BUNDLED_DEFAULT_PRESET_PATH, "Loaded bundled startup defaults from")
 
 
 func _apply_loaded_preset_status(result: Dictionary, path: String, prefix: String) -> void:

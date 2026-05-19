@@ -4,7 +4,6 @@ const PANEL_VIEW_SCENE_PATH := "res://ui/views/aero_ui_glass_panel_view.tscn"
 const PRESET_PANEL_VIEW_SCENE_PATH := "res://scenes/glass-shader-test.tscn"
 const PRESET_DIALOG_DIRECTORY := "res://presets/glass/2d"
 const DEFAULT_PRESET_FILENAME := "glass-shader-2d-preset.json"
-const BUNDLED_DEFAULT_PRESET_PATH := "res://presets/glass/2d/default.json"
 const SCREEN_SURFACE_ID: StringName = &"screen_glass_panel"
 const SCREEN_SURFACE_TYPE: StringName = AeroUiInteractionTypes.SURFACE_TYPE_SCREEN_2D
 const PREVIEW_BUTTON_PATH := NodePath("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton")
@@ -43,7 +42,6 @@ func _ready() -> void:
 	_configure_panel_view_contract()
 	_build_controls()
 	_setup_preset_dialogs()
-	_load_startup_default_preset()
 	call_deferred("_sync_controls_from_panel")
 	call_deferred("_refresh_contract_status")
 
@@ -410,7 +408,7 @@ func _make_preset_actions_block() -> Control:
 	var status := Label.new()
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.modulate = Color(1.0, 1.0, 1.0, 0.6)
-	status.text = "No preset loaded yet."
+	status.text = "Startup is using the YAML-backed panel defaults. Load a JSON preset to compare overrides manually."
 	wrapper.add_child(status)
 	_preset_status_label = status
 
@@ -552,20 +550,6 @@ func _load_preset_from_path(path: String) -> void:
 
 	call_deferred("_sync_controls_from_panel")
 	_apply_loaded_preset_status(result, path, "Loaded preset from")
-
-
-func _load_startup_default_preset() -> void:
-	var result := PresetIO.load_and_apply_preset(
-		BUNDLED_DEFAULT_PRESET_PATH,
-		PresetIO.PRESET_KIND_2D,
-		PanelViewScript.FLOAT_CONTROLS,
-		PanelViewScript.COLOR_CONTROLS,
-		Callable(self, "set_shader_parameter")
-	)
-	if not result.get("ok", false):
-		_set_preset_status("Bundled startup preset failed (%s). Using scene fallback defaults." % str(result.get("error", "unknown error")), true)
-		return
-	_apply_loaded_preset_status(result, BUNDLED_DEFAULT_PRESET_PATH, "Loaded bundled startup defaults from")
 
 
 func _apply_loaded_preset_status(result: Dictionary, path: String, prefix: String) -> void:
