@@ -1,0 +1,25 @@
+schema: aero.ui.glass_primary_button
+schema_version: 1
+variant: literal-badge
+version: v1
+
+button:
+  border_width: 2
+  radius_delta: 5
+label:
+  alpha: 0.95
+meta:
+  alpha: 0.66
+states:
+  source_2d:
+    rest: { fill_delta: 0.13, border_delta: 0.38 }
+    hover: { fill_delta: 0.17, border_delta: 0.46 }
+    pressed: { fill_delta: 0.22, border_delta: 0.54 }
+  hybrid_world:
+    rest: { fill_delta: 0.20, border_delta: 0.39, shadow_alpha: 0.18, shadow_size: 10 }
+    hover: { fill_delta: 0.25, border_delta: 0.46, shadow_alpha: 0.24, shadow_size: 12 }
+    pressed: { fill_delta: 0.31, border_delta: 0.50, shadow_alpha: 0.28, shadow_size: 12 }
+presentation:
+  hybrid_world:
+    label_alpha: 0.98
+    meta_alpha: 0.7

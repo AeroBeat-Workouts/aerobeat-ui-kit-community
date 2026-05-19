@@ -1,0 +1,11 @@
+schema: aero.ui.glass_badge
+schema_version: 1
+variant: test-extended
+version: v2
+extends: ./base
+
+surface:
+  border_alpha: 0.24
+presentation:
+  hybrid_world:
+    label_alpha: 0.93

@@ -1,7 +1,12 @@
 extends AeroContractConsumerViewBase
 
+const AeroUiGlassPanelConfigLoader := preload("res://ui/configs/loaders/aero_ui_glass_panel_config_loader.gd")
+const AeroUiGlassPanelConfig := preload("res://ui/configs/types/aero_ui_glass_panel_config.gd")
+const AeroUiGlassBadgeConfig := preload("res://ui/configs/types/aero_ui_glass_badge_config.gd")
+const AeroUiGlassPrimaryButtonConfig := preload("res://ui/configs/types/aero_ui_glass_primary_button_config.gd")
+
 const BACKGROUND_IMAGE_PATH := "res://assets/images/perfect-hue-may-08-2026-hd.png"
-const FRAME_ALPHA_BOOST := 0.18
+const DEFAULT_PANEL_STYLE_PRESET_PATH := "res://ui/presets/glass/panel/primary-card-source.v1.yaml"
 const TOGGLE_ON_ACCENT := Color(0.4, 0.82, 1.0, 1.0)
 const DEFAULT_INTERACTION_SURFACE_ID: StringName = &"hybrid_glass_panel"
 const DEFAULT_INTERACTION_BUS_PATH := NodePath("../../../AeroUiInteractionBus")
@@ -118,42 +123,6 @@ const COLOR_CONTROLS := [
 	},
 ]
 
-const HYBRID_SHELL_DEFAULTS := {
-	"hybrid_inner_border_brightness": 1.0,
-	"hybrid_inner_border_alpha": 0.312,
-	"hybrid_badge_fill_alpha": 0.18,
-	"hybrid_badge_border_alpha": 0.267,
-	"hybrid_badge_label_alpha": 0.9,
-}
-
-const BADGE_BASE_FILL_ALPHA := 0.08
-const BADGE_BASE_BORDER_ALPHA := 0.14
-const BADGE_BASE_LABEL_ALPHA := 0.78
-const BADGE_BASE_RADIUS := 14
-const BADGE_ACTION_RADIUS_DELTA := 5
-const BADGE_ACTION_BORDER_WIDTH := 2
-const BADGE_ACTION_SOURCE_REST_FILL_DELTA := 0.13
-const BADGE_ACTION_SOURCE_HOVER_FILL_DELTA := 0.17
-const BADGE_ACTION_SOURCE_PRESSED_FILL_DELTA := 0.22
-const BADGE_ACTION_HYBRID_REST_FILL_DELTA := 0.20
-const BADGE_ACTION_HYBRID_HOVER_FILL_DELTA := 0.25
-const BADGE_ACTION_HYBRID_PRESSED_FILL_DELTA := 0.31
-const BADGE_ACTION_SOURCE_REST_BORDER_DELTA := 0.38
-const BADGE_ACTION_SOURCE_HOVER_BORDER_DELTA := 0.46
-const BADGE_ACTION_SOURCE_PRESSED_BORDER_DELTA := 0.54
-const BADGE_ACTION_HYBRID_REST_BORDER_DELTA := 0.39
-const BADGE_ACTION_HYBRID_HOVER_BORDER_DELTA := 0.46
-const BADGE_ACTION_HYBRID_PRESSED_BORDER_DELTA := 0.50
-const BADGE_ACTION_SOURCE_TEXT_ALPHA := 0.95
-const BADGE_ACTION_HYBRID_TEXT_ALPHA := 0.98
-const BADGE_ACTION_SOURCE_META_ALPHA := 0.66
-const BADGE_ACTION_HYBRID_META_ALPHA := 0.7
-const BADGE_ACTION_HYBRID_SHADOW_ALPHA := 0.18
-const BADGE_ACTION_HYBRID_SHADOW_HOVER_ALPHA := 0.24
-const BADGE_ACTION_HYBRID_SHADOW_PRESSED_ALPHA := 0.28
-const BADGE_ACTION_HYBRID_SHADOW_SIZE := 10
-const BADGE_ACTION_HYBRID_SHADOW_HOVER_SIZE := 12
-
 @onready var background: TextureRect = get_node_or_null("Background") as TextureRect
 @onready var primary_card_button: Button = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton") as Button
 @onready var hybrid_mask_panel: Panel = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/HybridMaskPanel") as Panel
@@ -180,15 +149,19 @@ var _mask_style: StyleBoxFlat
 var _background_texture: Texture2D
 var _background_mode := DEFAULT_BACKGROUND_MODE
 var _presentation_mode := PRESENTATION_MODE_2D
+var _panel_style_config: AeroUiGlassPanelConfig
+var _badge_style_config: AeroUiGlassBadgeConfig
+var _primary_button_style_config: AeroUiGlassPrimaryButtonConfig
 var _shell_corner_radius := 0.24
 var _shell_edge_width := 2.4
 var _shell_tint := Color(0.92, 0.96, 1.0, 0.22)
 var _shell_edge_highlight := Color(1.0, 1.0, 1.0, 0.62)
-var _hybrid_inner_border_brightness := float(HYBRID_SHELL_DEFAULTS["hybrid_inner_border_brightness"])
-var _hybrid_inner_border_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_inner_border_alpha"])
-var _hybrid_badge_fill_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_fill_alpha"])
-var _hybrid_badge_border_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_border_alpha"])
-var _hybrid_badge_label_alpha := float(HYBRID_SHELL_DEFAULTS["hybrid_badge_label_alpha"])
+var _frame_alpha_boost := 0.18
+var _hybrid_inner_border_brightness := 1.0
+var _hybrid_inner_border_alpha := 0.312
+var _hybrid_badge_fill_alpha := 0.18
+var _hybrid_badge_border_alpha := 0.267
+var _hybrid_badge_label_alpha := 0.9
 var _last_interaction_event: AeroUiInteractionEvent = null
 
 
@@ -210,6 +183,7 @@ func _ready() -> void:
 	_inner_border_style = preview_inner_border.get_theme_stylebox("panel") as StyleBoxFlat
 	_badge_style = preview_badge.get_theme_stylebox("panel") as StyleBoxFlat
 	_mask_style = hybrid_mask_panel.get_theme_stylebox("panel") as StyleBoxFlat
+	_load_startup_style_config()
 
 	_configure_primary_card_button()
 	_configure_primary_action_button()
@@ -405,6 +379,29 @@ func reset_shader_parameters_to_defaults() -> void:
 		set_shader_parameter(str(config["name"]), config["default"])
 
 
+func _load_startup_style_config() -> void:
+	_panel_style_config = AeroUiGlassPanelConfigLoader.load_from_path(DEFAULT_PANEL_STYLE_PRESET_PATH)
+	if _panel_style_config == null:
+		return
+	_badge_style_config = _panel_style_config.badge_config
+	_primary_button_style_config = _panel_style_config.primary_button_config
+	_apply_panel_style_config(_panel_style_config)
+
+
+func _apply_panel_style_config(config: AeroUiGlassPanelConfig) -> void:
+	if config == null:
+		return
+	_frame_alpha_boost = config.frame_alpha_boost
+	_hybrid_inner_border_brightness = config.hybrid_inner_border_brightness
+	_hybrid_inner_border_alpha = config.hybrid_inner_border_alpha
+	if config.badge_config != null:
+		var hybrid_badge_tokens := config.badge_config.get_tokens(true)
+		_hybrid_badge_fill_alpha = float(hybrid_badge_tokens.get("fill_alpha", _hybrid_badge_fill_alpha))
+		_hybrid_badge_border_alpha = float(hybrid_badge_tokens.get("border_alpha", _hybrid_badge_border_alpha))
+		_hybrid_badge_label_alpha = float(hybrid_badge_tokens.get("label_alpha", _hybrid_badge_label_alpha))
+	set_shader_parameters(config.shader_parameters)
+
+
 func _apply_visual_state() -> void:
 	var is_mask_mode := _presentation_mode == PRESENTATION_MODE_HYBRID_MASK
 	var is_hybrid_world := _presentation_mode == PRESENTATION_MODE_HYBRID_WORLD_SPACE
@@ -457,7 +454,7 @@ func _sync_preview_shell() -> void:
 	_frame_style.border_width_right = border_width
 	_frame_style.border_width_bottom = border_width
 	_frame_style.border_color = _shell_edge_highlight.lightened(0.05)
-	_frame_style.border_color.a = clampf(_shell_edge_highlight.a + FRAME_ALPHA_BOOST, 0.28, 0.92)
+	_frame_style.border_color.a = clampf(_shell_edge_highlight.a + _frame_alpha_boost, 0.28, 0.92)
 
 	var is_hybrid_world := _presentation_mode == PRESENTATION_MODE_HYBRID_WORLD_SPACE
 	if is_hybrid_world:
@@ -481,11 +478,12 @@ func _sync_preview_shell() -> void:
 		if is_instance_valid(preview_badge_label):
 			preview_badge_label.modulate = Color(1.0, 1.0, 1.0, _hybrid_badge_label_alpha)
 	else:
+		var source_badge_tokens := _get_badge_tokens(false)
 		_inner_border_style.border_color = Color(1.0, 1.0, 1.0, clampf(0.08 + _shell_tint.a * 0.55, 0.08, 0.24))
-		_badge_style.bg_color = Color(1.0, 1.0, 1.0, 0.08)
-		_badge_style.border_color = Color(1.0, 1.0, 1.0, 0.14)
+		_badge_style.bg_color = Color(1.0, 1.0, 1.0, float(source_badge_tokens.get("fill_alpha", 0.08)))
+		_badge_style.border_color = Color(1.0, 1.0, 1.0, float(source_badge_tokens.get("border_alpha", 0.14)))
 		if is_instance_valid(preview_badge_label):
-			preview_badge_label.modulate = Color(1.0, 1.0, 1.0, 0.78)
+			preview_badge_label.modulate = Color(1.0, 1.0, 1.0, float(source_badge_tokens.get("label_alpha", 0.78)))
 
 	_mask_style.bg_color = Color(1.0, 1.0, 1.0, 1.0)
 	_mask_style.border_width_left = 0
@@ -543,27 +541,30 @@ func _refresh_primary_action_visual() -> void:
 	var accent := TOGGLE_ON_ACCENT if active else Color(1.0, 1.0, 1.0, 1.0)
 	var fill_alpha := float(badge_tokens["fill_alpha"]) + _action_fill_delta(is_hybrid_world, "rest")
 	var border_alpha := float(badge_tokens["border_alpha"]) + _action_border_delta(is_hybrid_world, "rest")
-	var shadow_alpha := BADGE_ACTION_HYBRID_SHADOW_ALPHA if is_hybrid_world else 0.0
-	var shadow_size := BADGE_ACTION_HYBRID_SHADOW_SIZE if is_hybrid_world else 0
+	var rest_state := _primary_button_state(is_hybrid_world, "rest")
+	var shadow_alpha := float(rest_state.get("shadow_alpha", 0.0))
+	var shadow_size := int(rest_state.get("shadow_size", 0))
 
 	if hovered:
-		fill_alpha = maxf(fill_alpha, float(badge_tokens["fill_alpha"]) + _action_fill_delta(is_hybrid_world, "hover"))
-		border_alpha = maxf(border_alpha, float(badge_tokens["border_alpha"]) + _action_border_delta(is_hybrid_world, "hover"))
-		shadow_alpha = maxf(shadow_alpha, BADGE_ACTION_HYBRID_SHADOW_HOVER_ALPHA if is_hybrid_world else 0.0)
-		shadow_size = max(shadow_size, BADGE_ACTION_HYBRID_SHADOW_HOVER_SIZE if is_hybrid_world else 0)
+		var hover_state := _primary_button_state(is_hybrid_world, "hover")
+		fill_alpha = maxf(fill_alpha, float(badge_tokens["fill_alpha"]) + float(hover_state.get("fill_delta", 0.0)))
+		border_alpha = maxf(border_alpha, float(badge_tokens["border_alpha"]) + float(hover_state.get("border_delta", 0.0)))
+		shadow_alpha = maxf(shadow_alpha, float(hover_state.get("shadow_alpha", 0.0)))
+		shadow_size = max(shadow_size, int(hover_state.get("shadow_size", 0)))
 	if pressed or toggled:
-		fill_alpha = maxf(fill_alpha, float(badge_tokens["fill_alpha"]) + _action_fill_delta(is_hybrid_world, "pressed"))
-		border_alpha = maxf(border_alpha, float(badge_tokens["border_alpha"]) + _action_border_delta(is_hybrid_world, "pressed"))
-		shadow_alpha = maxf(shadow_alpha, BADGE_ACTION_HYBRID_SHADOW_PRESSED_ALPHA if is_hybrid_world else 0.0)
-		shadow_size = max(shadow_size, BADGE_ACTION_HYBRID_SHADOW_HOVER_SIZE if is_hybrid_world else 0)
+		var pressed_state := _primary_button_state(is_hybrid_world, "pressed")
+		fill_alpha = maxf(fill_alpha, float(badge_tokens["fill_alpha"]) + float(pressed_state.get("fill_delta", 0.0)))
+		border_alpha = maxf(border_alpha, float(badge_tokens["border_alpha"]) + float(pressed_state.get("border_delta", 0.0)))
+		shadow_alpha = maxf(shadow_alpha, float(pressed_state.get("shadow_alpha", 0.0)))
+		shadow_size = max(shadow_size, int(pressed_state.get("shadow_size", 0)))
 
 	var body_style := _build_action_stylebox(fill_alpha, accent, active or hovered, border_alpha, shadow_alpha, shadow_size, is_hybrid_world, badge_tokens)
 	primary_action_body.add_theme_stylebox_override("panel", body_style)
 	if is_instance_valid(primary_action_label):
-		var label_alpha := BADGE_ACTION_HYBRID_TEXT_ALPHA if is_hybrid_world else BADGE_ACTION_SOURCE_TEXT_ALPHA
+		var label_alpha := _primary_button_style_config.get_label_alpha(is_hybrid_world) if _primary_button_style_config != null else (0.98 if is_hybrid_world else 0.95)
 		primary_action_label.modulate = accent if active else Color(1.0, 1.0, 1.0, 0.99 if hovered else label_alpha)
 	if is_instance_valid(primary_action_meta):
-		var meta_alpha := BADGE_ACTION_HYBRID_META_ALPHA if is_hybrid_world else BADGE_ACTION_SOURCE_META_ALPHA
+		var meta_alpha := _primary_button_style_config.get_meta_alpha(is_hybrid_world) if _primary_button_style_config != null else (0.7 if is_hybrid_world else 0.66)
 		primary_action_meta.modulate = accent if active else Color(1.0, 1.0, 1.0, meta_alpha)
 	primary_action_button.scale = Vector2.ONE
 	primary_action_body.scale = Vector2.ONE * (0.988 if pressed else 1.0)
@@ -575,12 +576,14 @@ func _build_action_stylebox(fill_alpha: float, accent: Color, is_emphasized: boo
 	if not is_hybrid_world:
 		fill_color = fill_color.lerp(Color(_shell_tint.r, _shell_tint.g, _shell_tint.b, fill_color.a), 0.16)
 	style.bg_color = fill_color
-	style.border_width_left = BADGE_ACTION_BORDER_WIDTH
-	style.border_width_top = BADGE_ACTION_BORDER_WIDTH
-	style.border_width_right = BADGE_ACTION_BORDER_WIDTH
-	style.border_width_bottom = BADGE_ACTION_BORDER_WIDTH
+	var border_width := _primary_button_style_config.border_width if _primary_button_style_config != null else 2
+	style.border_width_left = border_width
+	style.border_width_top = border_width
+	style.border_width_right = border_width
+	style.border_width_bottom = border_width
 	style.border_color = Color(accent.r, accent.g, accent.b, 0.7 if is_emphasized else clampf(border_alpha, 0.0, 0.76))
-	var action_radius := int(badge_tokens["radius"]) + BADGE_ACTION_RADIUS_DELTA
+	var radius_delta := _primary_button_style_config.radius_delta if _primary_button_style_config != null else 5
+	var action_radius := int(badge_tokens["radius"]) + radius_delta
 	style.corner_radius_top_left = action_radius
 	style.corner_radius_top_right = action_radius
 	style.corner_radius_bottom_right = action_radius
@@ -590,55 +593,35 @@ func _build_action_stylebox(fill_alpha: float, accent: Color, is_emphasized: boo
 	return style
 
 
+func _primary_button_state(is_hybrid_world: bool, phase: String) -> Dictionary:
+	if _primary_button_style_config == null:
+		return {"fill_delta": 0.0, "border_delta": 0.0, "shadow_alpha": 0.0, "shadow_size": 0}
+	return _primary_button_style_config.get_state(is_hybrid_world, phase)
+
+
 func _action_fill_delta(is_hybrid_world: bool, phase: String) -> float:
-	if is_hybrid_world:
-		match phase:
-			"hover":
-				return BADGE_ACTION_HYBRID_HOVER_FILL_DELTA
-			"pressed":
-				return BADGE_ACTION_HYBRID_PRESSED_FILL_DELTA
-			_:
-				return BADGE_ACTION_HYBRID_REST_FILL_DELTA
-	match phase:
-		"hover":
-			return BADGE_ACTION_SOURCE_HOVER_FILL_DELTA
-		"pressed":
-			return BADGE_ACTION_SOURCE_PRESSED_FILL_DELTA
-		_:
-			return BADGE_ACTION_SOURCE_REST_FILL_DELTA
+	return float(_primary_button_state(is_hybrid_world, phase).get("fill_delta", 0.0))
 
 
 func _action_border_delta(is_hybrid_world: bool, phase: String) -> float:
-	if is_hybrid_world:
-		match phase:
-			"hover":
-				return BADGE_ACTION_HYBRID_HOVER_BORDER_DELTA
-			"pressed":
-				return BADGE_ACTION_HYBRID_PRESSED_BORDER_DELTA
-			_:
-				return BADGE_ACTION_HYBRID_REST_BORDER_DELTA
-	match phase:
-		"hover":
-			return BADGE_ACTION_SOURCE_HOVER_BORDER_DELTA
-		"pressed":
-			return BADGE_ACTION_SOURCE_PRESSED_BORDER_DELTA
-		_:
-			return BADGE_ACTION_SOURCE_REST_BORDER_DELTA
+	return float(_primary_button_state(is_hybrid_world, phase).get("border_delta", 0.0))
 
 
 func _get_badge_tokens(is_hybrid_world: bool) -> Dictionary:
+	if _badge_style_config != null:
+		return _badge_style_config.get_tokens(is_hybrid_world)
 	if is_hybrid_world:
 		return {
 			"fill_alpha": _hybrid_badge_fill_alpha,
 			"border_alpha": _hybrid_badge_border_alpha,
 			"label_alpha": _hybrid_badge_label_alpha,
-			"radius": BADGE_BASE_RADIUS,
+			"radius": 14,
 		}
 	return {
-		"fill_alpha": BADGE_BASE_FILL_ALPHA,
-		"border_alpha": BADGE_BASE_BORDER_ALPHA,
-		"label_alpha": BADGE_BASE_LABEL_ALPHA,
-		"radius": BADGE_BASE_RADIUS,
+		"fill_alpha": 0.08,
+		"border_alpha": 0.14,
+		"label_alpha": 0.78,
+		"radius": 14,
 	}
 
 

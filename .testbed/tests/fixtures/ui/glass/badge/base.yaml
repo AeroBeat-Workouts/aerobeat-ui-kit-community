@@ -1,0 +1,17 @@
+schema: aero.ui.glass_badge
+schema_version: 1
+variant: test-base
+version: v1
+
+badge:
+  corner_radius_px: 12
+surface:
+  fill_alpha: 0.05
+  border_alpha: 0.10
+label:
+  alpha: 0.70
+presentation:
+  hybrid_world:
+    fill_alpha: 0.16
+    border_alpha: 0.22
+    label_alpha: 0.84
