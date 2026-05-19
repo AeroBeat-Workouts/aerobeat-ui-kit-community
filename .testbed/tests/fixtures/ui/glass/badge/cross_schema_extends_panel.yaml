@@ -1,0 +1,8 @@
+schema: aero.ui.glass_badge
+schema_version: 1
+variant: cross-schema-child
+version: v1
+extends: ../panel/base
+
+surface:
+  fill_alpha: 0.11

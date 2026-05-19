@@ -24,12 +24,16 @@ static func _resolve_document(path: String, visited: Dictionary) -> Dictionary:
 	var document := DocumentLoader.load_document(normalized_path)
 	if document.is_empty():
 		return {}
+	if not DocumentLoader.validate_document_schema(document, PanelConfig.SCHEMA, "Panel"):
+		return {}
 
 	var base: Dictionary = {}
 	var extends_reference: Variant = document.get("extends", null)
 	var resolved_extends: String = DocumentLoader.resolve_reference_path(extends_reference, normalized_path)
 	if resolved_extends != "":
 		base = _resolve_document(resolved_extends, visited)
+		if base.is_empty():
+			return {}
 
 	var merged := DocumentLoader.merge_documents(base, document)
 	merged["__source_path"] = str(document.get("__source_path", normalized_path))

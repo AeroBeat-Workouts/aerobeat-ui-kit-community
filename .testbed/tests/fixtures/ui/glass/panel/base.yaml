@@ -1,0 +1,10 @@
+schema: aero.ui.glass_panel
+schema_version: 1
+variant: panel-test-base
+version: v1
+
+shader:
+  blur: 7.25
+  edge_width: 3.5
+shell:
+  frame_alpha_boost: 0.41

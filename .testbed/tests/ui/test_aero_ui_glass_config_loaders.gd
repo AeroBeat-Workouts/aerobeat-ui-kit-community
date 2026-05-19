@@ -36,3 +36,17 @@ func test_badge_loader_resolves_same_schema_extends_without_cross_schema_couplin
 	assert_almost_eq(float(hybrid_tokens["fill_alpha"]), 0.16, 0.0001)
 	assert_almost_eq(float(hybrid_tokens["border_alpha"]), 0.22, 0.0001)
 	assert_almost_eq(float(hybrid_tokens["label_alpha"]), 0.93, 0.0001)
+
+
+func test_badge_loader_rejects_cross_schema_extends() -> void:
+	var config = BadgeLoader.load_from_path("res://tests/fixtures/ui/glass/badge/cross_schema_extends_panel.yaml")
+	var source_tokens := config.get_tokens(false)
+
+	assert_push_error("Badge preset schema mismatch in res://tests/fixtures/ui/glass/panel/base.yaml: expected aero.ui.glass_badge, got aero.ui.glass_panel")
+	assert_eq(config.variant, "default")
+	assert_eq(config.version, "v1")
+	assert_eq(config.source_path, "")
+	assert_eq(int(source_tokens["radius"]), 14)
+	assert_almost_eq(float(source_tokens["fill_alpha"]), 0.08, 0.0001)
+	assert_almost_eq(float(source_tokens["border_alpha"]), 0.14, 0.0001)
+	assert_almost_eq(float(source_tokens["label_alpha"]), 0.78, 0.0001)

@@ -61,6 +61,20 @@ static func resolve_reference_path(reference: Variant, current_path: String) -> 
 	return _ensure_yaml_extension(PRESET_ROOT.path_join(candidate))
 
 
+static func validate_document_schema(document: Dictionary, expected_schema: String, config_family_name: String) -> bool:
+	if document.is_empty():
+		return false
+
+	var actual_schema := str(document.get("schema", ""))
+	if actual_schema == expected_schema:
+		return true
+
+	var source_path := str(document.get("__source_path", "<memory>"))
+	var actual_label := actual_schema if actual_schema != "" else "<missing>"
+	push_error("%s preset schema mismatch in %s: expected %s, got %s" % [config_family_name, source_path, expected_schema, actual_label])
+	return false
+
+
 static func _parse_mapping_document(text: String) -> Dictionary:
 	var root: Dictionary = {}
 	var stack: Array[Dictionary] = [{"indent": -1, "container": root}]
