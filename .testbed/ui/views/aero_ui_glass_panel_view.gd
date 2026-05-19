@@ -369,15 +369,44 @@ func reset_shader_parameters_to_defaults() -> void:
 		set_shader_parameter(str(config["name"]), config["default"])
 
 
-func _load_startup_panel_style_bundle() -> void:
-	_panel_style_config = AeroUiGlassPanelConfigLoader.load_from_path(DEFAULT_PANEL_STYLE_BUNDLE_PATH)
-	if _panel_style_config == null:
+func get_panel_style_config() -> AeroUiGlassPanelConfig:
+	return _panel_style_config
+
+
+func get_badge_style_config() -> AeroUiGlassBadgeConfig:
+	return _badge_style_config
+
+
+func get_primary_button_style_config() -> AeroUiGlassPrimaryButtonConfig:
+	return _primary_button_style_config
+
+
+func apply_panel_style_bundle(config: AeroUiGlassPanelConfig) -> void:
+	if config == null:
 		return
-	_badge_style_config = _panel_style_config.badge_config
-	_primary_button_style_config = _panel_style_config.primary_button_config
-	if is_instance_valid(badge_view):
+	_panel_style_config = config
+	_badge_style_config = config.badge_config
+	_primary_button_style_config = config.primary_button_config
+	if is_instance_valid(badge_view) and _badge_style_config != null:
 		badge_view.set_badge_config(_badge_style_config)
 	_apply_panel_style_config(_panel_style_config)
+	_refresh_primary_action_visual()
+	_refresh_interaction_debug()
+
+
+func load_panel_style_bundle_from_path(path: String) -> AeroUiGlassPanelConfig:
+	var config := AeroUiGlassPanelConfigLoader.load_from_path(path)
+	if config == null or config.source_path == "":
+		return null
+	apply_panel_style_bundle(config)
+	return config
+
+
+func _load_startup_panel_style_bundle() -> void:
+	var config := AeroUiGlassPanelConfigLoader.load_from_path(DEFAULT_PANEL_STYLE_BUNDLE_PATH)
+	if config == null or config.source_path == "":
+		return
+	apply_panel_style_bundle(config)
 
 
 func _apply_panel_style_config(config: AeroUiGlassPanelConfig) -> void:

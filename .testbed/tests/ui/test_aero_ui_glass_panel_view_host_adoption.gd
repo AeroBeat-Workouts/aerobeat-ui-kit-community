@@ -4,8 +4,8 @@ const SCREEN_HOST_SCENE := preload("res://scenes/glass-shader-test.tscn")
 const HYBRID_HOST_SCENE := preload("res://scenes/glass-shader-gui-3d-test.tscn")
 const CANONICAL_PANEL_VIEW_SCRIPT_PATH := "res://ui/views/aero_ui_glass_panel_view.gd"
 const PANEL_YAML_PATH := "res://ui/presets/glass/panel/primary-card-source.v1.yaml"
-const STARTUP_STATUS_TEXT := "Startup is using the YAML-backed panel defaults. Load a JSON preset to compare overrides manually."
-const HYBRID_STARTUP_STATUS_TEXT := "Startup is using the YAML-backed panel defaults. Load a JSON preset to compare hybrid overrides manually."
+const STARTUP_STATUS_TEXT := "Startup is YAML-only. Export or load an AeroUiGlass YAML bundle when you want to compare manual overrides."
+const HYBRID_STARTUP_STATUS_TEXT := "Startup is YAML-only. Export or load an AeroUiGlass YAML bundle when you want to compare hybrid overrides manually."
 
 
 func _assert_yaml_backed_panel_defaults(panel: AeroUiGlassPanelView) -> void:

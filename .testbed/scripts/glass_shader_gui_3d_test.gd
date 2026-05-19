@@ -3,14 +3,13 @@ extends Node3D
 const PANEL_VIEW_SCENE_PATH := "res://ui/views/aero_ui_glass_panel_view.tscn"
 const HYBRID_SHADER_PATH := "res://assets/shaders/glass-panel-hybrid-3d.gdshader"
 const UI_OVERLAY_SHADER_PATH := "res://assets/shaders/glass-panel-ui-overlay-3d.gdshader"
-const PRESET_SOURCE_SCENE_PATH := "res://scenes/glass-shader-gui-3d-test.tscn"
 const PRESET_DIALOG_DIRECTORY := "res://presets/glass/hybrid"
-const DEFAULT_PRESET_FILENAME := "glass-shader-hybrid-3d-preset.json"
+const DEFAULT_PRESET_FILENAME := "glass-shader-hybrid-3d-preset.yaml"
 const HYBRID_SURFACE_ID: StringName = &"hybrid_glass_panel"
 const HYBRID_SURFACE_TYPE: StringName = AeroUiInteractionTypes.SURFACE_TYPE_HYBRID_3D_GUI
 const HYBRID_POINTER_MOUSE: StringName = &"mouse_0"
 const PanelViewScript = preload("res://ui/views/aero_ui_glass_panel_view.gd")
-const PresetIO = preload("res://scripts/glass_shader_preset_io.gd")
+const YamlBundleIO = preload("res://scripts/aero_ui_glass_yaml_bundle_io.gd")
 
 const AUTO_YAW_AMPLITUDE_DEG := 26.0
 const AUTO_PITCH_AMPLITUDE_DEG := 10.0
@@ -1150,11 +1149,11 @@ func _make_preset_actions_block() -> Control:
 	wrapper.add_theme_constant_override("separation", 8)
 
 	var title := Label.new()
-	title.text = "preset_json"
+	title.text = "preset_yaml"
 	wrapper.add_child(title)
 
 	var description := Label.new()
-	description.text = "Save the current hybrid body and overlay controls to JSON or load them back into this world-space shader test scene."
+	description.text = "Export or import an AeroUiGlass YAML bundle for this hybrid test. The panel YAML remains canonical, badge/button YAML siblings come with it, and hybrid-only material controls stay in the same root YAML file."
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	description.modulate = Color(1.0, 1.0, 1.0, 0.68)
 	wrapper.add_child(description)
@@ -1165,21 +1164,21 @@ func _make_preset_actions_block() -> Control:
 	wrapper.add_child(button_row)
 
 	var export_button := Button.new()
-	export_button.text = "Export JSON"
+	export_button.text = "Export YAML"
 	export_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	export_button.pressed.connect(_on_export_json_pressed)
+	export_button.pressed.connect(_on_export_yaml_pressed)
 	button_row.add_child(export_button)
 
 	var load_button := Button.new()
-	load_button.text = "Load JSON"
+	load_button.text = "Load YAML"
 	load_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	load_button.pressed.connect(_on_load_json_pressed)
+	load_button.pressed.connect(_on_load_yaml_pressed)
 	button_row.add_child(load_button)
 
 	var status := Label.new()
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.modulate = Color(1.0, 1.0, 1.0, 0.6)
-	status.text = "Startup is using the YAML-backed panel defaults. Load a JSON preset to compare hybrid overrides manually."
+	status.text = "Startup is YAML-only. Export or load an AeroUiGlass YAML bundle when you want to compare hybrid overrides manually."
 	wrapper.add_child(status)
 	_preset_status_label = status
 
@@ -1240,11 +1239,11 @@ func _make_color_control(config: Dictionary) -> Control:
 func _setup_preset_dialogs() -> void:
 	_ensure_preset_directory()
 	if _save_dialog == null:
-		_save_dialog = _create_preset_dialog(FileDialog.FILE_MODE_SAVE_FILE, "Export Hybrid Shader Preset JSON")
+		_save_dialog = _create_preset_dialog(FileDialog.FILE_MODE_SAVE_FILE, "Export Hybrid AeroUiGlass YAML Bundle")
 		_save_dialog.file_selected.connect(_export_preset_to_path)
 		add_child(_save_dialog)
 	if _load_dialog == null:
-		_load_dialog = _create_preset_dialog(FileDialog.FILE_MODE_OPEN_FILE, "Load Hybrid Shader Preset JSON")
+		_load_dialog = _create_preset_dialog(FileDialog.FILE_MODE_OPEN_FILE, "Load Hybrid AeroUiGlass YAML Bundle")
 		_load_dialog.file_selected.connect(_load_preset_from_path)
 		add_child(_load_dialog)
 
@@ -1255,7 +1254,7 @@ func _create_preset_dialog(file_mode: FileDialog.FileMode, title_text: String) -
 	dialog.file_mode = file_mode
 	dialog.title = title_text
 	dialog.use_native_dialog = true
-	dialog.filters = PackedStringArray(["*.json ; JSON preset"])
+	dialog.filters = PackedStringArray(["*.yaml, *.yml ; AeroUiGlass YAML bundle"])
 	dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIALOG_DIRECTORY)
 	dialog.current_file = DEFAULT_PRESET_FILENAME
 	return dialog
@@ -1280,55 +1279,109 @@ func _on_color_value_changed(color: Color, parameter_name: String) -> void:
 	set_panel_shader_parameter(parameter_name, color)
 
 
-func _on_export_json_pressed() -> void:
+func _on_export_yaml_pressed() -> void:
 	_ensure_preset_directory()
 	_save_dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIALOG_DIRECTORY)
 	_save_dialog.current_file = DEFAULT_PRESET_FILENAME
 	_save_dialog.popup_centered_ratio(0.7)
 
 
-func _on_load_json_pressed() -> void:
+func _on_load_yaml_pressed() -> void:
 	_ensure_preset_directory()
 	_load_dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIALOG_DIRECTORY)
 	_load_dialog.popup_centered_ratio(0.7)
 
 
 func _export_preset_to_path(path: String) -> void:
-	var parameters := PresetIO.collect_parameters(
-		HYBRID_FLOAT_CONTROLS,
-		HYBRID_COLOR_CONTROLS,
-		Callable(self, "get_panel_shader_parameter")
-	)
-	var envelope := PresetIO.build_preset_envelope(PresetIO.PRESET_KIND_HYBRID_3D, PRESET_SOURCE_SCENE_PATH, parameters)
-	var result := PresetIO.write_preset_file(path, envelope)
+	if not is_instance_valid(_panel_ui):
+		_set_preset_status("Hybrid panel is not ready for YAML export.", true)
+		return
+
+	var result := YamlBundleIO.export_panel_bundle(path, _build_hybrid_yaml_bundle_export())
 	if result.get("ok", false):
-		_set_preset_status("Saved preset to %s" % result["path"], false)
+		_set_preset_status("Saved AeroUiGlass YAML bundle to %s" % result["path"], false)
 	else:
-		_set_preset_status(str(result.get("error", "Failed to save preset.")), true)
+		_set_preset_status(str(result.get("error", "Failed to save YAML bundle.")), true)
 
 
 func _load_preset_from_path(path: String) -> void:
-	var result := PresetIO.load_and_apply_preset(
-		path,
-		PresetIO.PRESET_KIND_HYBRID_3D,
-		HYBRID_FLOAT_CONTROLS,
-		HYBRID_COLOR_CONTROLS,
-		Callable(self, "set_panel_shader_parameter")
-	)
+	var result := YamlBundleIO.load_panel_bundle(path)
 	if not result.get("ok", false):
-		_set_preset_status(str(result.get("error", "Failed to load preset.")), true)
+		_set_preset_status(str(result.get("error", "Failed to load YAML bundle.")), true)
+		return
+
+	if not _apply_loaded_hybrid_yaml_bundle(result):
+		_set_preset_status("Failed to apply AeroUiGlass YAML bundle from %s" % path, true)
 		return
 
 	call_deferred("_sync_controls_from_panel")
-	_apply_loaded_preset_status(result, path, "Loaded preset from")
+	_set_preset_status("Loaded AeroUiGlass YAML bundle from %s" % result.get("path", path), false)
 
 
-func _apply_loaded_preset_status(result: Dictionary, path: String, prefix: String) -> void:
-	var ignored_keys: Array = result.get("ignored_keys", [])
-	if ignored_keys.is_empty():
-		_set_preset_status("%s %s" % [prefix, path], false)
-	else:
-		_set_preset_status("%s %s (ignored: %s)" % [prefix, path, _join_string_array(ignored_keys)], false)
+func _build_hybrid_yaml_bundle_export() -> Dictionary:
+	var panel_style_config := _panel_ui.get_panel_style_config() if is_instance_valid(_panel_ui) else null
+	var badge_style_config := _panel_ui.get_badge_style_config() if is_instance_valid(_panel_ui) else null
+	var button_style_config := _panel_ui.get_primary_button_style_config() if is_instance_valid(_panel_ui) else null
+	var panel_shader_parameters: Dictionary = {}
+	for parameter_name in ["blur", "warp_intensity", "strength_x", "strength_y", "offset_x", "offset_y", "corner_radius", "edge_smoothness", "edge_width", "chromatic_strength", "tint", "edge_highlight"]:
+		panel_shader_parameters[parameter_name] = get_panel_shader_parameter(parameter_name)
+
+	var hybrid_shader_parameters: Dictionary = {}
+	for config in HYBRID_FLOAT_CONTROLS:
+		var parameter_name := str(config["name"])
+		if panel_shader_parameters.has(parameter_name) or parameter_name.begins_with("hybrid_"):
+			continue
+		hybrid_shader_parameters[parameter_name] = get_panel_shader_parameter(parameter_name)
+	for config in HYBRID_COLOR_CONTROLS:
+		var parameter_name := str(config["name"])
+		if panel_shader_parameters.has(parameter_name) or parameter_name == "edge_color":
+			continue
+		hybrid_shader_parameters[parameter_name] = get_panel_shader_parameter(parameter_name)
+
+	return {
+		"panel_config": panel_style_config,
+		"badge_config": badge_style_config,
+		"button_config": button_style_config,
+		"panel_shader_parameters": panel_shader_parameters,
+		"panel_overrides": {
+			"hybrid_inner_border_brightness": get_panel_shader_parameter("hybrid_inner_border_brightness"),
+			"hybrid_inner_border_alpha": get_panel_shader_parameter("hybrid_inner_border_alpha"),
+		},
+		"badge_overrides": {
+			"hybrid_fill_alpha": get_panel_shader_parameter("hybrid_badge_fill_alpha"),
+			"hybrid_border_alpha": get_panel_shader_parameter("hybrid_badge_border_alpha"),
+			"hybrid_label_alpha": get_panel_shader_parameter("hybrid_badge_label_alpha"),
+		},
+		"hybrid_shader_parameters": hybrid_shader_parameters,
+	}
+
+
+func _apply_loaded_hybrid_yaml_bundle(bundle: Dictionary) -> bool:
+	var panel_config = bundle.get("panel_config", null)
+	if panel_config == null:
+		return false
+	if not is_instance_valid(_panel_ui) or not is_instance_valid(_mask_ui):
+		return false
+	if _panel_ui.load_panel_style_bundle_from_path(str(bundle.get("path", ""))) == null:
+		return false
+	if _mask_ui.load_panel_style_bundle_from_path(str(bundle.get("path", ""))) == null:
+		return false
+
+	for parameter_name in panel_config.shader_parameters.keys():
+		set_panel_shader_parameter(str(parameter_name), panel_config.shader_parameters[parameter_name])
+	set_panel_shader_parameter("hybrid_inner_border_brightness", panel_config.hybrid_inner_border_brightness)
+	set_panel_shader_parameter("hybrid_inner_border_alpha", panel_config.hybrid_inner_border_alpha)
+
+	var badge_config = bundle.get("badge_config", null)
+	if badge_config != null:
+		set_panel_shader_parameter("hybrid_badge_fill_alpha", badge_config.hybrid_fill_alpha)
+		set_panel_shader_parameter("hybrid_badge_border_alpha", badge_config.hybrid_border_alpha)
+		set_panel_shader_parameter("hybrid_badge_label_alpha", badge_config.hybrid_label_alpha)
+
+	var hybrid_shader_parameters: Dictionary = bundle.get("hybrid_shader_parameters", {}) as Dictionary
+	for parameter_name in hybrid_shader_parameters.keys():
+		set_panel_shader_parameter(str(parameter_name), hybrid_shader_parameters[parameter_name])
+	return true
 
 
 func _set_preset_status(message: String, is_error: bool) -> void:

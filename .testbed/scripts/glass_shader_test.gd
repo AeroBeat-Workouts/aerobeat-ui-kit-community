@@ -1,14 +1,13 @@
 extends Control
 
 const PANEL_VIEW_SCENE_PATH := "res://ui/views/aero_ui_glass_panel_view.tscn"
-const PRESET_PANEL_VIEW_SCENE_PATH := "res://scenes/glass-shader-test.tscn"
 const PRESET_DIALOG_DIRECTORY := "res://presets/glass/2d"
-const DEFAULT_PRESET_FILENAME := "glass-shader-2d-preset.json"
+const DEFAULT_PRESET_FILENAME := "glass-shader-2d-preset.yaml"
 const SCREEN_SURFACE_ID: StringName = &"screen_glass_panel"
 const SCREEN_SURFACE_TYPE: StringName = AeroUiInteractionTypes.SURFACE_TYPE_SCREEN_2D
 const PREVIEW_BUTTON_PATH := NodePath("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton")
 const PanelViewScript = preload("res://ui/views/aero_ui_glass_panel_view.gd")
-const PresetIO = preload("res://scripts/glass_shader_preset_io.gd")
+const YamlBundleIO = preload("res://scripts/aero_ui_glass_yaml_bundle_io.gd")
 
 @onready var controls_list: VBoxContainer = get_node_or_null("SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll/ControlsList") as VBoxContainer
 @onready var panel_view_host: Control = get_node_or_null("SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost") as Control
@@ -379,11 +378,11 @@ func _make_preset_actions_block() -> Control:
 	wrapper.add_theme_constant_override("separation", 8)
 
 	var title := Label.new()
-	title.text = "preset_json"
+	title.text = "preset_yaml"
 	wrapper.add_child(title)
 
 	var description := Label.new()
-	description.text = "Save the current slider and color values to JSON or load them back into this 2D shader tester."
+	description.text = "Export or import an AeroUiGlass YAML bundle for this 2D panel test. The panel YAML stays canonical and the badge/button YAML siblings travel with it."
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	description.modulate = Color(1.0, 1.0, 1.0, 0.68)
 	wrapper.add_child(description)
@@ -394,21 +393,21 @@ func _make_preset_actions_block() -> Control:
 	wrapper.add_child(button_row)
 
 	var export_button := Button.new()
-	export_button.text = "Export JSON"
+	export_button.text = "Export YAML"
 	export_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	export_button.pressed.connect(_on_export_json_pressed)
+	export_button.pressed.connect(_on_export_yaml_pressed)
 	button_row.add_child(export_button)
 
 	var load_button := Button.new()
-	load_button.text = "Load JSON"
+	load_button.text = "Load YAML"
 	load_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	load_button.pressed.connect(_on_load_json_pressed)
+	load_button.pressed.connect(_on_load_yaml_pressed)
 	button_row.add_child(load_button)
 
 	var status := Label.new()
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.modulate = Color(1.0, 1.0, 1.0, 0.6)
-	status.text = "Startup is using the YAML-backed panel defaults. Load a JSON preset to compare overrides manually."
+	status.text = "Startup is YAML-only. Export or load an AeroUiGlass YAML bundle when you want to compare manual overrides."
 	wrapper.add_child(status)
 	_preset_status_label = status
 
@@ -469,11 +468,11 @@ func _make_color_control(config: Dictionary) -> Control:
 func _setup_preset_dialogs() -> void:
 	_ensure_preset_directory()
 	if _save_dialog == null:
-		_save_dialog = _create_preset_dialog(FileDialog.FILE_MODE_SAVE_FILE, "Export Shader Preset JSON")
+		_save_dialog = _create_preset_dialog(FileDialog.FILE_MODE_SAVE_FILE, "Export AeroUiGlass YAML Bundle")
 		_save_dialog.file_selected.connect(_export_preset_to_path)
 		add_child(_save_dialog)
 	if _load_dialog == null:
-		_load_dialog = _create_preset_dialog(FileDialog.FILE_MODE_OPEN_FILE, "Load Shader Preset JSON")
+		_load_dialog = _create_preset_dialog(FileDialog.FILE_MODE_OPEN_FILE, "Load AeroUiGlass YAML Bundle")
 		_load_dialog.file_selected.connect(_load_preset_from_path)
 		add_child(_load_dialog)
 
@@ -484,7 +483,7 @@ func _create_preset_dialog(file_mode: FileDialog.FileMode, title_text: String) -
 	dialog.file_mode = file_mode
 	dialog.title = title_text
 	dialog.use_native_dialog = true
-	dialog.filters = PackedStringArray(["*.json ; JSON preset"])
+	dialog.filters = PackedStringArray(["*.yaml, *.yml ; AeroUiGlass YAML bundle"])
 	dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIALOG_DIRECTORY)
 	dialog.current_file = DEFAULT_PRESET_FILENAME
 	return dialog
@@ -509,47 +508,52 @@ func _on_color_value_changed(color: Color, parameter_name: String) -> void:
 	set_shader_parameter(parameter_name, color)
 
 
-func _on_export_json_pressed() -> void:
+func _on_export_yaml_pressed() -> void:
 	_ensure_preset_directory()
 	_save_dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIALOG_DIRECTORY)
 	_save_dialog.current_file = DEFAULT_PRESET_FILENAME
 	_save_dialog.popup_centered_ratio(0.7)
 
 
-func _on_load_json_pressed() -> void:
+func _on_load_yaml_pressed() -> void:
 	_ensure_preset_directory()
 	_load_dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIALOG_DIRECTORY)
 	_load_dialog.popup_centered_ratio(0.7)
 
 
 func _export_preset_to_path(path: String) -> void:
-	var parameters := PresetIO.collect_parameters(
-		PanelViewScript.FLOAT_CONTROLS,
-		PanelViewScript.COLOR_CONTROLS,
-		Callable(self, "get_shader_parameter")
-	)
-	var envelope := PresetIO.build_preset_envelope(PresetIO.PRESET_KIND_2D, PRESET_PANEL_VIEW_SCENE_PATH, parameters)
-	var result := PresetIO.write_preset_file(path, envelope)
+	if not is_instance_valid(_panel_view):
+		_set_preset_status("Panel view is not ready for YAML export.", true)
+		return
+
+	var panel_config := _panel_view.get_panel_style_config()
+	var badge_config := _panel_view.get_badge_style_config()
+	var button_config := _panel_view.get_primary_button_style_config()
+	var panel_shader_parameters := _panel_view.get_shader_parameters()
+	var result := YamlBundleIO.export_panel_bundle(path, {
+		"panel_config": panel_config,
+		"badge_config": badge_config,
+		"button_config": button_config,
+		"panel_shader_parameters": panel_shader_parameters,
+	})
 	if result.get("ok", false):
-		_set_preset_status("Saved preset to %s" % result["path"], false)
+		_set_preset_status("Saved AeroUiGlass YAML bundle to %s" % result["path"], false)
 	else:
-		_set_preset_status(str(result.get("error", "Failed to save preset.")), true)
+		_set_preset_status(str(result.get("error", "Failed to save YAML bundle.")), true)
 
 
 func _load_preset_from_path(path: String) -> void:
-	var result := PresetIO.load_and_apply_preset(
-		path,
-		PresetIO.PRESET_KIND_2D,
-		PanelViewScript.FLOAT_CONTROLS,
-		PanelViewScript.COLOR_CONTROLS,
-		Callable(self, "set_shader_parameter")
-	)
-	if not result.get("ok", false):
-		_set_preset_status(str(result.get("error", "Failed to load preset.")), true)
+	if not is_instance_valid(_panel_view):
+		_set_preset_status("Panel view is not ready for YAML import.", true)
+		return
+
+	var panel_config := _panel_view.load_panel_style_bundle_from_path(path)
+	if panel_config == null or panel_config.source_path == "":
+		_set_preset_status("Failed to load AeroUiGlass YAML bundle from %s" % path, true)
 		return
 
 	call_deferred("_sync_controls_from_panel")
-	_apply_loaded_preset_status(result, path, "Loaded preset from")
+	_set_preset_status("Loaded AeroUiGlass YAML bundle from %s" % panel_config.source_path, false)
 
 
 func _apply_loaded_preset_status(result: Dictionary, path: String, prefix: String) -> void:
