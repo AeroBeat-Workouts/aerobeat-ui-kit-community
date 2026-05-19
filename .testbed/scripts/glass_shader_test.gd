@@ -8,6 +8,12 @@ const SCREEN_SURFACE_TYPE: StringName = AeroUiInteractionTypes.SURFACE_TYPE_SCRE
 const PREVIEW_BUTTON_PATH := NodePath("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton")
 const PanelViewScript = preload("res://ui/views/aero_ui_glass_panel_view.gd")
 const YamlBundleIO = preload("res://scripts/aero_ui_glass_yaml_bundle_io.gd")
+const BadgeConfigLoader = preload("res://ui/configs/loaders/aero_ui_glass_badge_config_loader.gd")
+const ButtonConfigLoader = preload("res://ui/configs/loaders/aero_ui_glass_primary_button_config_loader.gd")
+
+const PRESET_SECTION_PANEL := "panel"
+const PRESET_SECTION_BADGE := "badge"
+const PRESET_SECTION_BUTTON := "button"
 
 @onready var controls_list: VBoxContainer = get_node_or_null("SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll/ControlsList") as VBoxContainer
 @onready var panel_view_host: Control = get_node_or_null("SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost") as Control
@@ -23,6 +29,8 @@ var _preset_status_label: Label
 var _contract_status_label: RichTextLabel
 var _save_dialog: FileDialog
 var _load_dialog: FileDialog
+var _pending_save_section := PRESET_SECTION_PANEL
+var _pending_load_section := PRESET_SECTION_PANEL
 var _mouse_card_capture := false
 var _mouse_hover_active := false
 var _active_touch_capture: Dictionary = {}
@@ -310,18 +318,11 @@ func _build_controls() -> void:
 	_contract_status_label = null
 
 	controls_list.add_child(_make_background_mode_control())
-	controls_list.add_child(_make_preset_actions_block())
-
-	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(0.0, 8.0)
-	controls_list.add_child(spacer)
-
-	for config in PanelViewScript.FLOAT_CONTROLS:
-		controls_list.add_child(_make_float_control(config))
-
-	for config in PanelViewScript.COLOR_CONTROLS:
-		controls_list.add_child(_make_color_control(config))
-
+	controls_list.add_child(_make_yaml_actions_block("panel_yaml_bundle", PRESET_SECTION_PANEL, "Root panel YAML: panel shader + shell plus badge/button sibling references."))
+	controls_list.add_child(_make_parameter_section("panel_shader_parameters", PanelViewScript.FLOAT_CONTROLS, PanelViewScript.COLOR_CONTROLS))
+	controls_list.add_child(_make_yaml_actions_block("badge_yaml", PRESET_SECTION_BADGE, "Badge component YAML only."))
+	controls_list.add_child(_make_yaml_actions_block("primary_button_yaml", PRESET_SECTION_BUTTON, "Primary button component YAML only."))
+	controls_list.add_child(_make_preset_status_block())
 	controls_list.add_child(_make_contract_status_block())
 
 	var tail_spacer := Control.new()
@@ -372,20 +373,21 @@ func _make_background_mode_control() -> Control:
 	return wrapper
 
 
-func _make_preset_actions_block() -> Control:
+func _make_yaml_actions_block(title_text: String, section_key: String, subtitle_text: String = "") -> Control:
 	var wrapper := VBoxContainer.new()
 	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	wrapper.add_theme_constant_override("separation", 8)
 
 	var title := Label.new()
-	title.text = "preset_yaml"
+	title.text = title_text
 	wrapper.add_child(title)
 
-	var description := Label.new()
-	description.text = "Export or import an AeroUiGlass YAML bundle for this 2D panel test. The panel YAML stays canonical and the badge/button YAML siblings travel with it."
-	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	description.modulate = Color(1.0, 1.0, 1.0, 0.68)
-	wrapper.add_child(description)
+	if not subtitle_text.is_empty():
+		var subtitle := Label.new()
+		subtitle.text = subtitle_text
+		subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		subtitle.modulate = Color(1.0, 1.0, 1.0, 0.68)
+		wrapper.add_child(subtitle)
 
 	var button_row := HBoxContainer.new()
 	button_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -395,19 +397,48 @@ func _make_preset_actions_block() -> Control:
 	var export_button := Button.new()
 	export_button.text = "Export YAML"
 	export_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	export_button.pressed.connect(_on_export_yaml_pressed)
+	export_button.pressed.connect(_open_export_dialog_for_section.bind(section_key))
 	button_row.add_child(export_button)
 
 	var load_button := Button.new()
 	load_button.text = "Load YAML"
 	load_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	load_button.pressed.connect(_on_load_yaml_pressed)
+	load_button.pressed.connect(_open_load_dialog_for_section.bind(section_key))
 	button_row.add_child(load_button)
+
+	return wrapper
+
+
+func _make_parameter_section(title_text: String, float_configs: Array, color_configs: Array) -> Control:
+	var wrapper := VBoxContainer.new()
+	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	wrapper.add_theme_constant_override("separation", 8)
+
+	var title := Label.new()
+	title.text = title_text
+	wrapper.add_child(title)
+
+	for config in float_configs:
+		wrapper.add_child(_make_float_control(config))
+	for config in color_configs:
+		wrapper.add_child(_make_color_control(config))
+
+	return wrapper
+
+
+func _make_preset_status_block() -> Control:
+	var wrapper := VBoxContainer.new()
+	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	wrapper.add_theme_constant_override("separation", 4)
+
+	var title := Label.new()
+	title.text = "yaml_status"
+	wrapper.add_child(title)
 
 	var status := Label.new()
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.modulate = Color(1.0, 1.0, 1.0, 0.6)
-	status.text = "Startup is YAML-only. Export or load an AeroUiGlass YAML bundle when you want to compare manual overrides."
+	status.text = "Section buttons load or export the authored YAML files directly."
 	wrapper.add_child(status)
 	_preset_status_label = status
 
@@ -468,12 +499,12 @@ func _make_color_control(config: Dictionary) -> Control:
 func _setup_preset_dialogs() -> void:
 	_ensure_preset_directory()
 	if _save_dialog == null:
-		_save_dialog = _create_preset_dialog(FileDialog.FILE_MODE_SAVE_FILE, "Export AeroUiGlass YAML Bundle")
-		_save_dialog.file_selected.connect(_export_preset_to_path)
+		_save_dialog = _create_preset_dialog(FileDialog.FILE_MODE_SAVE_FILE, "Export AeroUiGlass YAML")
+		_save_dialog.file_selected.connect(_on_save_dialog_file_selected)
 		add_child(_save_dialog)
 	if _load_dialog == null:
-		_load_dialog = _create_preset_dialog(FileDialog.FILE_MODE_OPEN_FILE, "Load AeroUiGlass YAML Bundle")
-		_load_dialog.file_selected.connect(_load_preset_from_path)
+		_load_dialog = _create_preset_dialog(FileDialog.FILE_MODE_OPEN_FILE, "Load AeroUiGlass YAML")
+		_load_dialog.file_selected.connect(_on_load_dialog_file_selected)
 		add_child(_load_dialog)
 
 
@@ -483,7 +514,7 @@ func _create_preset_dialog(file_mode: FileDialog.FileMode, title_text: String) -
 	dialog.file_mode = file_mode
 	dialog.title = title_text
 	dialog.use_native_dialog = true
-	dialog.filters = PackedStringArray(["*.yaml, *.yml ; AeroUiGlass YAML bundle"])
+	dialog.filters = PackedStringArray(["*.yaml, *.yml ; AeroUiGlass YAML"])
 	dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIALOG_DIRECTORY)
 	dialog.current_file = DEFAULT_PRESET_FILENAME
 	return dialog
@@ -508,20 +539,75 @@ func _on_color_value_changed(color: Color, parameter_name: String) -> void:
 	set_shader_parameter(parameter_name, color)
 
 
-func _on_export_yaml_pressed() -> void:
+func _open_export_dialog_for_section(section_key: String) -> void:
 	_ensure_preset_directory()
+	_pending_save_section = section_key
+	_save_dialog.title = _export_dialog_title(section_key)
 	_save_dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIALOG_DIRECTORY)
-	_save_dialog.current_file = DEFAULT_PRESET_FILENAME
+	_save_dialog.current_file = _default_filename_for_section(section_key)
 	_save_dialog.popup_centered_ratio(0.7)
 
 
-func _on_load_yaml_pressed() -> void:
+func _open_load_dialog_for_section(section_key: String) -> void:
 	_ensure_preset_directory()
+	_pending_load_section = section_key
+	_load_dialog.title = _load_dialog_title(section_key)
 	_load_dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIALOG_DIRECTORY)
+	_load_dialog.current_file = _default_filename_for_section(section_key)
 	_load_dialog.popup_centered_ratio(0.7)
 
 
-func _export_preset_to_path(path: String) -> void:
+func _default_filename_for_section(section_key: String) -> String:
+	match section_key:
+		PRESET_SECTION_BADGE:
+			return DEFAULT_PRESET_FILENAME.replace(".yaml", ".badge.yaml")
+		PRESET_SECTION_BUTTON:
+			return DEFAULT_PRESET_FILENAME.replace(".yaml", ".button.yaml")
+		_:
+			return DEFAULT_PRESET_FILENAME
+
+
+func _export_dialog_title(section_key: String) -> String:
+	match section_key:
+		PRESET_SECTION_BADGE:
+			return "Export AeroUiGlass Badge YAML"
+		PRESET_SECTION_BUTTON:
+			return "Export AeroUiGlass Primary Button YAML"
+		_:
+			return "Export AeroUiGlass Panel YAML Bundle"
+
+
+func _load_dialog_title(section_key: String) -> String:
+	match section_key:
+		PRESET_SECTION_BADGE:
+			return "Load AeroUiGlass Badge YAML"
+		PRESET_SECTION_BUTTON:
+			return "Load AeroUiGlass Primary Button YAML"
+		_:
+			return "Load AeroUiGlass Panel YAML Bundle"
+
+
+func _on_save_dialog_file_selected(path: String) -> void:
+	match _pending_save_section:
+		PRESET_SECTION_BADGE:
+			_export_badge_yaml_to_path(path)
+		PRESET_SECTION_BUTTON:
+			_export_button_yaml_to_path(path)
+		_:
+			_export_panel_yaml_bundle_to_path(path)
+
+
+func _on_load_dialog_file_selected(path: String) -> void:
+	match _pending_load_section:
+		PRESET_SECTION_BADGE:
+			_load_badge_yaml_from_path(path)
+		PRESET_SECTION_BUTTON:
+			_load_button_yaml_from_path(path)
+		_:
+			_load_panel_yaml_bundle_from_path(path)
+
+
+func _export_panel_yaml_bundle_to_path(path: String) -> void:
 	if not is_instance_valid(_panel_view):
 		_set_preset_status("Panel view is not ready for YAML export.", true)
 		return
@@ -537,31 +623,115 @@ func _export_preset_to_path(path: String) -> void:
 		"panel_shader_parameters": panel_shader_parameters,
 	})
 	if result.get("ok", false):
-		_set_preset_status("Saved AeroUiGlass YAML bundle to %s" % result["path"], false)
+		_set_preset_status("Saved panel YAML bundle to %s" % result["path"], false)
 	else:
-		_set_preset_status(str(result.get("error", "Failed to save YAML bundle.")), true)
+		_set_preset_status(str(result.get("error", "Failed to save panel YAML bundle.")), true)
 
 
-func _load_preset_from_path(path: String) -> void:
+func _load_panel_yaml_bundle_from_path(path: String) -> void:
 	if not is_instance_valid(_panel_view):
 		_set_preset_status("Panel view is not ready for YAML import.", true)
 		return
 
 	var panel_config := _panel_view.load_panel_style_bundle_from_path(path)
 	if panel_config == null or panel_config.source_path == "":
-		_set_preset_status("Failed to load AeroUiGlass YAML bundle from %s" % path, true)
+		_set_preset_status("Failed to load panel YAML bundle from %s" % path, true)
 		return
 
 	call_deferred("_sync_controls_from_panel")
-	_set_preset_status("Loaded AeroUiGlass YAML bundle from %s" % panel_config.source_path, false)
+	_set_preset_status("Loaded panel YAML bundle from %s" % panel_config.source_path, false)
 
 
-func _apply_loaded_preset_status(result: Dictionary, path: String, prefix: String) -> void:
-	var ignored_keys: Array = result.get("ignored_keys", [])
-	if ignored_keys.is_empty():
-		_set_preset_status("%s %s" % [prefix, path], false)
+func _export_badge_yaml_to_path(path: String) -> void:
+	if not is_instance_valid(_panel_view):
+		_set_preset_status("Panel view is not ready for badge YAML export.", true)
+		return
+	var badge_config = _panel_view.get_badge_style_config()
+	if badge_config == null:
+		_set_preset_status("Badge config is not ready for YAML export.", true)
+		return
+	var result := _write_yaml_section_document(path, YamlBundleIO._build_badge_document(badge_config, {}))
+	if result.get("ok", false):
+		_set_preset_status("Saved badge YAML to %s" % result["path"], false)
 	else:
-		_set_preset_status("%s %s (ignored: %s)" % [prefix, path, _join_string_array(ignored_keys)], false)
+		_set_preset_status(str(result.get("error", "Failed to save badge YAML.")), true)
+
+
+func _load_badge_yaml_from_path(path: String) -> void:
+	if not is_instance_valid(_panel_view):
+		_set_preset_status("Panel view is not ready for badge YAML import.", true)
+		return
+	var badge_config = BadgeConfigLoader.load_from_path(path)
+	if badge_config == null or badge_config.source_path == "":
+		_set_preset_status("Failed to load badge YAML from %s" % path, true)
+		return
+	_apply_badge_config_to_panel_view(_panel_view, badge_config)
+	_set_preset_status("Loaded badge YAML from %s" % badge_config.source_path, false)
+
+
+func _export_button_yaml_to_path(path: String) -> void:
+	if not is_instance_valid(_panel_view):
+		_set_preset_status("Panel view is not ready for button YAML export.", true)
+		return
+	var button_config = _panel_view.get_primary_button_style_config()
+	if button_config == null:
+		_set_preset_status("Primary button config is not ready for YAML export.", true)
+		return
+	var result := _write_yaml_section_document(path, YamlBundleIO._build_button_document(button_config, {}))
+	if result.get("ok", false):
+		_set_preset_status("Saved primary button YAML to %s" % result["path"], false)
+	else:
+		_set_preset_status(str(result.get("error", "Failed to save primary button YAML.")), true)
+
+
+func _load_button_yaml_from_path(path: String) -> void:
+	if not is_instance_valid(_panel_view):
+		_set_preset_status("Panel view is not ready for button YAML import.", true)
+		return
+	var button_config = ButtonConfigLoader.load_from_path(path)
+	if button_config == null or button_config.source_path == "":
+		_set_preset_status("Failed to load primary button YAML from %s" % path, true)
+		return
+	_apply_button_config_to_panel_view(_panel_view, button_config)
+	_set_preset_status("Loaded primary button YAML from %s" % button_config.source_path, false)
+
+
+func _write_yaml_section_document(path: String, document: Dictionary) -> Dictionary:
+	var normalized_path := YamlBundleIO.ensure_yaml_extension(path)
+	var directory_path := normalized_path.get_base_dir()
+	if not directory_path.is_empty():
+		var mkdir_error := DirAccess.make_dir_recursive_absolute(directory_path)
+		if mkdir_error != OK:
+			return {
+				"ok": false,
+				"error": "Failed to create YAML preset directory: %s" % directory_path,
+				"code": mkdir_error,
+			}
+	return YamlBundleIO._write_yaml_document(normalized_path, document)
+
+
+func _apply_badge_config_to_panel_view(panel_view: AeroUiGlassPanelView, badge_config) -> void:
+	if panel_view == null or badge_config == null:
+		return
+	panel_view._badge_style_config = badge_config
+	if panel_view._panel_style_config != null:
+		panel_view._panel_style_config.badge_config = badge_config
+		panel_view._panel_style_config.badge_preset_path = badge_config.source_path
+	if is_instance_valid(panel_view.badge_view):
+		panel_view.badge_view.set_badge_config(badge_config)
+	var is_hybrid_world := panel_view.get_presentation_mode() == panel_view.PRESENTATION_MODE_HYBRID_WORLD_SPACE
+	panel_view._refresh_badge_visual(is_hybrid_world)
+	panel_view._refresh_primary_action_visual()
+
+
+func _apply_button_config_to_panel_view(panel_view: AeroUiGlassPanelView, button_config) -> void:
+	if panel_view == null or button_config == null:
+		return
+	panel_view._primary_button_style_config = button_config
+	if panel_view._panel_style_config != null:
+		panel_view._panel_style_config.primary_button_config = button_config
+		panel_view._panel_style_config.primary_button_preset_path = button_config.source_path
+	panel_view._refresh_primary_action_visual()
 
 
 func _set_preset_status(message: String, is_error: bool) -> void:
