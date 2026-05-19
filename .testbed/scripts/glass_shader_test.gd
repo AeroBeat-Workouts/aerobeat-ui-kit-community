@@ -1,22 +1,22 @@
 extends Control
 
-const SOURCE_SCENE_PATH := "res://scenes/glass-shader-panel-source.tscn"
-const PRESET_SOURCE_SCENE_PATH := "res://scenes/glass-shader-test.tscn"
+const PANEL_VIEW_SCENE_PATH := "res://ui/views/aero_ui_glass_panel_view.tscn"
+const PRESET_PANEL_VIEW_SCENE_PATH := "res://scenes/glass-shader-test.tscn"
 const PRESET_DIALOG_DIRECTORY := "res://presets/glass/2d"
 const DEFAULT_PRESET_FILENAME := "glass-shader-2d-preset.json"
 const BUNDLED_DEFAULT_PRESET_PATH := "res://presets/glass/2d/default.json"
 const SCREEN_SURFACE_ID: StringName = &"screen_glass_panel"
 const SCREEN_SURFACE_TYPE: StringName = AeroUiInteractionTypes.SURFACE_TYPE_SCREEN_2D
 const PREVIEW_BUTTON_PATH := NodePath("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton")
-const PanelSourceScript = preload("res://scripts/glass_shader_panel_source.gd")
+const PanelViewScript = preload("res://ui/views/aero_ui_glass_panel_view.gd")
 const PresetIO = preload("res://scripts/glass_shader_preset_io.gd")
 
 @onready var controls_list: VBoxContainer = get_node_or_null("SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll/ControlsList") as VBoxContainer
-@onready var panel_source_host: Control = get_node_or_null("SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost") as Control
+@onready var panel_view_host: Control = get_node_or_null("SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost") as Control
 @onready var interaction_bus: AeroUiInteractionBus = get_node_or_null("SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus") as AeroUiInteractionBus
 @onready var screen_input_adapter: ScreenUiInputAdapter = get_node_or_null("SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/ScreenUiInputAdapter") as ScreenUiInputAdapter
 
-var _panel_source: Control
+var _panel_view: AeroUiGlassPanelView
 var _proof_button: Control
 var _background_mode_selector: OptionButton
 var _float_sliders: Dictionary = {}
@@ -38,9 +38,9 @@ var _last_contract_target_path := ""
 
 
 func _ready() -> void:
-	_mount_panel_source()
+	_mount_panel_view()
 	_ensure_interaction_contract_nodes()
-	_configure_panel_source_contract()
+	_configure_panel_view_contract()
 	_build_controls()
 	_setup_preset_dialogs()
 	_load_startup_default_preset()
@@ -55,61 +55,61 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func set_background_mode(mode: int) -> void:
-	if is_instance_valid(_panel_source) and _panel_source.has_method("set_background_mode"):
-		_panel_source.call("set_background_mode", mode)
+	if is_instance_valid(_panel_view):
+		_panel_view.set_background_mode(mode)
 	if is_instance_valid(_background_mode_selector):
 		_select_background_mode(mode)
 
 
 func get_background_mode() -> int:
-	if is_instance_valid(_panel_source) and _panel_source.has_method("get_background_mode"):
-		return _panel_source.call("get_background_mode")
-	return PanelSourceScript.DEFAULT_BACKGROUND_MODE
+	if is_instance_valid(_panel_view):
+		return _panel_view.get_background_mode()
+	return PanelViewScript.DEFAULT_BACKGROUND_MODE
 
 
 func set_shader_parameter(parameter_name: String, value: Variant) -> void:
-	if is_instance_valid(_panel_source) and _panel_source.has_method("set_shader_parameter"):
-		_panel_source.call("set_shader_parameter", parameter_name, value)
+	if is_instance_valid(_panel_view):
+		_panel_view.set_shader_parameter(parameter_name, value)
 	_sync_single_control_from_panel(parameter_name)
 
 
 func get_shader_parameter(parameter_name: String) -> Variant:
-	if is_instance_valid(_panel_source) and _panel_source.has_method("get_shader_parameter"):
-		return _panel_source.call("get_shader_parameter", parameter_name)
+	if is_instance_valid(_panel_view):
+		return _panel_view.get_shader_parameter(parameter_name)
 	return null
 
 
-func _mount_panel_source() -> void:
-	_detach_contract_nodes_from_panel_source()
-	if is_instance_valid(_panel_source):
-		_panel_source.queue_free()
-		_panel_source = null
+func _mount_panel_view() -> void:
+	_detach_contract_nodes_from_panel_view()
+	if is_instance_valid(_panel_view):
+		_panel_view.queue_free()
+		_panel_view = null
 	_proof_button = null
 
-	var packed: PackedScene = load(SOURCE_SCENE_PATH)
+	var packed: PackedScene = load(PANEL_VIEW_SCENE_PATH)
 	if packed == null:
-		push_error("Failed to load panel source scene: %s" % SOURCE_SCENE_PATH)
+		push_error("Failed to load AeroUiGlassPanelView scene: %s" % PANEL_VIEW_SCENE_PATH)
 		return
 
-	_panel_source = packed.instantiate() as Control
-	if _panel_source == null:
-		push_error("Panel source scene did not instantiate as a Control root.")
+	_panel_view = packed.instantiate() as AeroUiGlassPanelView
+	if _panel_view == null:
+		push_error("AeroUiGlassPanelView scene did not instantiate as a Control root.")
 		return
 
-	panel_source_host.add_child(_panel_source)
-	_panel_source.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_proof_button = _panel_source.get_node_or_null(PREVIEW_BUTTON_PATH) as Control
+	panel_view_host.add_child(_panel_view)
+	_panel_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_proof_button = _panel_view.get_node_or_null(PREVIEW_BUTTON_PATH) as Control
 	_attach_contract_nodes_to_proof_button()
 
 
-func _detach_contract_nodes_from_panel_source() -> void:
+func _detach_contract_nodes_from_panel_view() -> void:
 	for contract_node in [screen_input_adapter, interaction_bus]:
 		if not is_instance_valid(contract_node):
 			continue
 		var parent: Node = contract_node.get_parent()
-		if parent != null and parent != panel_source_host:
+		if parent != null and parent != panel_view_host:
 			parent.remove_child(contract_node)
-			panel_source_host.add_child(contract_node)
+			panel_view_host.add_child(contract_node)
 
 
 func _attach_contract_nodes_to_proof_button() -> void:
@@ -128,11 +128,11 @@ func _ensure_interaction_contract_nodes() -> void:
 	if interaction_bus == null:
 		interaction_bus = AeroUiInteractionBus.new()
 		interaction_bus.name = "AeroUiInteractionBus"
-		panel_source_host.add_child(interaction_bus)
+		panel_view_host.add_child(interaction_bus)
 	if screen_input_adapter == null:
 		screen_input_adapter = ScreenUiInputAdapter.new()
 		screen_input_adapter.name = "ScreenUiInputAdapter"
-		panel_source_host.add_child(screen_input_adapter)
+		panel_view_host.add_child(screen_input_adapter)
 
 	screen_input_adapter.bus_path = interaction_bus.get_path()
 	screen_input_adapter.surface_id = SCREEN_SURFACE_ID
@@ -145,18 +145,17 @@ func _ensure_interaction_contract_nodes() -> void:
 		interaction_bus.interaction_event.connect(_on_contract_interaction_event)
 
 
-func _configure_panel_source_contract() -> void:
-	if not is_instance_valid(_panel_source):
+func _configure_panel_view_contract() -> void:
+	if not is_instance_valid(_panel_view):
 		return
-	if is_instance_valid(interaction_bus) and _panel_source.has_method("set_interaction_bus_path"):
-		_panel_source.call("set_interaction_bus_path", interaction_bus.get_path())
-	if _panel_source.has_method("configure_interaction_contract"):
-		_panel_source.call("configure_interaction_contract", {
-			"surface_id": SCREEN_SURFACE_ID,
-			"surface_type_label": String(SCREEN_SURFACE_TYPE),
-			"mode_label": "Screen contract proof",
-			"host_summary": "Screen-space host routing now feeds AeroUiInteractionBus through ScreenUiInputAdapter. This card reacts to normalized hover / press / drag / tap phases instead of raw gui_input parsing.",
-		})
+	if is_instance_valid(interaction_bus):
+		_panel_view.set_interaction_bus_path(interaction_bus.get_path())
+	_panel_view.configure_interaction_contract({
+		"surface_id": SCREEN_SURFACE_ID,
+		"surface_type_label": String(SCREEN_SURFACE_TYPE),
+		"mode_label": "Screen contract proof",
+		"host_summary": "Screen-space host routing now feeds AeroUiInteractionBus through ScreenUiInputAdapter. This card reacts to normalized hover / press / drag / tap phases instead of raw gui_input parsing.",
+	})
 
 
 func _forward_screen_panel_input(event: InputEvent) -> bool:
@@ -320,10 +319,10 @@ func _build_controls() -> void:
 	spacer.custom_minimum_size = Vector2(0.0, 8.0)
 	controls_list.add_child(spacer)
 
-	for config in PanelSourceScript.FLOAT_CONTROLS:
+	for config in PanelViewScript.FLOAT_CONTROLS:
 		controls_list.add_child(_make_float_control(config))
 
-	for config in PanelSourceScript.COLOR_CONTROLS:
+	for config in PanelViewScript.COLOR_CONTROLS:
 		controls_list.add_child(_make_color_control(config))
 
 	controls_list.add_child(_make_contract_status_block())
@@ -366,10 +365,10 @@ func _make_background_mode_control() -> Control:
 
 	var selector := OptionButton.new()
 	selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	selector.add_item("AeroBeat image", PanelSourceScript.BACKGROUND_MODE_IMAGE)
-	selector.add_item("Debug pattern", PanelSourceScript.BACKGROUND_MODE_DEBUG)
-	selector.add_item("Hybrid overlay", PanelSourceScript.BACKGROUND_MODE_HYBRID)
-	selector.add_item("No background", PanelSourceScript.BACKGROUND_MODE_NONE)
+	selector.add_item("AeroBeat image", PanelViewScript.BACKGROUND_MODE_IMAGE)
+	selector.add_item("Debug pattern", PanelViewScript.BACKGROUND_MODE_DEBUG)
+	selector.add_item("Hybrid overlay", PanelViewScript.BACKGROUND_MODE_HYBRID)
+	selector.add_item("No background", PanelViewScript.BACKGROUND_MODE_NONE)
 	selector.item_selected.connect(_on_background_mode_selected.bind(selector))
 	wrapper.add_child(selector)
 	_background_mode_selector = selector
@@ -527,11 +526,11 @@ func _on_load_json_pressed() -> void:
 
 func _export_preset_to_path(path: String) -> void:
 	var parameters := PresetIO.collect_parameters(
-		PanelSourceScript.FLOAT_CONTROLS,
-		PanelSourceScript.COLOR_CONTROLS,
+		PanelViewScript.FLOAT_CONTROLS,
+		PanelViewScript.COLOR_CONTROLS,
 		Callable(self, "get_shader_parameter")
 	)
-	var envelope := PresetIO.build_preset_envelope(PresetIO.PRESET_KIND_2D, PRESET_SOURCE_SCENE_PATH, parameters)
+	var envelope := PresetIO.build_preset_envelope(PresetIO.PRESET_KIND_2D, PRESET_PANEL_VIEW_SCENE_PATH, parameters)
 	var result := PresetIO.write_preset_file(path, envelope)
 	if result.get("ok", false):
 		_set_preset_status("Saved preset to %s" % result["path"], false)
@@ -543,8 +542,8 @@ func _load_preset_from_path(path: String) -> void:
 	var result := PresetIO.load_and_apply_preset(
 		path,
 		PresetIO.PRESET_KIND_2D,
-		PanelSourceScript.FLOAT_CONTROLS,
-		PanelSourceScript.COLOR_CONTROLS,
+		PanelViewScript.FLOAT_CONTROLS,
+		PanelViewScript.COLOR_CONTROLS,
 		Callable(self, "set_shader_parameter")
 	)
 	if not result.get("ok", false):
@@ -559,8 +558,8 @@ func _load_startup_default_preset() -> void:
 	var result := PresetIO.load_and_apply_preset(
 		BUNDLED_DEFAULT_PRESET_PATH,
 		PresetIO.PRESET_KIND_2D,
-		PanelSourceScript.FLOAT_CONTROLS,
-		PanelSourceScript.COLOR_CONTROLS,
+		PanelViewScript.FLOAT_CONTROLS,
+		PanelViewScript.COLOR_CONTROLS,
 		Callable(self, "set_shader_parameter")
 	)
 	if not result.get("ok", false):
@@ -586,9 +585,9 @@ func _set_preset_status(message: String, is_error: bool) -> void:
 
 func _sync_controls_from_panel() -> void:
 	_select_background_mode(get_background_mode())
-	for config in PanelSourceScript.FLOAT_CONTROLS:
+	for config in PanelViewScript.FLOAT_CONTROLS:
 		_sync_single_control_from_panel(str(config["name"]))
-	for config in PanelSourceScript.COLOR_CONTROLS:
+	for config in PanelViewScript.COLOR_CONTROLS:
 		_sync_single_control_from_panel(str(config["name"]))
 
 

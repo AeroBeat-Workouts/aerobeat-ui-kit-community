@@ -1,6 +1,6 @@
 extends Node3D
 
-const SOURCE_2D_SCENE_PATH := "res://scenes/glass-shader-panel-source.tscn"
+const PANEL_VIEW_SCENE_PATH := "res://ui/views/aero_ui_glass_panel_view.tscn"
 const HYBRID_SHADER_PATH := "res://assets/shaders/glass-panel-hybrid-3d.gdshader"
 const UI_OVERLAY_SHADER_PATH := "res://assets/shaders/glass-panel-ui-overlay-3d.gdshader"
 const PRESET_SOURCE_SCENE_PATH := "res://scenes/glass-shader-gui-3d-test.tscn"
@@ -10,7 +10,7 @@ const BUNDLED_DEFAULT_PRESET_PATH := "res://presets/glass/hybrid/default.json"
 const HYBRID_SURFACE_ID: StringName = &"hybrid_glass_panel"
 const HYBRID_SURFACE_TYPE: StringName = AeroUiInteractionTypes.SURFACE_TYPE_HYBRID_3D_GUI
 const HYBRID_POINTER_MOUSE: StringName = &"mouse_0"
-const PanelSourceScript = preload("res://scripts/glass_shader_panel_source.gd")
+const PanelViewScript = preload("res://ui/views/aero_ui_glass_panel_view.gd")
 const PresetIO = preload("res://scripts/glass_shader_preset_io.gd")
 
 const AUTO_YAW_AMPLITUDE_DEG := 26.0
@@ -316,8 +316,8 @@ const PARAMETER_ALIASES := {
 @onready var interaction_bus: AeroUiInteractionBus = get_node_or_null("AeroUiInteractionBus") as AeroUiInteractionBus
 @onready var hybrid_input_adapter: HybridSubViewportInputAdapter = get_node_or_null("HybridInputAdapter") as HybridSubViewportInputAdapter
 
-var _panel_ui: Control
-var _mask_ui: Control
+var _panel_ui: AeroUiGlassPanelView
+var _mask_ui: AeroUiGlassPanelView
 var _panel_material: ShaderMaterial
 var _panel_ui_overlay_material: ShaderMaterial
 var _authored_glass_rect := Rect2(0.0, 0.0, 1.0, 1.0)
@@ -358,10 +358,10 @@ func _ready() -> void:
 	_base_rotation = panel_pivot.rotation_degrees
 	_configure_subviewport(panel_viewport)
 	_configure_subviewport(mask_viewport)
-	_mount_source_2d_scenes()
-	_configure_panel_sources_for_hybrid()
+	_mount_panel_views()
+	_configure_panel_views_for_hybrid()
 	_ensure_interaction_contract_nodes()
-	_inject_panel_source_interaction_bus()
+	_inject_panel_view_interaction_bus()
 	_apply_panel_materials()
 	_build_controls()
 	_setup_preset_dialogs()
@@ -396,13 +396,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_R:
 				reset_manual_rotation()
 			KEY_1:
-				set_preview_background_mode(PanelSourceScript.BACKGROUND_MODE_IMAGE)
+				set_preview_background_mode(PanelViewScript.BACKGROUND_MODE_IMAGE)
 			KEY_2:
-				set_preview_background_mode(PanelSourceScript.BACKGROUND_MODE_DEBUG)
+				set_preview_background_mode(PanelViewScript.BACKGROUND_MODE_DEBUG)
 			KEY_3:
-				set_preview_background_mode(PanelSourceScript.BACKGROUND_MODE_HYBRID)
+				set_preview_background_mode(PanelViewScript.BACKGROUND_MODE_HYBRID)
 			KEY_4:
-				set_preview_background_mode(PanelSourceScript.BACKGROUND_MODE_NONE)
+				set_preview_background_mode(PanelViewScript.BACKGROUND_MODE_NONE)
 			_:
 				return
 		_refresh_status()
@@ -426,13 +426,13 @@ func _ensure_interaction_contract_nodes() -> void:
 		interaction_bus.interaction_event.connect(_on_contract_interaction_event)
 
 
-func _inject_panel_source_interaction_bus() -> void:
+func _inject_panel_view_interaction_bus() -> void:
 	if not is_instance_valid(interaction_bus):
 		return
 	var bus_path := interaction_bus.get_path()
 	for source in [_panel_ui, _mask_ui]:
-		if is_instance_valid(source) and source.has_method("set_interaction_bus_path"):
-			source.call("set_interaction_bus_path", bus_path)
+		if is_instance_valid(source):
+			source.set_interaction_bus_path(bus_path)
 
 
 func _forward_world_panel_input(event: InputEvent) -> bool:
@@ -807,9 +807,9 @@ func _resolve_projected_target_path_from_hit(hit: Dictionary) -> NodePath:
 
 
 func _resolve_projected_target_path(surface_position: Vector2, surface_uv: Vector2 = Vector2(-1.0, -1.0)) -> NodePath:
-	if not is_instance_valid(_panel_ui) or not _panel_ui.has_method("get_interaction_target_specs"):
+	if not is_instance_valid(_panel_ui):
 		return NodePath()
-	for spec_variant in _panel_ui.call("get_interaction_target_specs"):
+	for spec_variant in _panel_ui.get_interaction_target_specs():
 		if not (spec_variant is Dictionary):
 			continue
 		var spec: Dictionary = spec_variant
@@ -879,17 +879,17 @@ func reset_manual_rotation() -> void:
 
 
 func set_preview_background_mode(mode: int) -> void:
-	if is_instance_valid(_panel_ui) and _panel_ui.has_method("set_background_mode"):
-		_panel_ui.call("set_background_mode", mode)
+	if is_instance_valid(_panel_ui):
+		_panel_ui.set_background_mode(mode)
 	if is_instance_valid(_background_mode_selector):
 		_select_background_mode(get_preview_background_mode())
 	_refresh_status()
 
 
 func get_preview_background_mode() -> int:
-	if is_instance_valid(_panel_ui) and _panel_ui.has_method("get_background_mode"):
-		return _panel_ui.call("get_background_mode")
-	return PanelSourceScript.BACKGROUND_MODE_NONE
+	if is_instance_valid(_panel_ui):
+		return _panel_ui.get_background_mode()
+	return PanelViewScript.BACKGROUND_MODE_NONE
 
 
 func set_panel_shader_parameter(parameter_name: String, value: Variant) -> void:
@@ -961,13 +961,13 @@ func _sync_hybrid_shell_parameter(parameter_name: String, value: Variant) -> voi
 
 func _sync_hybrid_shell(shell_updates: Dictionary) -> void:
 	for source in [_panel_ui, _mask_ui]:
-		if is_instance_valid(source) and source.has_method("sync_hybrid_shell"):
-			source.call("sync_hybrid_shell", shell_updates)
+		if is_instance_valid(source):
+			source.sync_hybrid_shell(shell_updates)
 
 
 func _get_hybrid_shell_parameter(parameter_name: String) -> Variant:
-	if is_instance_valid(_panel_ui) and _panel_ui.has_method("get_hybrid_shell_parameter"):
-		return _panel_ui.call("get_hybrid_shell_parameter", parameter_name)
+	if is_instance_valid(_panel_ui):
+		return _panel_ui.get_hybrid_shell_parameter(parameter_name)
 	return null
 
 
@@ -991,23 +991,23 @@ func _configure_subviewport(viewport: SubViewport) -> void:
 		hybrid_input_adapter.surface_pixel_size = Vector2(viewport.size)
 
 
-func _mount_source_2d_scenes() -> void:
-	_panel_ui = _instantiate_source_scene(panel_viewport)
-	_mask_ui = _instantiate_source_scene(mask_viewport)
+func _mount_panel_views() -> void:
+	_panel_ui = _instantiate_panel_view(panel_viewport)
+	_mask_ui = _instantiate_panel_view(mask_viewport)
 
 
-func _instantiate_source_scene(target_viewport: SubViewport) -> Control:
+func _instantiate_panel_view(target_viewport: SubViewport) -> AeroUiGlassPanelView:
 	for child in target_viewport.get_children():
 		child.queue_free()
 
-	var packed: PackedScene = load(SOURCE_2D_SCENE_PATH)
+	var packed: PackedScene = load(PANEL_VIEW_SCENE_PATH)
 	if packed == null:
-		push_error("Failed to load source 2D glass shader scene: %s" % SOURCE_2D_SCENE_PATH)
+		push_error("Failed to load AeroUiGlassPanelView scene: %s" % PANEL_VIEW_SCENE_PATH)
 		return null
 
-	var instance := packed.instantiate() as Control
+	var instance := packed.instantiate() as AeroUiGlassPanelView
 	if instance == null:
-		push_error("Source 2D glass shader scene did not instantiate as a Control root.")
+		push_error("AeroUiGlassPanelView scene did not instantiate as a Control root.")
 		return null
 
 	target_viewport.add_child(instance)
@@ -1015,18 +1015,14 @@ func _instantiate_source_scene(target_viewport: SubViewport) -> Control:
 	return instance
 
 
-func _configure_panel_sources_for_hybrid() -> void:
+func _configure_panel_views_for_hybrid() -> void:
 	if is_instance_valid(_panel_ui):
-		if _panel_ui.has_method("set_presentation_mode"):
-			_panel_ui.call("set_presentation_mode", PanelSourceScript.PRESENTATION_MODE_HYBRID_WORLD_SPACE)
-		if _panel_ui.has_method("set_background_mode"):
-			_panel_ui.call("set_background_mode", PanelSourceScript.BACKGROUND_MODE_NONE)
+		_panel_ui.set_presentation_mode(PanelViewScript.PRESENTATION_MODE_HYBRID_WORLD_SPACE)
+		_panel_ui.set_background_mode(PanelViewScript.BACKGROUND_MODE_NONE)
 
 	if is_instance_valid(_mask_ui):
-		if _mask_ui.has_method("set_presentation_mode"):
-			_mask_ui.call("set_presentation_mode", PanelSourceScript.PRESENTATION_MODE_HYBRID_MASK)
-		if _mask_ui.has_method("set_background_mode"):
-			_mask_ui.call("set_background_mode", PanelSourceScript.BACKGROUND_MODE_NONE)
+		_mask_ui.set_presentation_mode(PanelViewScript.PRESENTATION_MODE_HYBRID_MASK)
+		_mask_ui.set_background_mode(PanelViewScript.BACKGROUND_MODE_NONE)
 
 
 func _apply_panel_materials() -> void:
@@ -1100,10 +1096,10 @@ func _make_background_mode_control() -> Control:
 
 	var selector := OptionButton.new()
 	selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	selector.add_item("AeroBeat image", PanelSourceScript.BACKGROUND_MODE_IMAGE)
-	selector.add_item("Debug pattern", PanelSourceScript.BACKGROUND_MODE_DEBUG)
-	selector.add_item("Hybrid overlay", PanelSourceScript.BACKGROUND_MODE_HYBRID)
-	selector.add_item("No background", PanelSourceScript.BACKGROUND_MODE_NONE)
+	selector.add_item("AeroBeat image", PanelViewScript.BACKGROUND_MODE_IMAGE)
+	selector.add_item("Debug pattern", PanelViewScript.BACKGROUND_MODE_DEBUG)
+	selector.add_item("Hybrid overlay", PanelViewScript.BACKGROUND_MODE_HYBRID)
+	selector.add_item("No background", PanelViewScript.BACKGROUND_MODE_NONE)
 	selector.item_selected.connect(_on_background_mode_selected.bind(selector))
 	wrapper.add_child(selector)
 	_background_mode_selector = selector
@@ -1412,9 +1408,9 @@ func _sync_authored_card_rect() -> void:
 
 func _get_authored_glass_rect() -> Rect2:
 	var source := _mask_ui if is_instance_valid(_mask_ui) else _panel_ui
-	if not is_instance_valid(source) or not source.has_method("get_preview_rect_normalized"):
+	if not is_instance_valid(source):
 		return Rect2(0.0, 0.0, 1.0, 1.0)
-	return source.call("get_preview_rect_normalized")
+	return source.get_preview_rect_normalized()
 
 
 func _panel_uv_to_authored_uv(panel_uv: Vector2) -> Vector2:
@@ -1517,13 +1513,13 @@ func _refresh_status() -> void:
 
 func _background_mode_name(mode: int) -> String:
 	match mode:
-		PanelSourceScript.BACKGROUND_MODE_IMAGE:
+		PanelViewScript.BACKGROUND_MODE_IMAGE:
 			return "AeroBeat image"
-		PanelSourceScript.BACKGROUND_MODE_DEBUG:
+		PanelViewScript.BACKGROUND_MODE_DEBUG:
 			return "Debug pattern"
-		PanelSourceScript.BACKGROUND_MODE_HYBRID:
+		PanelViewScript.BACKGROUND_MODE_HYBRID:
 			return "Hybrid overlay"
-		PanelSourceScript.BACKGROUND_MODE_NONE:
+		PanelViewScript.BACKGROUND_MODE_NONE:
 			return "No background"
 		_:
 			return "Unknown"

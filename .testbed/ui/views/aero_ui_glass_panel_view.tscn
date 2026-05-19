@@ -1,0 +1,284 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/views/aero_ui_glass_panel_view.gd" id="1_script"]
+[ext_resource type="Shader" uid="uid://cpkp0irsnrqm7" path="res://assets/shaders/glass-shader.gdshader" id="2_shader"]
+[ext_resource type="Script" uid="uid://bxhdc78obwfuk" path="res://scripts/glass_debug_backdrop.gd" id="3_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hybrid_mask"]
+resource_local_to_scene = true
+bg_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 42
+corner_radius_top_right = 42
+corner_radius_bottom_right = 42
+corner_radius_bottom_left = 42
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_glass"]
+resource_local_to_scene = true
+shader = ExtResource("2_shader")
+shader_parameter/blur = 4.2
+shader_parameter/warp_intensity = 0.45
+shader_parameter/strength_x = 14.0
+shader_parameter/strength_y = 14.0
+shader_parameter/offset_x = 0.03
+shader_parameter/offset_y = 0.0
+shader_parameter/corner_radius = 0.24
+shader_parameter/edge_smoothness = 1.1
+shader_parameter/tint = Color(0.92, 0.96, 1, 0.22)
+shader_parameter/edge_highlight = Color(1, 1, 1, 0.62)
+shader_parameter/edge_width = 2.4
+shader_parameter/chromatic_strength = 2.2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_glass_frame"]
+resource_local_to_scene = true
+bg_color = Color(1, 1, 1, 0.04)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 0.42)
+corner_radius_top_left = 42
+corner_radius_top_right = 42
+corner_radius_bottom_right = 42
+corner_radius_bottom_left = 42
+shadow_color = Color(1, 1, 1, 0.08)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_glass_inner_border"]
+resource_local_to_scene = true
+bg_color = Color(1, 1, 1, 0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.18)
+corner_radius_top_left = 32
+corner_radius_top_right = 32
+corner_radius_bottom_right = 32
+corner_radius_bottom_left = 32
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_badge"]
+resource_local_to_scene = true
+bg_color = Color(1, 1, 1, 0.08)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.14)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[node name="AeroUiGlassPanelView" type="Control" unique_id=451344346]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="TextureRect" parent="." unique_id=414726689]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+stretch_mode = 6
+
+[node name="PreviewCenter" type="CenterContainer" parent="." unique_id=1315703232]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PreviewStack" type="Control" parent="PreviewCenter" unique_id=2143237777]
+custom_minimum_size = Vector2(760, 560)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="PreviewBackdropDebug" type="Control" parent="PreviewCenter/PreviewStack" unique_id=793205952]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_script")
+
+[node name="PrimaryCardButton" type="Button" parent="PreviewCenter/PreviewStack" unique_id=1254985994]
+custom_minimum_size = Vector2(520, 280)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -260.0
+offset_top = -120.0
+offset_right = 260.0
+offset_bottom = 160.0
+grow_horizontal = 2
+grow_vertical = 2
+flat = true
+
+[node name="HybridMaskPanel" type="Panel" parent="PreviewCenter/PreviewStack/PrimaryCardButton" unique_id=383534851]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hybrid_mask")
+
+[node name="GlassFill" type="ColorRect" parent="PreviewCenter/PreviewStack/PrimaryCardButton" unique_id=1214473690]
+material = SubResource("ShaderMaterial_glass")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PreviewFrame" type="Panel" parent="PreviewCenter/PreviewStack/PrimaryCardButton" unique_id=757676779]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_glass_frame")
+
+[node name="InnerBorderInset" type="MarginContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton" unique_id=236589082]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="PreviewInnerBorder" type="Panel" parent="PreviewCenter/PreviewStack/PrimaryCardButton/InnerBorderInset" unique_id=619096440]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_glass_inner_border")
+
+[node name="ContentMargin" type="MarginContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton" unique_id=721022552]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 36
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 36
+theme_override_constants/margin_bottom = 28
+
+[node name="ContentColumn" type="VBoxContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin" unique_id=73873824]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="Badge" type="PanelContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn" unique_id=1930876741]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_horizontal = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_badge")
+
+[node name="BadgePadding" type="MarginContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge" unique_id=1533214822]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 6
+
+[node name="BadgeLabel" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge/BadgePadding" unique_id=425131152]
+modulate = Color(1, 1, 1, 0.78)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Shader"
+
+[node name="Headline" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn" unique_id=1195175716]
+layout_mode = 2
+theme_override_font_sizes/font_size = 38
+text = "AeroBeat Glass"
+vertical_alignment = 1
+
+[node name="Body" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn" unique_id=1863090644]
+modulate = Color(1, 1, 1, 0.82)
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Glass Shader UI Demo"
+autowrap_mode = 3
+
+[node name="PrimaryActionButton" type="Button" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn" unique_id=846262354]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+size_flags_horizontal = 3
+flat = true
+
+[node name="PrimaryActionBodyInset" type="MarginContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton" unique_id=108462623]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_right = 28
+
+[node name="PrimaryActionBodyAlign" type="CenterContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset" unique_id=640182374]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="PrimaryActionBody" type="PanelContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign" unique_id=1846262354]
+custom_minimum_size = Vector2(312, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="PrimaryActionBodyPadding" type="MarginContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody" unique_id=1262354108]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 12
+
+[node name="PrimaryActionTextColumn" type="VBoxContainer" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody/PrimaryActionBodyPadding" unique_id=923487551]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="PrimaryActionLabel" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody/PrimaryActionBodyPadding/PrimaryActionTextColumn" unique_id=177631244]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "PRIMARY TARGET"
+
+[node name="PrimaryActionMeta" type="Label" parent="PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton/PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody/PrimaryActionBodyPadding/PrimaryActionTextColumn" unique_id=735337839]
+modulate = Color(1, 1, 1, 0.66)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Visible center hit target"

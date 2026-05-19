@@ -1,10 +1,11 @@
 extends GutTest
 
-const PANEL_SCENE := preload("res://scenes/glass-shader-panel-source.tscn")
+const CANONICAL_PANEL_VIEW_SCENE := preload("res://ui/views/aero_ui_glass_panel_view.tscn")
+const LEGACY_PANEL_SOURCE_SCENE := preload("res://scenes/glass-shader-panel-source.tscn")
 
 
-func test_source_scene_loads_yaml_backed_style_bundle_on_startup() -> void:
-	var panel = PANEL_SCENE.instantiate()
+func test_canonical_panel_view_scene_loads_yaml_backed_style_bundle_on_startup() -> void:
+	var panel = CANONICAL_PANEL_VIEW_SCENE.instantiate()
 	add_child_autofree(panel)
 	await get_tree().process_frame
 	await get_tree().process_frame
@@ -29,3 +30,14 @@ func test_source_scene_loads_yaml_backed_style_bundle_on_startup() -> void:
 	await get_tree().process_frame
 	assert_almost_eq(panel.preview_badge_label.modulate.a, 0.9, 0.0001)
 	assert_almost_eq(panel.primary_action_label.modulate.a, 0.98, 0.0001)
+
+
+func test_legacy_panel_source_scene_still_wraps_canonical_panel_view() -> void:
+	var panel = LEGACY_PANEL_SOURCE_SCENE.instantiate()
+	add_child_autofree(panel)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	assert_true(panel is AeroUiGlassPanelView)
+	assert_eq(panel.get_script().resource_path, "res://scripts/glass_shader_panel_source.gd")
+	assert_eq(panel._panel_style_config.source_path, "res://ui/presets/glass/panel/primary-card-source.v1.yaml")
