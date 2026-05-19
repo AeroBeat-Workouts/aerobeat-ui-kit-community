@@ -13,6 +13,9 @@ func test_screen_host_exports_and_reloads_a_yaml_panel_bundle() -> void:
 
 	host.set_shader_parameter("blur", 5.5)
 	host.set_shader_parameter("chromatic_strength", 3.4)
+	host._panel_view.get_badge_style_config().tint = Color(0.75, 0.88, 1.0, 1.0)
+	host._panel_view.get_primary_button_style_config().background_tint = Color(0.8, 0.9, 1.0, 1.0)
+	host._panel_view.get_primary_button_style_config().source_states["hover"]["scale"] = 1.02
 	var export_path := "user://gut/yaml-bundles/screen-panel-bundle.yaml"
 	var export_result := YamlBundleIO.export_panel_bundle(export_path, {
 		"panel_config": host._panel_view.get_panel_style_config(),
@@ -30,6 +33,9 @@ func test_screen_host_exports_and_reloads_a_yaml_panel_bundle() -> void:
 	assert_true(loaded.get("ok", false))
 	assert_eq(loaded["panel_config"].shader_parameters["blur"], 5.5)
 	assert_eq(loaded["panel_config"].shader_parameters["chromatic_strength"], 3.4)
+	assert_eq(loaded["badge_config"].tint, Color(0.75, 0.88, 1.0, 1.0))
+	assert_eq(loaded["button_config"].background_tint, Color(0.8, 0.9, 1.0, 1.0))
+	assert_almost_eq(float(loaded["button_config"].source_states["hover"]["scale"]), 1.02, 0.0001)
 	assert_true(String(loaded["panel_config"].badge_preset_path).ends_with("screen-panel-bundle.badge.yaml"))
 	assert_true(String(loaded["panel_config"].primary_button_preset_path).ends_with("screen-panel-bundle.button.yaml"))
 

@@ -60,9 +60,27 @@ static func _build_config(document: Dictionary) -> AeroUiGlassPrimaryButtonConfi
 	var states_block := document.get("states", {}) as Dictionary
 	var presentation_block := document.get("presentation", {}) as Dictionary
 	var hybrid_presentation := presentation_block.get("hybrid_world", {}) as Dictionary
+	var tint_block := document.get("tint", {}) as Dictionary
 
 	config.border_width = int(button_block.get("border_width", config.border_width))
 	config.radius_delta = int(button_block.get("radius_delta", config.radius_delta))
+	if not tint_block.is_empty():
+		var background_tint_block := tint_block.get("background", {}) as Dictionary
+		if not background_tint_block.is_empty():
+			config.background_tint = Color(
+				float(background_tint_block.get("r", config.background_tint.r)),
+				float(background_tint_block.get("g", config.background_tint.g)),
+				float(background_tint_block.get("b", config.background_tint.b)),
+				float(background_tint_block.get("a", config.background_tint.a))
+			)
+		var interaction_tint_block := tint_block.get("interaction", {}) as Dictionary
+		if not interaction_tint_block.is_empty():
+			config.interaction_tint = Color(
+				float(interaction_tint_block.get("r", config.interaction_tint.r)),
+				float(interaction_tint_block.get("g", config.interaction_tint.g)),
+				float(interaction_tint_block.get("b", config.interaction_tint.b)),
+				float(interaction_tint_block.get("a", config.interaction_tint.a))
+			)
 	config.source_label_alpha = float(label_block.get("alpha", config.source_label_alpha))
 	config.source_meta_alpha = float(meta_block.get("alpha", config.source_meta_alpha))
 	config.hybrid_label_alpha = float(hybrid_presentation.get("label_alpha", config.hybrid_label_alpha))
@@ -83,5 +101,7 @@ static func _build_state_map(raw_states: Variant, fallback: Dictionary) -> Dicti
 			"border_delta": float(raw_state.get("border_delta", fallback_state.get("border_delta", 0.0))),
 			"shadow_alpha": float(raw_state.get("shadow_alpha", fallback_state.get("shadow_alpha", 0.0))),
 			"shadow_size": int(raw_state.get("shadow_size", fallback_state.get("shadow_size", 0))),
+			"tint_strength": float(raw_state.get("tint_strength", fallback_state.get("tint_strength", 0.0))),
+			"scale": float(raw_state.get("scale", fallback_state.get("scale", 1.0))),
 		}
 	return result

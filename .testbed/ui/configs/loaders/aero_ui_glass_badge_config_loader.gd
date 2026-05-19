@@ -59,11 +59,19 @@ static func _build_config(document: Dictionary) -> AeroUiGlassBadgeConfig:
 	var label_block := document.get("label", {}) as Dictionary
 	var presentation_block := document.get("presentation", {}) as Dictionary
 	var hybrid_block := presentation_block.get("hybrid_world", {}) as Dictionary
+	var tint_block := document.get("tint", {}) as Dictionary
 
 	config.base_radius = int(badge_block.get("corner_radius_px", config.base_radius))
 	config.base_fill_alpha = float(surface_block.get("fill_alpha", config.base_fill_alpha))
 	config.base_border_alpha = float(surface_block.get("border_alpha", config.base_border_alpha))
 	config.base_label_alpha = float(label_block.get("alpha", config.base_label_alpha))
+	if not tint_block.is_empty():
+		config.tint = Color(
+			float(tint_block.get("r", config.tint.r)),
+			float(tint_block.get("g", config.tint.g)),
+			float(tint_block.get("b", config.tint.b)),
+			float(tint_block.get("a", config.tint.a))
+		)
 	config.hybrid_fill_alpha = float(hybrid_block.get("fill_alpha", config.hybrid_fill_alpha))
 	config.hybrid_border_alpha = float(hybrid_block.get("border_alpha", config.hybrid_border_alpha))
 	config.hybrid_label_alpha = float(hybrid_block.get("label_alpha", config.hybrid_label_alpha))

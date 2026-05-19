@@ -510,7 +510,6 @@ func _sync_preview_shell() -> void:
 	_mask_style.border_width_bottom = 0
 	_mask_style.shadow_size = 0
 	_mask_style.shadow_color = Color(0.0, 0.0, 0.0, 0.0)
-	_apply_primary_card_accent()
 	_refresh_primary_action_visual()
 
 

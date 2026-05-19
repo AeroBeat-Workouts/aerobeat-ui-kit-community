@@ -10,6 +10,7 @@ surface:
   border_alpha: 0.14
 label:
   alpha: 0.78
+tint: { r: 0.92, g: 0.96, b: 1.0, a: 1.0 }
 presentation:
   hybrid_world:
     fill_alpha: 0.18

@@ -30,12 +30,14 @@ func get_badge_tokens(is_hybrid_world: bool) -> Dictionary:
 			"border_alpha": 0.267,
 			"label_alpha": 0.9,
 			"radius": 14,
+			"tint": Color(0.92, 0.96, 1.0, 1.0),
 		}
 	return {
 		"fill_alpha": 0.08,
 		"border_alpha": 0.14,
 		"label_alpha": 0.78,
 		"radius": 14,
+		"tint": Color(0.92, 0.96, 1.0, 1.0),
 	}
 
 
@@ -46,14 +48,15 @@ func apply_visual_state(tokens: Dictionary) -> void:
 		return
 
 	var radius := int(tokens.get("radius", 14))
-	_badge_style.bg_color = Color(1.0, 1.0, 1.0, float(tokens.get("fill_alpha", 0.08)))
-	_badge_style.border_color = Color(1.0, 1.0, 1.0, float(tokens.get("border_alpha", 0.14)))
+	var tint: Color = tokens.get("tint", Color(0.92, 0.96, 1.0, 1.0)) if tokens.get("tint", null) is Color else Color(0.92, 0.96, 1.0, 1.0)
+	_badge_style.bg_color = Color(tint.r, tint.g, tint.b, float(tokens.get("fill_alpha", 0.08)))
+	_badge_style.border_color = Color(tint.r, tint.g, tint.b, float(tokens.get("border_alpha", 0.14)))
 	_badge_style.corner_radius_top_left = radius
 	_badge_style.corner_radius_top_right = radius
 	_badge_style.corner_radius_bottom_right = radius
 	_badge_style.corner_radius_bottom_left = radius
 	if is_instance_valid(badge_label):
-		badge_label.modulate = Color(1.0, 1.0, 1.0, float(tokens.get("label_alpha", 0.78)))
+		badge_label.modulate = Color(tint.r, tint.g, tint.b, float(tokens.get("label_alpha", 0.78)))
 
 
 func apply_accent(accent: Color, accent_strength: float) -> void:

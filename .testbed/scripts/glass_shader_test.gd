@@ -21,11 +21,24 @@ const BADGE_EDITOR_CONTROLS := [
 	{"name": "badge_base_label_alpha", "label": "label_alpha", "min": 0.0, "max": 1.0, "step": 0.01, "default": 0.78},
 ]
 
+const BADGE_EDITOR_COLOR_CONTROLS := [
+	{"name": "badge_tint", "label": "tint", "default": Color(0.92, 0.96, 1.0, 1.0)},
+]
+
 const BUTTON_EDITOR_CONTROLS := [
 	{"name": "button_source_label_alpha", "label": "label_alpha", "min": 0.0, "max": 1.0, "step": 0.01, "default": 0.95},
 	{"name": "button_source_meta_alpha", "label": "meta_alpha", "min": 0.0, "max": 1.0, "step": 0.01, "default": 0.66},
 	{"name": "button_border_width", "label": "border_width", "min": 0.0, "max": 8.0, "step": 1.0, "default": 2.0},
 	{"name": "button_radius_delta", "label": "radius_delta", "min": 0.0, "max": 16.0, "step": 1.0, "default": 5.0},
+	{"name": "button_source_hover_tint_strength", "label": "hover_tint_strength", "min": 0.0, "max": 1.0, "step": 0.01, "default": 0.34},
+	{"name": "button_source_pressed_tint_strength", "label": "pressed_tint_strength", "min": 0.0, "max": 1.0, "step": 0.01, "default": 0.72},
+	{"name": "button_source_hover_scale", "label": "hover_scale", "min": 0.9, "max": 1.1, "step": 0.001, "default": 1.01},
+	{"name": "button_source_pressed_scale", "label": "pressed_scale", "min": 0.9, "max": 1.1, "step": 0.001, "default": 0.988},
+]
+
+const BUTTON_EDITOR_COLOR_CONTROLS := [
+	{"name": "button_background_tint", "label": "background_tint", "default": Color(0.92, 0.96, 1.0, 1.0)},
+	{"name": "button_interaction_tint", "label": "interaction_tint", "default": Color(0.4, 0.82, 1.0, 1.0)},
 ]
 
 @onready var controls_list: VBoxContainer = get_node_or_null("SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll/ControlsList") as VBoxContainer
@@ -324,6 +337,7 @@ func _build_controls() -> void:
 	for child in controls_list.get_children():
 		child.queue_free()
 
+	controls_list.add_theme_constant_override("separation", 24)
 	_float_sliders.clear()
 	_color_pickers.clear()
 	_background_mode_selector = null
@@ -337,11 +351,11 @@ func _build_controls() -> void:
 	]))
 	controls_list.add_child(_make_section_block("badge", [
 		_make_yaml_actions_block("", PRESET_SECTION_BADGE, "Badge component YAML."),
-		_make_float_parameter_section("live badge values", BADGE_EDITOR_CONTROLS),
+		_make_parameter_section("live badge values", BADGE_EDITOR_CONTROLS, BADGE_EDITOR_COLOR_CONTROLS),
 	]))
 	controls_list.add_child(_make_section_block("primary button", [
 		_make_yaml_actions_block("", PRESET_SECTION_BUTTON, "Primary button component YAML."),
-		_make_float_parameter_section("live button values", BUTTON_EDITOR_CONTROLS),
+		_make_parameter_section("live button values", BUTTON_EDITOR_CONTROLS, BUTTON_EDITOR_COLOR_CONTROLS),
 	]))
 	controls_list.add_child(_make_section_block("input debug", [
 		_make_preset_status_block(),
@@ -787,6 +801,8 @@ func _get_live_control_value(parameter_name: String) -> Variant:
 			return _panel_view.get_badge_style_config().base_border_alpha if is_instance_valid(_panel_view) and _panel_view.get_badge_style_config() != null else null
 		"badge_base_label_alpha":
 			return _panel_view.get_badge_style_config().base_label_alpha if is_instance_valid(_panel_view) and _panel_view.get_badge_style_config() != null else null
+		"badge_tint":
+			return _panel_view.get_badge_style_config().tint if is_instance_valid(_panel_view) and _panel_view.get_badge_style_config() != null else null
 		"button_source_label_alpha":
 			return _panel_view.get_primary_button_style_config().source_label_alpha if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
 		"button_source_meta_alpha":
@@ -795,13 +811,25 @@ func _get_live_control_value(parameter_name: String) -> Variant:
 			return float(_panel_view.get_primary_button_style_config().border_width) if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
 		"button_radius_delta":
 			return float(_panel_view.get_primary_button_style_config().radius_delta) if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+		"button_background_tint":
+			return _panel_view.get_primary_button_style_config().background_tint if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+		"button_interaction_tint":
+			return _panel_view.get_primary_button_style_config().interaction_tint if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+		"button_source_hover_tint_strength":
+			return _panel_view.get_primary_button_style_config().source_states.get("hover", {}).get("tint_strength", 0.0) if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+		"button_source_pressed_tint_strength":
+			return _panel_view.get_primary_button_style_config().source_states.get("pressed", {}).get("tint_strength", 0.0) if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+		"button_source_hover_scale":
+			return _panel_view.get_primary_button_style_config().source_states.get("hover", {}).get("scale", 1.0) if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+		"button_source_pressed_scale":
+			return _panel_view.get_primary_button_style_config().source_states.get("pressed", {}).get("scale", 1.0) if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
 		_:
 			return get_shader_parameter(parameter_name)
 
 
 func _set_live_control_value(parameter_name: String, value: Variant) -> void:
 	match parameter_name:
-		"badge_base_fill_alpha", "badge_base_border_alpha", "badge_base_label_alpha":
+		"badge_base_fill_alpha", "badge_base_border_alpha", "badge_base_label_alpha", "badge_tint":
 			var badge_config = _panel_view.get_badge_style_config() if is_instance_valid(_panel_view) else null
 			if badge_config == null:
 				return
@@ -812,8 +840,10 @@ func _set_live_control_value(parameter_name: String, value: Variant) -> void:
 					badge_config.base_border_alpha = float(value)
 				"badge_base_label_alpha":
 					badge_config.base_label_alpha = float(value)
+				"badge_tint":
+					badge_config.tint = value if value is Color else badge_config.tint
 			_apply_badge_config_to_panel_view(_panel_view, badge_config)
-		"button_source_label_alpha", "button_source_meta_alpha", "button_border_width", "button_radius_delta":
+		"button_source_label_alpha", "button_source_meta_alpha", "button_border_width", "button_radius_delta", "button_background_tint", "button_interaction_tint", "button_source_hover_tint_strength", "button_source_pressed_tint_strength", "button_source_hover_scale", "button_source_pressed_scale":
 			var button_config = _panel_view.get_primary_button_style_config() if is_instance_valid(_panel_view) else null
 			if button_config == null:
 				return
@@ -826,6 +856,18 @@ func _set_live_control_value(parameter_name: String, value: Variant) -> void:
 					button_config.border_width = int(round(float(value)))
 				"button_radius_delta":
 					button_config.radius_delta = int(round(float(value)))
+				"button_background_tint":
+					button_config.background_tint = value if value is Color else button_config.background_tint
+				"button_interaction_tint":
+					button_config.interaction_tint = value if value is Color else button_config.interaction_tint
+				"button_source_hover_tint_strength":
+					button_config.source_states["hover"]["tint_strength"] = float(value)
+				"button_source_pressed_tint_strength":
+					button_config.source_states["pressed"]["tint_strength"] = float(value)
+				"button_source_hover_scale":
+					button_config.source_states["hover"]["scale"] = float(value)
+				"button_source_pressed_scale":
+					button_config.source_states["pressed"]["scale"] = float(value)
 			_apply_button_config_to_panel_view(_panel_view, button_config)
 		_:
 			set_shader_parameter(parameter_name, value)
@@ -846,7 +888,11 @@ func _sync_controls_from_panel() -> void:
 		_sync_single_control_from_panel(str(config["name"]))
 	for config in BADGE_EDITOR_CONTROLS:
 		_sync_single_control_from_panel(str(config["name"]))
+	for config in BADGE_EDITOR_COLOR_CONTROLS:
+		_sync_single_control_from_panel(str(config["name"]))
 	for config in BUTTON_EDITOR_CONTROLS:
+		_sync_single_control_from_panel(str(config["name"]))
+	for config in BUTTON_EDITOR_COLOR_CONTROLS:
 		_sync_single_control_from_panel(str(config["name"]))
 
 

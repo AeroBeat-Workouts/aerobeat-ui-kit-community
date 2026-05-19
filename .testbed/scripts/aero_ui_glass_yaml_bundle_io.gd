@@ -168,6 +168,7 @@ static func _build_badge_document(badge_config: BadgeConfig, badge_overrides: Di
 		"label": {
 			"alpha": float(badge_overrides.get("base_label_alpha", badge_config.base_label_alpha)),
 		},
+		"tint": _color_to_document(badge_overrides.get("tint", badge_config.tint)),
 		"presentation": {
 			"hybrid_world": {
 				"fill_alpha": float(badge_overrides.get("hybrid_fill_alpha", badge_config.hybrid_fill_alpha)),
@@ -187,6 +188,10 @@ static func _build_button_document(button_config: ButtonConfig, button_overrides
 		"button": {
 			"border_width": int(button_overrides.get("border_width", button_config.border_width)),
 			"radius_delta": int(button_overrides.get("radius_delta", button_config.radius_delta)),
+		},
+		"tint": {
+			"background": _color_to_document(button_overrides.get("background_tint", button_config.background_tint)),
+			"interaction": _color_to_document(button_overrides.get("interaction_tint", button_config.interaction_tint)),
 		},
 		"label": {
 			"alpha": float(button_overrides.get("source_label_alpha", button_config.source_label_alpha)),
@@ -216,6 +221,8 @@ static func _state_map_document(states: Dictionary) -> Dictionary:
 			"border_delta": float(state.get("border_delta", 0.0)),
 			"shadow_alpha": float(state.get("shadow_alpha", 0.0)),
 			"shadow_size": int(state.get("shadow_size", 0)),
+			"tint_strength": float(state.get("tint_strength", 0.0)),
+			"scale": float(state.get("scale", 1.0)),
 		}
 	return document
 

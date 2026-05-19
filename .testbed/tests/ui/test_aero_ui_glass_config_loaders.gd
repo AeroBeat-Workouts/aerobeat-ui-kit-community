@@ -16,6 +16,11 @@ func test_panel_bundle_loader_materializes_typed_child_configs() -> void:
 	assert_not_null(config.primary_button_config)
 	assert_eq(config.badge_config.variant, "default")
 	assert_eq(config.primary_button_config.variant, "literal-badge")
+	assert_eq(config.badge_config.tint, Color(0.92, 0.96, 1.0, 1.0))
+	assert_eq(config.primary_button_config.background_tint, Color(0.92, 0.96, 1.0, 1.0))
+	assert_eq(config.primary_button_config.interaction_tint, Color(0.4, 0.82, 1.0, 1.0))
+	assert_almost_eq(float(config.primary_button_config.source_states["hover"]["tint_strength"]), 0.34, 0.0001)
+	assert_almost_eq(float(config.primary_button_config.source_states["pressed"]["scale"]), 0.988, 0.0001)
 	assert_almost_eq(float(config.shader_parameters["blur"]), 4.2, 0.0001)
 	assert_eq(config.shader_parameters["tint"], Color(0.92, 0.96, 1.0, 0.22))
 	assert_almost_eq(config.frame_alpha_boost, 0.18, 0.0001)
@@ -41,8 +46,13 @@ func test_badge_loader_resolves_same_schema_extends_without_cross_schema_couplin
 func test_badge_loader_rejects_cross_schema_extends() -> void:
 	var config = BadgeLoader.load_from_path("res://tests/fixtures/ui/glass/badge/cross_schema_extends_panel.yaml")
 	var source_tokens := config.get_tokens(false)
+	var errors := get_errors()
 
-	assert_push_error("Badge preset schema mismatch in res://tests/fixtures/ui/glass/panel/base.yaml: expected aero.ui.glass_badge, got aero.ui.glass_panel")
+	assert_eq(errors.size(), 1)
+	assert_true(str(errors[0].code).find("Badge preset schema mismatch in res://tests/fixtures/ui/glass/panel/base.yaml: expected aero.ui.glass_badge, got aero.ui.glass_panel") != -1)
+	for error in errors:
+		error.handled = true
+
 	assert_eq(config.variant, "default")
 	assert_eq(config.version, "v1")
 	assert_eq(config.source_path, "")
