@@ -1,6 +1,11 @@
 extends RefCounted
 class_name AeroUiYamlConfigDocumentLoader
 
+# Intentionally narrow helper for the first YAML-backed seam.
+# Supported today: mapping-root documents, indentation-based nested mappings,
+# inline arrays/dictionaries, scalar values, comments, and path resolution.
+# Deferred on purpose: block-list syntax, anchors/aliases, multiline scalars,
+# multi-document YAML, and broader schema hardening beyond schema-specific loaders.
 const PRESET_ROOT := "res://ui/presets"
 
 

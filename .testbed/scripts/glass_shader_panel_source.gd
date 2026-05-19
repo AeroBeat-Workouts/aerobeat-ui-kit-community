@@ -1,12 +1,18 @@
 extends AeroContractConsumerViewBase
 
+# Temporary runtime host for the first YAML-backed glass panel seam.
+#
+# This file/class/scene path intentionally stays in the legacy `glass_shader_panel_source`
+# world for now, but the runtime role conceptually maps to `AeroUiGlassPanelView` from the
+# architecture plan. The YAML-authored style contract now lives in typed config objects and
+# preset files; this script consumes those configs and owns runtime composition/application.
 const AeroUiGlassPanelConfigLoader := preload("res://ui/configs/loaders/aero_ui_glass_panel_config_loader.gd")
 const AeroUiGlassPanelConfig := preload("res://ui/configs/types/aero_ui_glass_panel_config.gd")
 const AeroUiGlassBadgeConfig := preload("res://ui/configs/types/aero_ui_glass_badge_config.gd")
 const AeroUiGlassPrimaryButtonConfig := preload("res://ui/configs/types/aero_ui_glass_primary_button_config.gd")
 
 const BACKGROUND_IMAGE_PATH := "res://assets/images/perfect-hue-may-08-2026-hd.png"
-const DEFAULT_PANEL_STYLE_PRESET_PATH := "res://ui/presets/glass/panel/primary-card-source.v1.yaml"
+const DEFAULT_PANEL_STYLE_BUNDLE_PATH := "res://ui/presets/glass/panel/primary-card-source.v1.yaml"
 const TOGGLE_ON_ACCENT := Color(0.4, 0.82, 1.0, 1.0)
 const DEFAULT_INTERACTION_SURFACE_ID: StringName = &"hybrid_glass_panel"
 const DEFAULT_INTERACTION_BUS_PATH := NodePath("../../../AeroUiInteractionBus")
@@ -183,7 +189,7 @@ func _ready() -> void:
 	_inner_border_style = preview_inner_border.get_theme_stylebox("panel") as StyleBoxFlat
 	_badge_style = preview_badge.get_theme_stylebox("panel") as StyleBoxFlat
 	_mask_style = hybrid_mask_panel.get_theme_stylebox("panel") as StyleBoxFlat
-	_load_startup_style_config()
+	_load_startup_panel_style_bundle()
 
 	_configure_primary_card_button()
 	_configure_primary_action_button()
@@ -379,8 +385,8 @@ func reset_shader_parameters_to_defaults() -> void:
 		set_shader_parameter(str(config["name"]), config["default"])
 
 
-func _load_startup_style_config() -> void:
-	_panel_style_config = AeroUiGlassPanelConfigLoader.load_from_path(DEFAULT_PANEL_STYLE_PRESET_PATH)
+func _load_startup_panel_style_bundle() -> void:
+	_panel_style_config = AeroUiGlassPanelConfigLoader.load_from_path(DEFAULT_PANEL_STYLE_BUNDLE_PATH)
 	if _panel_style_config == null:
 		return
 	_badge_style_config = _panel_style_config.badge_config
@@ -391,6 +397,8 @@ func _load_startup_style_config() -> void:
 func _apply_panel_style_config(config: AeroUiGlassPanelConfig) -> void:
 	if config == null:
 		return
+	# The panel config owns the authored shell/shader contract and bundle references.
+	# This runtime host applies those values onto the existing scene nodes/materials.
 	_frame_alpha_boost = config.frame_alpha_boost
 	_hybrid_inner_border_brightness = config.hybrid_inner_border_brightness
 	_hybrid_inner_border_alpha = config.hybrid_inner_border_alpha
@@ -478,12 +486,12 @@ func _sync_preview_shell() -> void:
 		if is_instance_valid(preview_badge_label):
 			preview_badge_label.modulate = Color(1.0, 1.0, 1.0, _hybrid_badge_label_alpha)
 	else:
-		var source_badge_tokens := _get_badge_tokens(false)
+		var panel_badge_tokens_2d := _get_badge_tokens(false)
 		_inner_border_style.border_color = Color(1.0, 1.0, 1.0, clampf(0.08 + _shell_tint.a * 0.55, 0.08, 0.24))
-		_badge_style.bg_color = Color(1.0, 1.0, 1.0, float(source_badge_tokens.get("fill_alpha", 0.08)))
-		_badge_style.border_color = Color(1.0, 1.0, 1.0, float(source_badge_tokens.get("border_alpha", 0.14)))
+		_badge_style.bg_color = Color(1.0, 1.0, 1.0, float(panel_badge_tokens_2d.get("fill_alpha", 0.08)))
+		_badge_style.border_color = Color(1.0, 1.0, 1.0, float(panel_badge_tokens_2d.get("border_alpha", 0.14)))
 		if is_instance_valid(preview_badge_label):
-			preview_badge_label.modulate = Color(1.0, 1.0, 1.0, float(source_badge_tokens.get("label_alpha", 0.78)))
+			preview_badge_label.modulate = Color(1.0, 1.0, 1.0, float(panel_badge_tokens_2d.get("label_alpha", 0.78)))
 
 	_mask_style.bg_color = Color(1.0, 1.0, 1.0, 1.0)
 	_mask_style.border_width_left = 0

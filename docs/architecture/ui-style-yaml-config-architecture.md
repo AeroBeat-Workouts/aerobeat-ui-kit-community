@@ -466,6 +466,17 @@ A low-level shared helper is fine, for example:
 
 But do not make that helper the public contract for all effect families. The public entrypoints should still be schema-specific loaders.
 
+### Current implementation note for the first seam
+
+The first live seam in this repo is intentionally narrower than the full target architecture:
+
+- `glass_shader_panel_source.gd` still carries the legacy runtime filename/path, but it is acting as the temporary runtime host for the `AeroUiGlassPanelView` concept
+- the panel YAML preset is the current bundle entrypoint and composes badge/button typed configs rather than making the runtime script the authored-style owner
+- the current YAML helper only supports the subset needed by these presets (mapping-root documents, nested mappings, inline arrays/dictionaries, scalar values, comments, and same-schema `extends`)
+- broader loader productization work is still deferred, including unknown-field rejection, deeper schema validation, migration helpers, and richer YAML feature support
+
+That is acceptable for the first seam because the main architectural rule already holds: runtime composition, typed configs, schema-specific loaders, and authored preset files are now separate concerns.
+
 ---
 
 ## Pitfalls to avoid
