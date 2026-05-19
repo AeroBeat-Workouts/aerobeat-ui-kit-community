@@ -1,8 +1,9 @@
 extends Control
 
 const PANEL_VIEW_SCENE_PATH := "res://ui/views/aero_ui_glass_panel_view.tscn"
-const PRESET_DIALOG_DIRECTORY := "res://presets/glass/2d"
-const DEFAULT_PRESET_FILENAME := "default.yaml"
+const PANEL_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/panel"
+const BADGE_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/badge"
+const BUTTON_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/button/primary"
 const SCREEN_SURFACE_ID: StringName = &"screen_glass_panel"
 const SCREEN_SURFACE_TYPE: StringName = AeroUiInteractionTypes.SURFACE_TYPE_SCREEN_2D
 const PREVIEW_BUTTON_PATH := NodePath("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton")
@@ -574,13 +575,14 @@ func _create_preset_dialog(file_mode: FileDialog.FileMode, title_text: String) -
 	dialog.title = title_text
 	dialog.use_native_dialog = true
 	dialog.filters = PackedStringArray(["*.yaml, *.yml ; AeroUiGlass YAML"])
-	dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIALOG_DIRECTORY)
-	dialog.current_file = DEFAULT_PRESET_FILENAME
+	dialog.current_dir = ProjectSettings.globalize_path(_preset_directory_for_section(PRESET_SECTION_PANEL))
+	dialog.current_file = _default_filename_for_section(PRESET_SECTION_PANEL)
 	return dialog
 
 
 func _ensure_preset_directory() -> void:
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(PRESET_DIALOG_DIRECTORY))
+	for directory in [PANEL_PRESET_DIALOG_DIRECTORY, BADGE_PRESET_DIALOG_DIRECTORY, BUTTON_PRESET_DIALOG_DIRECTORY]:
+		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(directory))
 
 
 func _on_background_mode_selected(index: int, selector: OptionButton) -> void:
@@ -602,7 +604,7 @@ func _open_export_dialog_for_section(section_key: String) -> void:
 	_ensure_preset_directory()
 	_pending_save_section = section_key
 	_save_dialog.title = _export_dialog_title(section_key)
-	_save_dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIALOG_DIRECTORY)
+	_save_dialog.current_dir = ProjectSettings.globalize_path(_preset_directory_for_section(section_key))
 	_save_dialog.current_file = _default_filename_for_section(section_key)
 	_save_dialog.popup_centered_ratio(0.7)
 
@@ -611,19 +613,29 @@ func _open_load_dialog_for_section(section_key: String) -> void:
 	_ensure_preset_directory()
 	_pending_load_section = section_key
 	_load_dialog.title = _load_dialog_title(section_key)
-	_load_dialog.current_dir = ProjectSettings.globalize_path(PRESET_DIALOG_DIRECTORY)
+	_load_dialog.current_dir = ProjectSettings.globalize_path(_preset_directory_for_section(section_key))
 	_load_dialog.current_file = _default_filename_for_section(section_key)
 	_load_dialog.popup_centered_ratio(0.7)
+
+
+func _preset_directory_for_section(section_key: String) -> String:
+	match section_key:
+		PRESET_SECTION_BADGE:
+			return BADGE_PRESET_DIALOG_DIRECTORY
+		PRESET_SECTION_BUTTON:
+			return BUTTON_PRESET_DIALOG_DIRECTORY
+		_:
+			return PANEL_PRESET_DIALOG_DIRECTORY
 
 
 func _default_filename_for_section(section_key: String) -> String:
 	match section_key:
 		PRESET_SECTION_BADGE:
-			return DEFAULT_PRESET_FILENAME.replace(".yaml", ".badge.yaml")
+			return "screen-badge.yaml"
 		PRESET_SECTION_BUTTON:
-			return DEFAULT_PRESET_FILENAME.replace(".yaml", ".button.yaml")
+			return "screen-primary-button.yaml"
 		_:
-			return DEFAULT_PRESET_FILENAME
+			return "screen-panel.yaml"
 
 
 func _export_dialog_title(section_key: String) -> String:

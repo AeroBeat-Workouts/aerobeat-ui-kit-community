@@ -522,27 +522,6 @@ func _sync_shell_state_from_shader() -> void:
 	_shell_edge_highlight = _shader_material.get_shader_parameter("edge_highlight")
 
 
-func _apply_primary_card_accent() -> void:
-	if _frame_style == null or _inner_border_style == null:
-		return
-
-	var state := _target_state(TARGET_PRIMARY)
-	var accent_strength := 0.0
-	if bool(state.get("toggle_on", false)):
-		accent_strength = 1.0
-	elif bool(state.get("pressed", false)):
-		accent_strength = 0.78
-	elif bool(state.get("dragging", false)):
-		accent_strength = 0.64
-	elif bool(state.get("hovered", false)):
-		accent_strength = 0.4
-
-	if accent_strength > 0.0:
-		_frame_style.border_color = _frame_style.border_color.lerp(TOGGLE_ON_ACCENT, accent_strength * 0.65)
-		_inner_border_style.border_color = _inner_border_style.border_color.lerp(TOGGLE_ON_ACCENT, accent_strength * 0.55)
-		if is_instance_valid(badge_view):
-			badge_view.apply_accent(TOGGLE_ON_ACCENT, accent_strength)
-
 
 func _refresh_primary_action_visual() -> void:
 	if not is_instance_valid(primary_button_view):

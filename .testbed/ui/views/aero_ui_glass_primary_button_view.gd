@@ -2,8 +2,6 @@ class_name AeroUiGlassPrimaryButtonView
 extends Button
 
 const AeroUiGlassPrimaryButtonConfig := preload("res://ui/configs/types/aero_ui_glass_primary_button_config.gd")
-const DEFAULT_ACCENT := Color(0.4, 0.82, 1.0, 1.0)
-
 @onready var primary_action_body: PanelContainer = get_node_or_null("PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody") as PanelContainer
 @onready var primary_action_label: Label = get_node_or_null("PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody/PrimaryActionBodyPadding/PrimaryActionTextColumn/PrimaryActionLabel") as Label
 @onready var primary_action_meta: Label = get_node_or_null("PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody/PrimaryActionBodyPadding/PrimaryActionTextColumn/PrimaryActionMeta") as Label
@@ -17,7 +15,7 @@ func refresh_theme() -> void:
 	_configure_button_theme()
 
 
-func apply_visual_state(state: Dictionary, is_hybrid_world: bool, badge_tokens: Dictionary, button_style_config: AeroUiGlassPrimaryButtonConfig, shell_tint: Color, accent_color: Color = DEFAULT_ACCENT) -> void:
+func apply_visual_state(state: Dictionary, is_hybrid_world: bool, badge_tokens: Dictionary, button_style_config: AeroUiGlassPrimaryButtonConfig, shell_tint: Color, accent_color: Color) -> void:
 	if not is_instance_valid(primary_action_body):
 		return
 

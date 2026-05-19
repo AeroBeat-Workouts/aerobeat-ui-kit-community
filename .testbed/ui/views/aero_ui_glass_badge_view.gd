@@ -57,13 +57,3 @@ func apply_visual_state(tokens: Dictionary) -> void:
 	_badge_style.corner_radius_bottom_left = radius
 	if is_instance_valid(badge_label):
 		badge_label.modulate = Color(tint.r, tint.g, tint.b, float(tokens.get("label_alpha", 0.78)))
-
-
-func apply_accent(accent: Color, accent_strength: float) -> void:
-	if _badge_style == null:
-		refresh_theme()
-	if _badge_style == null or accent_strength <= 0.0:
-		return
-
-	_badge_style.border_color = _badge_style.border_color.lerp(accent, accent_strength * 0.55)
-	_badge_style.bg_color = _badge_style.bg_color.lerp(Color(accent.r, accent.g, accent.b, 0.22), accent_strength * 0.65)

@@ -389,8 +389,8 @@ The runtime/view migration is now materially in place:
 - `.testbed/ui/views/aero_ui_glass_panel_view.gd` is the canonical **runtime composite/controller**
 - `.testbed/ui/views/aero_ui_glass_badge_view.gd` is the canonical badge runtime/view
 - `.testbed/ui/views/aero_ui_glass_primary_button_view.gd` is the canonical primary-button runtime/view
-- `.testbed/scripts/glass_shader_preset_io.gd` remains a **generic preset helper**
-- current JSON preset files still hold a broad parameter envelope, mainly for shader-oriented tuning
+- `.testbed/scripts/aero_ui_glass_yaml_bundle_io.gd` is the active **YAML bundle import/export helper**
+- authored defaults and manual save/load now live in the YAML preset family under `res://ui/presets/glass/...`
 - `.testbed/scripts/glass_shader_panel_source.gd` and `.testbed/scenes/glass-shader-panel-source.tscn` now exist only as compatibility aliases over the canonical panel view
 
 ### Current mapping
