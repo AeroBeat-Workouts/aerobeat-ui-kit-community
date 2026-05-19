@@ -382,22 +382,29 @@ states:
 
 ---
 
-## Mapping to the current `glass_shader_panel_source` world
+## Mapping from the legacy `glass_shader_panel_source` world
 
-Current code already hints at the natural separation:
+The runtime/view migration is now materially in place:
 
-- `.testbed/scripts/glass_shader_panel_source.gd` is a **runtime composite/controller**
-- `.testbed/scripts/glass_shader_preset_io.gd` is a **generic preset helper**
-- current JSON preset files hold a broad parameter envelope, mainly for shader-oriented tuning
+- `.testbed/ui/views/aero_ui_glass_panel_view.gd` is the canonical **runtime composite/controller**
+- `.testbed/ui/views/aero_ui_glass_badge_view.gd` is the canonical badge runtime/view
+- `.testbed/ui/views/aero_ui_glass_primary_button_view.gd` is the canonical primary-button runtime/view
+- `.testbed/scripts/glass_shader_preset_io.gd` remains a **generic preset helper**
+- current JSON preset files still hold a broad parameter envelope, mainly for shader-oriented tuning
+- `.testbed/scripts/glass_shader_panel_source.gd` and `.testbed/scenes/glass-shader-panel-source.tscn` now exist only as compatibility aliases over the canonical panel view
 
-### Recommended mapping
+### Current mapping
 
-#### Today
-- `glass_shader_panel_source.gd` conceptually maps closest to `AeroUiGlassPanelView`
-- hybrid shell values, badge values, and action-button deltas are still living together in one runtime script
+#### Canonical runtime ownership
+- `AeroUiGlassPanelView` owns panel runtime composition and YAML-backed config application
+- `AeroUiGlassBadgeView` owns badge rendering/state application
+- `AeroUiGlassPrimaryButtonView` owns primary-button rendering/state application
 
-#### Next step
-Split the current script’s authored data responsibilities into separate config objects without requiring immediate scene surgery.
+#### Compatibility surface
+Keep the legacy `glass_shader_panel_source` script/scene path only for downstream references that have not been retired yet.
+
+#### Config composition
+The panel runtime can still compose separate authored data responsibilities into distinct config objects without collapsing them back into one legacy runtime surface.
 
 Example conceptual split:
 - `AeroUiGlassPanelConfig`
@@ -470,12 +477,12 @@ But do not make that helper the public contract for all effect families. The pub
 
 The first live seam in this repo is intentionally narrower than the full target architecture:
 
-- `glass_shader_panel_source.gd` still carries the legacy runtime filename/path, but it is acting as the temporary runtime host for the `AeroUiGlassPanelView` concept
-- the panel YAML preset is the current bundle entrypoint and composes badge/button typed configs rather than making the runtime script the authored-style owner
+- the canonical runtime now lives under `ui/views/`, while `glass_shader_panel_source.gd` is retained only as a legacy compatibility script path
+- the panel YAML preset is the current bundle entrypoint and composes badge/button typed configs rather than making the compatibility layer the authored-style owner
 - the current YAML helper only supports the subset needed by these presets (mapping-root documents, nested mappings, inline arrays/dictionaries, scalar values, comments, and same-schema `extends`)
 - broader loader productization work is still deferred, including unknown-field rejection, deeper schema validation, migration helpers, and richer YAML feature support
 
-That is acceptable for the first seam because the main architectural rule already holds: runtime composition, typed configs, schema-specific loaders, and authored preset files are now separate concerns.
+That is acceptable for the current seam because the main architectural rule already holds: canonical runtime composition, typed configs, schema-specific loaders, and authored preset files are separate concerns, and the remaining legacy path is compatibility-only rather than the conceptual owner.
 
 ---
 

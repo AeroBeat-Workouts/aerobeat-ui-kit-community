@@ -6,7 +6,7 @@ This folder holds the first narrow YAML-backed seam for the glass UI family.
 
 - `res://ui/views/aero_ui_glass_panel_view.gd` / `res://ui/views/aero_ui_glass_panel_view.tscn` are now the canonical panel runtime/view owner described in the architecture docs.
 - The canonical panel view composes and applies typed config objects into the existing scene/material tree.
-- `res://scripts/glass_shader_panel_source.gd` remains only as a transitional compatibility wrapper while older paths are retired.
+- `res://scripts/glass_shader_panel_source.gd` and `res://scenes/glass-shader-panel-source.tscn` remain only as transitional compatibility aliases over the canonical panel view while older paths are retired.
 - Authored style ownership now lives in YAML preset files plus the schema-specific config loaders/types under `res://ui/configs/`.
 - The panel preset is the current entrypoint and may reference badge and primary-button presets through `parts`.
 
@@ -38,8 +38,8 @@ Not supported yet:
 
 ## Explicitly deferred follow-up work
 
-- removing the remaining legacy `glass_shader_panel_source` compatibility wrapper/path once downstream callers no longer need it
+- removing the remaining legacy `glass_shader_panel_source` compatibility wrapper/scene aliases once downstream callers no longer need them
 - broader loader hardening and migration helpers
 - layout metrics migration from `.tscn` into YAML
-- extracting badge/button into separate runtime components
+- human visual/workflow review of the extracted panel/button/badge runtime stack
 - broader hybrid/world-space migration

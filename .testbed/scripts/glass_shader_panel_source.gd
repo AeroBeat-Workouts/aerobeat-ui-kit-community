@@ -6,5 +6,5 @@ extends "res://ui/views/aero_ui_glass_panel_view.gd"
 # - script: res://ui/views/aero_ui_glass_panel_view.gd
 # - scene:  res://ui/views/aero_ui_glass_panel_view.tscn
 #
-# Keep this legacy script path only to lower transition risk for older scenes/tests while
-# host adoption migrates to the canonical AeroUiGlassPanelView path/API.
+# Keep this legacy script path only as a narrow compatibility alias for older scene/script
+# references. New runtime ownership and behavior must stay in AeroUiGlassPanelView.

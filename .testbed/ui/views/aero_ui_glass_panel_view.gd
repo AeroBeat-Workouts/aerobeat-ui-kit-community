@@ -1,12 +1,12 @@
 class_name AeroUiGlassPanelView
 extends AeroContractConsumerViewBase
 
-# Canonical runtime/view owner for the first YAML-backed glass panel seam.
+# Canonical runtime/view owner for the AeroUiGlass panel architecture.
 #
 # The YAML-authored style contract lives in typed config objects and preset files; this view
 # consumes those configs and owns runtime composition/application. Legacy
-# `glass_shader_panel_source` paths can extend or instance this view as transitional wrappers,
-# but `AeroUiGlassPanelView` is now the primary runtime identity.
+# `glass_shader_panel_source` paths exist only as narrow compatibility aliases around this view,
+# but `AeroUiGlassPanelView` is the runtime source of truth.
 const AeroUiGlassPanelConfigLoader := preload("res://ui/configs/loaders/aero_ui_glass_panel_config_loader.gd")
 const AeroUiGlassPanelConfig := preload("res://ui/configs/types/aero_ui_glass_panel_config.gd")
 const AeroUiGlassBadgeConfig := preload("res://ui/configs/types/aero_ui_glass_badge_config.gd")
