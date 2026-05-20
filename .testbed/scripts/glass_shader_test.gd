@@ -15,6 +15,7 @@ const ButtonConfigLoader = preload("res://ui/configs/loaders/aero_ui_glass_prima
 const PRESET_SECTION_PANEL := "panel"
 const PRESET_SECTION_BADGE := "badge"
 const PRESET_SECTION_BUTTON := "button"
+const INFO_PANEL_MIN_WIDTH := 440.0
 const SECTION_SPACER_HEIGHT := 56.0
 
 const BADGE_EDITOR_CONTROLS := [
@@ -50,6 +51,8 @@ const BUTTON_EDITOR_COLOR_CONTROLS := [
 	{"name": "button_interaction_tint", "label": "interaction_tint", "default": Color(0.4, 0.82, 1.0, 1.0)},
 ]
 
+@onready var split_root: HSplitContainer = get_node_or_null("SplitRoot") as HSplitContainer
+@onready var controls_panel: PanelContainer = get_node_or_null("SplitRoot/ControlsPanel") as PanelContainer
 @onready var controls_list: VBoxContainer = get_node_or_null("SplitRoot/ControlsPanel/Margin/ControlsColumn/ControlsScroll/ControlsList") as VBoxContainer
 @onready var panel_view_host: Control = get_node_or_null("SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost") as Control
 @onready var interaction_bus: AeroUiInteractionBus = get_node_or_null("SplitRoot/PreviewArea/PreviewCenter/PanelSourceHost/AeroUiInteractionBus") as AeroUiInteractionBus
@@ -80,6 +83,7 @@ var _last_contract_target_path := ""
 
 
 func _ready() -> void:
+	_configure_info_panel_layout()
 	_mount_panel_view()
 	_ensure_interaction_contract_nodes()
 	_configure_panel_view_contract()
@@ -93,6 +97,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _forward_screen_panel_input(event):
 		get_viewport().set_input_as_handled()
 		_refresh_contract_status()
+
+
+func _configure_info_panel_layout() -> void:
+	if is_instance_valid(controls_panel):
+		controls_panel.custom_minimum_size.x = INFO_PANEL_MIN_WIDTH
+	if is_instance_valid(split_root):
+		split_root.split_offset = int(INFO_PANEL_MIN_WIDTH)
 
 
 func set_background_mode(mode: int) -> void:

@@ -64,7 +64,32 @@ func test_screen_host_mounts_canonical_aeroui_glass_panel_view() -> void:
 	assert_null(host._preset_status_label)
 	assert_not_null(host._contract_status_label)
 	assert_eq(host._contract_status_label.text, "Hovered target: none\nInteraction state: idle")
+	assert_gte(host.controls_panel.custom_minimum_size.x, host.INFO_PANEL_MIN_WIDTH)
+	assert_eq(host.split_root.split_offset, int(host.INFO_PANEL_MIN_WIDTH))
 	_assert_forbidden_preset_copy_removed(host, BASE_FORBIDDEN_TEXT_SNIPPETS + SCREEN_ONLY_FORBIDDEN_TEXT_SNIPPETS)
+
+
+func test_screen_host_input_debug_readout_stays_two_lines_during_hover_updates() -> void:
+	var host = SCREEN_HOST_SCENE.instantiate()
+	add_child_autofree(host)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	var status: RichTextLabel = host._contract_status_label
+	assert_not_null(status)
+	var idle_height := status.get_content_height()
+	var button := host._proof_button as Control
+	assert_not_null(button)
+
+	var hover := InputEventMouseMotion.new()
+	hover.position = button.get_global_rect().get_center()
+	hover.relative = Vector2.ZERO
+	assert_true(host._publish_mouse_motion_to_contract(hover))
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	assert_eq(status.text, "Hovered target: PrimaryActionButton\nInteraction state: hover")
+	assert_eq(status.get_content_height(), idle_height)
 
 
 func test_hybrid_host_mounts_canonical_aeroui_glass_panel_view_in_both_subviewports() -> void:
