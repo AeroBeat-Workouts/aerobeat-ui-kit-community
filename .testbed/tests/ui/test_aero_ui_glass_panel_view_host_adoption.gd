@@ -85,3 +85,43 @@ func test_hybrid_host_mounts_canonical_aeroui_glass_panel_view_in_both_subviewpo
 	_assert_yaml_backed_panel_defaults(host._mask_ui)
 	assert_eq(host._preset_status_label.text, HYBRID_STATUS_TEXT)
 	_assert_forbidden_preset_copy_removed(host, BASE_FORBIDDEN_TEXT_SNIPPETS)
+
+
+func test_screen_host_release_outside_card_emits_hover_exit_and_returns_idle() -> void:
+	var host = SCREEN_HOST_SCENE.instantiate()
+	add_child_autofree(host)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	var button := host._proof_button as Control
+	assert_not_null(button)
+	var rect := button.get_global_rect()
+	var inside := rect.get_center()
+	var outside := rect.position + Vector2(rect.size.x + 24.0, rect.size.y * 0.5)
+
+	var hover := InputEventMouseMotion.new()
+	hover.position = inside
+	hover.relative = Vector2.ZERO
+	assert_true(host._publish_mouse_motion_to_contract(hover))
+	await get_tree().process_frame
+	assert_eq(host._contract_status_label.text, "Hovered target: PrimaryActionButton\nInteraction state: hover")
+	assert_eq(host._panel_view.primary_button_view._last_visual_phase, "hover")
+
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = inside
+	assert_true(host._publish_mouse_button_to_contract(press))
+	await get_tree().process_frame
+	assert_eq(host._contract_status_label.text, "Hovered target: PrimaryActionButton\nInteraction state: pressed")
+
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.pressed = false
+	release.position = outside
+	assert_true(host._publish_mouse_button_to_contract(release))
+	await get_tree().process_frame
+	assert_eq(host._contract_status_label.text, "Hovered target: none\nInteraction state: idle")
+	assert_eq(host._panel_view.primary_button_view._last_visual_phase, "rest")
+	assert_false(host._mouse_hover_active)
+	assert_eq(host._last_contract_phase, "hover_exit")

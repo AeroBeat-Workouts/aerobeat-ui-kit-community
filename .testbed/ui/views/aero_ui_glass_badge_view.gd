@@ -1,13 +1,13 @@
 class_name AeroUiGlassBadgeView
 extends PanelContainer
 
-const AeroUiGlassBadgeConfig := preload("res://ui/configs/types/aero_ui_glass_badge_config.gd")
-const AeroUiTweenUtils := preload("res://ui/views/shared/aero_ui_tween_utils.gd")
+const BadgeConfigScript := preload("res://ui/configs/types/aero_ui_glass_badge_config.gd")
+const TweenUtilsScript := preload("res://ui/views/shared/aero_ui_tween_utils.gd")
 
 @onready var badge_label: Label = get_node_or_null("BadgePadding/BadgeLabel") as Label
 
 var _badge_style: StyleBoxFlat
-var _badge_style_config: AeroUiGlassBadgeConfig
+var _badge_style_config: BadgeConfigScript
 var _alpha_tween: Tween
 
 
@@ -20,10 +20,10 @@ func refresh_theme() -> void:
 
 
 func TweenAlpha(target_alpha: float, tweenSpeed: float, easeType: Variant, callback: Callable = Callable()) -> void:
-	_alpha_tween = AeroUiTweenUtils.tween_canvas_item_alpha(self, _alpha_tween, self, target_alpha, tweenSpeed, easeType, callback)
+	_alpha_tween = TweenUtilsScript.tween_canvas_item_alpha(self, _alpha_tween, self, target_alpha, tweenSpeed, easeType, callback)
 
 
-func set_badge_config(config: AeroUiGlassBadgeConfig) -> void:
+func set_badge_config(config: BadgeConfigScript) -> void:
 	_badge_style_config = config
 
 

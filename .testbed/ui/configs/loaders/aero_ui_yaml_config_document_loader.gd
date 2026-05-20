@@ -48,11 +48,11 @@ static func merge_documents(base: Dictionary, override: Dictionary) -> Dictionar
 	return merged
 
 
-static func resolve_reference_path(reference: Variant, current_path: String) -> String:
-	if not (reference is String):
+static func resolve_reference_path(reference_value: Variant, current_path: String) -> String:
+	if not (reference_value is String):
 		return ""
 
-	var raw_reference := String(reference).strip_edges()
+	var raw_reference := String(reference_value).strip_edges()
 	if raw_reference == "" or raw_reference == "null":
 		return ""
 

@@ -1,3 +1,4 @@
+@tool
 class_name AeroUiGlassPanelView
 extends AeroContractConsumerViewBase
 
@@ -7,14 +8,14 @@ extends AeroContractConsumerViewBase
 # consumes those configs and owns runtime composition/application. Legacy
 # `glass_shader_panel_source` paths exist only as narrow compatibility aliases around this view,
 # but `AeroUiGlassPanelView` is the runtime source of truth.
-const AeroUiGlassPanelConfigLoader := preload("res://ui/configs/loaders/aero_ui_glass_panel_config_loader.gd")
-const AeroUiGlassPanelConfig := preload("res://ui/configs/types/aero_ui_glass_panel_config.gd")
-const AeroUiGlassBadgeConfig := preload("res://ui/configs/types/aero_ui_glass_badge_config.gd")
-const AeroUiGlassPrimaryButtonConfig := preload("res://ui/configs/types/aero_ui_glass_primary_button_config.gd")
-const AeroUiGlassBadgeView := preload("res://ui/views/aero_ui_glass_badge_view.gd")
-const AeroUiGlassPrimaryButtonView := preload("res://ui/views/aero_ui_glass_primary_button_view.gd")
-const AeroUiElementGroupController := preload("res://ui/views/shared/aero_ui_element_group_controller.gd")
-const AeroUiTweenUtils := preload("res://ui/views/shared/aero_ui_tween_utils.gd")
+const PanelConfigLoaderScript := preload("res://ui/configs/loaders/aero_ui_glass_panel_config_loader.gd")
+const PanelConfigScript := preload("res://ui/configs/types/aero_ui_glass_panel_config.gd")
+const BadgeConfigScript := preload("res://ui/configs/types/aero_ui_glass_badge_config.gd")
+const PrimaryButtonConfigScript := preload("res://ui/configs/types/aero_ui_glass_primary_button_config.gd")
+const BadgeViewScript := preload("res://ui/views/aero_ui_glass_badge_view.gd")
+const PrimaryButtonViewScript := preload("res://ui/views/aero_ui_glass_primary_button_view.gd")
+const ElementGroupControllerScript := preload("res://ui/views/shared/aero_ui_element_group_controller.gd")
+const TweenUtilsScript := preload("res://ui/views/shared/aero_ui_tween_utils.gd")
 
 const BACKGROUND_IMAGE_PATH := "res://assets/images/perfect-hue-may-08-2026-hd.png"
 const DEFAULT_PANEL_STYLE_BUNDLE_PATH := "res://ui/presets/glass/panel/default.yaml"
@@ -140,10 +141,10 @@ const COLOR_CONTROLS := [
 @onready var glass_fill: ColorRect = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/GlassFill") as ColorRect
 @onready var preview_frame: Panel = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/PreviewFrame") as Panel
 @onready var preview_inner_border: Panel = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/InnerBorderInset/PreviewInnerBorder") as Panel
-@onready var badge_view: AeroUiGlassBadgeView = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge") as AeroUiGlassBadgeView
+@onready var badge_view: BadgeViewScript = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge") as BadgeViewScript
 @onready var preview_badge: PanelContainer = badge_view
 @onready var preview_badge_label: Label = badge_view.badge_label if is_instance_valid(badge_view) else null
-@onready var primary_button_view: AeroUiGlassPrimaryButtonView = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton") as AeroUiGlassPrimaryButtonView
+@onready var primary_button_view: PrimaryButtonViewScript = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton") as PrimaryButtonViewScript
 @onready var primary_action_button: Button = primary_button_view
 @onready var primary_action_body: PanelContainer = primary_button_view.primary_action_body if is_instance_valid(primary_button_view) else null
 @onready var primary_action_label: Label = primary_button_view.primary_action_label if is_instance_valid(primary_button_view) else null
@@ -161,9 +162,9 @@ var _mask_style: StyleBoxFlat
 var _background_texture: Texture2D
 var _background_mode := DEFAULT_BACKGROUND_MODE
 var _presentation_mode := PRESENTATION_MODE_2D
-var _panel_style_config: AeroUiGlassPanelConfig
-var _badge_style_config: AeroUiGlassBadgeConfig
-var _primary_button_style_config: AeroUiGlassPrimaryButtonConfig
+var _panel_style_config: PanelConfigScript
+var _badge_style_config: BadgeConfigScript
+var _primary_button_style_config: PrimaryButtonConfigScript
 var _shell_corner_radius := 0.24
 var _shell_edge_width := 2.4
 var _shell_tint := Color(0.92, 0.96, 1.0, 0.22)
@@ -176,7 +177,7 @@ var _hybrid_badge_border_alpha := 0.267
 var _hybrid_badge_label_alpha := 0.9
 var _last_interaction_event: AeroUiInteractionEvent = null
 var _alpha_tween: Tween
-var _element_group_controller := AeroUiElementGroupController.new()
+var _element_group_controller := ElementGroupControllerScript.new()
 
 
 func _ready() -> void:
@@ -220,14 +221,14 @@ func _notification(what: int) -> void:
 
 
 func TweenAlpha(target_alpha: float, tweenSpeed: float, easeType: Variant, callback: Callable = Callable()) -> void:
-	_alpha_tween = AeroUiTweenUtils.tween_canvas_item_alpha(self, _alpha_tween, self, target_alpha, tweenSpeed, easeType, callback)
+	_alpha_tween = TweenUtilsScript.tween_canvas_item_alpha(self, _alpha_tween, self, target_alpha, tweenSpeed, easeType, callback)
 
 
 func TweenAlphaChildren(target_alpha: float, tweenSpeed: float, easeType: Variant, callback: Callable = Callable()) -> void:
 	_element_group_controller.TweenAlpha(target_alpha, tweenSpeed, easeType, callback)
 
 
-func get_element_group_controller() -> AeroUiElementGroupController:
+func get_element_group_controller() -> ElementGroupControllerScript:
 	return _element_group_controller
 
 
@@ -393,19 +394,19 @@ func reset_shader_parameters_to_defaults() -> void:
 		set_shader_parameter(str(config["name"]), config["default"])
 
 
-func get_panel_style_config() -> AeroUiGlassPanelConfig:
+func get_panel_style_config() -> PanelConfigScript:
 	return _panel_style_config
 
 
-func get_badge_style_config() -> AeroUiGlassBadgeConfig:
+func get_badge_style_config() -> BadgeConfigScript:
 	return _badge_style_config
 
 
-func get_primary_button_style_config() -> AeroUiGlassPrimaryButtonConfig:
+func get_primary_button_style_config() -> PrimaryButtonConfigScript:
 	return _primary_button_style_config
 
 
-func apply_panel_style_bundle(config: AeroUiGlassPanelConfig) -> void:
+func apply_panel_style_bundle(config: PanelConfigScript) -> void:
 	if config == null:
 		return
 	_panel_style_config = config
@@ -418,8 +419,8 @@ func apply_panel_style_bundle(config: AeroUiGlassPanelConfig) -> void:
 	_refresh_interaction_debug()
 
 
-func load_panel_style_bundle_from_path(path: String) -> AeroUiGlassPanelConfig:
-	var config := AeroUiGlassPanelConfigLoader.load_from_path(path)
+func load_panel_style_bundle_from_path(path: String) -> PanelConfigScript:
+	var config := PanelConfigLoaderScript.load_from_path(path)
 	if config == null or config.source_path == "":
 		return null
 	apply_panel_style_bundle(config)
@@ -427,13 +428,13 @@ func load_panel_style_bundle_from_path(path: String) -> AeroUiGlassPanelConfig:
 
 
 func _load_startup_panel_style_bundle() -> void:
-	var config := AeroUiGlassPanelConfigLoader.load_from_path(DEFAULT_PANEL_STYLE_BUNDLE_PATH)
+	var config := PanelConfigLoaderScript.load_from_path(DEFAULT_PANEL_STYLE_BUNDLE_PATH)
 	if config == null or config.source_path == "":
 		return
 	apply_panel_style_bundle(config)
 
 
-func _apply_panel_style_config(config: AeroUiGlassPanelConfig) -> void:
+func _apply_panel_style_config(config: PanelConfigScript) -> void:
 	if config == null:
 		return
 	# The panel config owns the authored shell/shader contract and component preset references.

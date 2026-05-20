@@ -1,8 +1,8 @@
 class_name AeroUiGlassPrimaryButtonView
 extends Button
 
-const AeroUiGlassPrimaryButtonConfig := preload("res://ui/configs/types/aero_ui_glass_primary_button_config.gd")
-const AeroUiTweenUtils := preload("res://ui/views/shared/aero_ui_tween_utils.gd")
+const PrimaryButtonConfigScript := preload("res://ui/configs/types/aero_ui_glass_primary_button_config.gd")
+const TweenUtilsScript := preload("res://ui/views/shared/aero_ui_tween_utils.gd")
 
 @onready var primary_action_body: PanelContainer = get_node_or_null("PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody") as PanelContainer
 @onready var primary_action_label: Label = get_node_or_null("PrimaryActionBodyInset/PrimaryActionBodyAlign/PrimaryActionBody/PrimaryActionBodyPadding/PrimaryActionTextColumn/PrimaryActionLabel") as Label
@@ -26,17 +26,17 @@ func refresh_theme() -> void:
 
 
 func TweenAlpha(target_alpha: float, tweenSpeed: float, easeType: Variant, callback: Callable = Callable()) -> void:
-	_alpha_tween = AeroUiTweenUtils.tween_canvas_item_alpha(self, _alpha_tween, self, target_alpha, tweenSpeed, easeType, callback)
+	_alpha_tween = TweenUtilsScript.tween_canvas_item_alpha(self, _alpha_tween, self, target_alpha, tweenSpeed, easeType, callback)
 
 
-func apply_visual_state(state: Dictionary, is_hybrid_world: bool, badge_tokens: Dictionary, button_style_config: AeroUiGlassPrimaryButtonConfig, shell_tint: Color, accent_color: Color) -> void:
+func apply_visual_state(state: Dictionary, is_hybrid_world: bool, badge_tokens: Dictionary, button_style_config: PrimaryButtonConfigScript, shell_tint: Color, accent_color: Color) -> void:
 	if not is_instance_valid(primary_action_body):
 		return
 	_ensure_action_style()
 
 	var hovered := bool(state.get("hovered", false))
-	var pressed := bool(state.get("pressed", false))
-	var visual_phase := _resolve_visual_phase(hovered, pressed)
+	var is_pressed_state := bool(state.get("pressed", false))
+	var visual_phase := _resolve_visual_phase(hovered, is_pressed_state)
 	var resolved_state := _button_state(button_style_config, is_hybrid_world, visual_phase)
 
 	var fill_alpha: float = float(badge_tokens["fill_alpha"]) + float(resolved_state.get("fill_delta", 0.0))
@@ -99,7 +99,7 @@ func _ensure_action_style() -> void:
 	primary_action_body.add_theme_stylebox_override("panel", _action_style)
 
 
-func _build_action_stylebox(fill_alpha: float, fill_tint: Color, border_tint: Color, border_alpha: float, shadow_alpha: float, shadow_size: int, is_hybrid_world: bool, badge_tokens: Dictionary, button_style_config: AeroUiGlassPrimaryButtonConfig, shell_tint: Color) -> StyleBoxFlat:
+func _build_action_stylebox(fill_alpha: float, fill_tint: Color, border_tint: Color, border_alpha: float, shadow_alpha: float, shadow_size: int, is_hybrid_world: bool, badge_tokens: Dictionary, button_style_config: PrimaryButtonConfigScript, shell_tint: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	var fill_color := Color(fill_tint.r, fill_tint.g, fill_tint.b, clampf(fill_alpha, 0.0, 0.44 if is_hybrid_world else 0.24))
 	if not is_hybrid_world:
@@ -119,23 +119,23 @@ func _build_action_stylebox(fill_alpha: float, fill_tint: Color, border_tint: Co
 	return style
 
 
-func _button_state(button_style_config: AeroUiGlassPrimaryButtonConfig, is_hybrid_world: bool, phase: String) -> Dictionary:
+func _button_state(button_style_config: PrimaryButtonConfigScript, is_hybrid_world: bool, phase: String) -> Dictionary:
 	if button_style_config == null:
 		return {"fill_delta": 0.0, "border_delta": 0.0, "shadow_alpha": 0.0, "shadow_size": 0, "tint_strength": 0.0, "scale": 1.0}
 	return button_style_config.get_state(is_hybrid_world, phase)
 
 
-func _resolve_visual_phase(hovered: bool, pressed: bool) -> String:
-	if pressed:
+func _resolve_visual_phase(hovered: bool, is_pressed_state: bool) -> String:
+	if is_pressed_state:
 		return "pressed"
 	if hovered:
 		return "hover"
 	return "rest"
 
 
-func _resolve_transition_profile(button_style_config: AeroUiGlassPrimaryButtonConfig, is_hybrid_world: bool, target_phase: String) -> Dictionary:
+func _resolve_transition_profile(button_style_config: PrimaryButtonConfigScript, is_hybrid_world: bool, target_phase: String) -> Dictionary:
 	if button_style_config == null:
-		return {"speed": 0.0, "ease_type": AeroUiTweenUtils.DEFAULT_EASE_TYPE}
+		return {"speed": 0.0, "ease_type": TweenUtilsScript.DEFAULT_EASE_TYPE}
 	var interaction_phase := "hover"
 	if target_phase == "pressed" or _last_visual_phase == "pressed":
 		interaction_phase = "pressed"
@@ -153,14 +153,14 @@ func _apply_visual_snapshot(target_style: StyleBoxFlat, target_scale: Vector2, t
 
 func _tween_visual_snapshot(target_style: StyleBoxFlat, target_scale: Vector2, target_label_modulate: Color, target_meta_modulate: Color, transition_profile: Dictionary) -> void:
 	var duration := maxf(0.0, float(transition_profile.get("speed", 0.0)))
-	var ease_type: Variant = transition_profile.get("ease_type", AeroUiTweenUtils.DEFAULT_EASE_TYPE)
+	var ease_type: Variant = transition_profile.get("ease_type", TweenUtilsScript.DEFAULT_EASE_TYPE)
 	if duration <= 0.0:
 		_apply_visual_snapshot(target_style, target_scale, target_label_modulate, target_meta_modulate)
 		return
 
 	if is_instance_valid(_visual_tween):
 		_visual_tween.kill()
-	var curve := AeroUiTweenUtils.resolve_curve(ease_type)
+	var curve := TweenUtilsScript.resolve_curve(ease_type)
 	_visual_tween = create_tween()
 	_visual_tween.set_trans(int(curve["trans"]))
 	_visual_tween.set_ease(int(curve["ease"]))

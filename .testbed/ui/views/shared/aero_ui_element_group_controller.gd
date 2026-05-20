@@ -36,10 +36,10 @@ func TweenAlpha(target_alpha: float, tween_speed: float, ease_type: Variant, cal
 			callback.call_deferred()
 		return
 
-	var remaining := tweenables.size()
+	var pending := {"count": tweenables.size()}
 	var finish_one := func() -> void:
-		remaining -= 1
-		if remaining <= 0 and callback.is_valid():
+		pending["count"] = int(pending["count"]) - 1
+		if int(pending["count"]) <= 0 and callback.is_valid():
 			callback.call_deferred()
 
 	for element in tweenables:
