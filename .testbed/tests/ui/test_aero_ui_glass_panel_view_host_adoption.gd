@@ -14,7 +14,16 @@ const SCREEN_ONLY_FORBIDDEN_TEXT_SNIPPETS := [
 	"yaml status",
 	"interaction status",
 	"Screen 2D Glass Panel / Input-Core Contract Proof",
-	"Panel, badge, and primary button each load or export their authored YAML directly.",
+	"Source variant:",
+	"Phase:",
+	"Surface ID:",
+	"Surface type:",
+	"Target path:",
+	"Mouse capture:",
+	"Hover active:",
+	"Active touches:",
+	"Last contract publish:",
+	"Panel, badge, and primary button each load or export their YAML directly.",
 ]
 
 
@@ -53,7 +62,8 @@ func test_screen_host_mounts_canonical_aeroui_glass_panel_view() -> void:
 	assert_eq(host._panel_view.get_script().resource_path, CANONICAL_PANEL_VIEW_SCRIPT_PATH)
 	_assert_yaml_backed_panel_defaults(host._panel_view)
 	assert_null(host._preset_status_label)
-	assert_null(host._contract_status_label)
+	assert_not_null(host._contract_status_label)
+	assert_eq(host._contract_status_label.text, "Hovered target: none\nInteraction state: idle")
 	_assert_forbidden_preset_copy_removed(host, BASE_FORBIDDEN_TEXT_SNIPPETS + SCREEN_ONLY_FORBIDDEN_TEXT_SNIPPETS)
 
 

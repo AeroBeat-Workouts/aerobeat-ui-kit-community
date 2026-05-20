@@ -368,7 +368,9 @@ func _build_controls() -> void:
 		_make_yaml_actions_block("", PRESET_SECTION_BUTTON, "Primary button component YAML."),
 		_make_parameter_section("live button values", BUTTON_EDITOR_CONTROLS, BUTTON_EDITOR_COLOR_CONTROLS, BUTTON_EDITOR_OPTION_CONTROLS),
 	]))
-	_append_controls_section(_make_section_block("input debug", []), false)
+	_append_controls_section(_make_section_block("input debug", [
+		_make_contract_status_block(),
+	]), false)
 
 	var tail_spacer := Control.new()
 	tail_spacer.custom_minimum_size = Vector2(0.0, 8.0)
@@ -380,11 +382,6 @@ func _build_controls() -> void:
 func _make_contract_status_block() -> Control:
 	var wrapper := VBoxContainer.new()
 	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	wrapper.add_theme_constant_override("separation", 8)
-
-	var title := Label.new()
-	title.text = "interaction status"
-	wrapper.add_child(title)
 
 	var status := RichTextLabel.new()
 	status.fit_content = true
@@ -1018,20 +1015,47 @@ func _refresh_contract_status() -> void:
 	if not is_instance_valid(_contract_status_label):
 		return
 
-	var lines := [
-		"Screen 2D Glass Panel / Input-Core Contract Proof",
-		"",
-		"Source variant: %s" % _last_contract_source_variant,
-		"Phase: %s" % _last_contract_phase,
-		"Surface ID: %s" % _last_contract_surface_id,
-		"Surface type: %s" % String(SCREEN_SURFACE_TYPE),
-		"Target path: %s" % (_last_contract_target_path if _last_contract_target_path != "" else "waiting"),
-		"Mouse capture: %s" % ("ON" if _mouse_card_capture else "OFF"),
-		"Hover active: %s" % ("YES" if _mouse_hover_active else "NO"),
-		"Active touches: %d" % _active_touch_capture.size(),
-		"Last contract publish: %s" % _last_forwarded_panel_event,
+	_contract_status_label.text = "Hovered target: %s\nInteraction state: %s" % [
+		_get_hovered_target_debug_text(),
+		_get_interaction_state_debug_text(),
 	]
-	_contract_status_label.text = "\n".join(lines)
+
+
+func _get_hovered_target_debug_text() -> String:
+	if not is_instance_valid(_panel_view):
+		return "none"
+
+	for binding_variant in _panel_view.get_contract_target_bindings():
+		var binding := binding_variant as AeroUiContractTargetBinding
+		if binding == null or not binding.is_hovered:
+			continue
+		return _display_debug_target_name(binding)
+	return "none"
+
+
+func _get_interaction_state_debug_text() -> String:
+	if not is_instance_valid(_panel_view):
+		return "idle"
+
+	for binding_variant in _panel_view.get_contract_target_bindings():
+		var binding := binding_variant as AeroUiContractTargetBinding
+		if binding == null:
+			continue
+		if binding.is_pressed:
+			return "pressed"
+		if binding.is_hovered:
+			return "hover"
+	return "idle"
+
+
+func _display_debug_target_name(binding: AeroUiContractTargetBinding) -> String:
+	if binding == null:
+		return "none"
+	if not binding.target_label.is_empty():
+		return binding.target_label
+	if binding.control != null:
+		return binding.control.name
+	return binding.target_key if not binding.target_key.is_empty() else "none"
 
 
 func _join_string_array(values: Array) -> String:
