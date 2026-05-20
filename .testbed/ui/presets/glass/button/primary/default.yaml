@@ -22,6 +22,13 @@ states:
     rest: { fill_delta: 0.20, border_delta: 0.39, shadow_alpha: 0.18, shadow_size: 10, tint_strength: 0.0, scale: 1.0 }
     hover: { fill_delta: 0.25, border_delta: 0.46, shadow_alpha: 0.24, shadow_size: 12, tint_strength: 0.34, scale: 1.012 }
     pressed: { fill_delta: 0.31, border_delta: 0.50, shadow_alpha: 0.28, shadow_size: 12, tint_strength: 0.72, scale: 0.988 }
+interaction:
+  source_2d:
+    hover: { speed: 0.12, ease_type: smooth }
+    pressed: { speed: 0.08, ease_type: snappy }
+  hybrid_world:
+    hover: { speed: 0.12, ease_type: smooth }
+    pressed: { speed: 0.08, ease_type: snappy }
 presentation:
   hybrid_world:
     label_alpha: 0.98

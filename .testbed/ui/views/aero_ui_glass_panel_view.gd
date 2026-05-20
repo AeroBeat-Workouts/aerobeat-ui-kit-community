@@ -13,6 +13,8 @@ const AeroUiGlassBadgeConfig := preload("res://ui/configs/types/aero_ui_glass_ba
 const AeroUiGlassPrimaryButtonConfig := preload("res://ui/configs/types/aero_ui_glass_primary_button_config.gd")
 const AeroUiGlassBadgeView := preload("res://ui/views/aero_ui_glass_badge_view.gd")
 const AeroUiGlassPrimaryButtonView := preload("res://ui/views/aero_ui_glass_primary_button_view.gd")
+const AeroUiElementGroupController := preload("res://ui/views/shared/aero_ui_element_group_controller.gd")
+const AeroUiTweenUtils := preload("res://ui/views/shared/aero_ui_tween_utils.gd")
 
 const BACKGROUND_IMAGE_PATH := "res://assets/images/perfect-hue-may-08-2026-hd.png"
 const DEFAULT_PANEL_STYLE_BUNDLE_PATH := "res://ui/presets/glass/panel/default.yaml"
@@ -173,6 +175,8 @@ var _hybrid_badge_fill_alpha := 0.18
 var _hybrid_badge_border_alpha := 0.267
 var _hybrid_badge_label_alpha := 0.9
 var _last_interaction_event: AeroUiInteractionEvent = null
+var _alpha_tween: Tween
+var _element_group_controller := AeroUiElementGroupController.new()
 
 
 func _ready() -> void:
@@ -197,6 +201,7 @@ func _ready() -> void:
 	_load_startup_panel_style_bundle()
 
 	_configure_primary_card_button()
+	_configure_element_group_controller()
 	super._ready()
 	_sync_shell_state_from_shader()
 	_apply_visual_state()
@@ -212,6 +217,18 @@ func _notification(what: int) -> void:
 			_configure_primary_card_button()
 		if is_instance_valid(badge_view):
 			badge_view.refresh_theme()
+
+
+func TweenAlpha(target_alpha: float, tweenSpeed: float, easeType: Variant, callback: Callable = Callable()) -> void:
+	_alpha_tween = AeroUiTweenUtils.tween_canvas_item_alpha(self, _alpha_tween, self, target_alpha, tweenSpeed, easeType, callback)
+
+
+func TweenAlphaChildren(target_alpha: float, tweenSpeed: float, easeType: Variant, callback: Callable = Callable()) -> void:
+	_element_group_controller.TweenAlpha(target_alpha, tweenSpeed, easeType, callback)
+
+
+func get_element_group_controller() -> AeroUiElementGroupController:
+	return _element_group_controller
 
 
 func _build_contract_targets() -> void:
@@ -241,6 +258,13 @@ func _load_background_texture() -> Texture2D:
 		push_error("Unable to load background image at %s" % BACKGROUND_IMAGE_PATH)
 		return null
 	return ImageTexture.create_from_image(image)
+
+
+func _configure_element_group_controller() -> void:
+	_element_group_controller.set_elements([
+		badge_view,
+		primary_button_view,
+	])
 
 
 func _configure_primary_card_button() -> void:

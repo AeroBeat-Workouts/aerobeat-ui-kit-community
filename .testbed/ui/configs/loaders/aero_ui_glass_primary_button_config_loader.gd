@@ -59,6 +59,9 @@ static func _build_config(document: Dictionary) -> AeroUiGlassPrimaryButtonConfi
 	var meta_block := document.get("meta", {}) as Dictionary
 	var states_block := document.get("states", {}) as Dictionary
 	var presentation_block := document.get("presentation", {}) as Dictionary
+	var interaction_block := document.get("interaction", {}) as Dictionary
+	var source_interaction := interaction_block.get("source_2d", {}) as Dictionary
+	var hybrid_interaction := interaction_block.get("hybrid_world", {}) as Dictionary
 	var hybrid_presentation := presentation_block.get("hybrid_world", {}) as Dictionary
 	var tint_block := document.get("tint", {}) as Dictionary
 
@@ -87,6 +90,8 @@ static func _build_config(document: Dictionary) -> AeroUiGlassPrimaryButtonConfi
 	config.hybrid_meta_alpha = float(hybrid_presentation.get("meta_alpha", config.hybrid_meta_alpha))
 	config.source_states = _build_state_map(states_block.get("source_2d", {}), config.source_states)
 	config.hybrid_states = _build_state_map(states_block.get("hybrid_world", {}), config.hybrid_states)
+	config.source_interactions = _build_interaction_map(source_interaction, config.source_interactions)
+	config.hybrid_interactions = _build_interaction_map(hybrid_interaction, config.hybrid_interactions)
 	return config
 
 
@@ -103,5 +108,18 @@ static func _build_state_map(raw_states: Variant, fallback: Dictionary) -> Dicti
 			"shadow_size": int(raw_state.get("shadow_size", fallback_state.get("shadow_size", 0))),
 			"tint_strength": float(raw_state.get("tint_strength", fallback_state.get("tint_strength", 0.0))),
 			"scale": float(raw_state.get("scale", fallback_state.get("scale", 1.0))),
+		}
+	return result
+
+
+static func _build_interaction_map(raw_interaction: Variant, fallback: Dictionary) -> Dictionary:
+	var result: Dictionary = {}
+	var source := raw_interaction as Dictionary if raw_interaction is Dictionary else {}
+	for phase in ["hover", "pressed"]:
+		var fallback_interaction := fallback.get(phase, ButtonConfig.DEFAULT_INTERACTION_TWEEN) as Dictionary
+		var raw_phase := source.get(phase, {}) as Dictionary
+		result[phase] = {
+			"speed": float(raw_phase.get("speed", fallback_interaction.get("speed", ButtonConfig.DEFAULT_INTERACTION_TWEEN["speed"]))),
+			"ease_type": str(raw_phase.get("ease_type", fallback_interaction.get("ease_type", ButtonConfig.DEFAULT_INTERACTION_TWEEN["ease_type"]))),
 		}
 	return result

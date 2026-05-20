@@ -16,6 +16,8 @@ func test_screen_host_exports_and_reloads_a_yaml_panel_bundle() -> void:
 	host._panel_view.get_badge_style_config().tint = Color(0.75, 0.88, 1.0, 1.0)
 	host._panel_view.get_primary_button_style_config().background_tint = Color(0.8, 0.9, 1.0, 1.0)
 	host._panel_view.get_primary_button_style_config().source_states["hover"]["scale"] = 1.02
+	host._panel_view.get_primary_button_style_config().source_interactions["pressed"]["speed"] = 0.05
+	host._panel_view.get_primary_button_style_config().source_interactions["pressed"]["ease_type"] = "crisp"
 	var export_path := "user://gut/yaml-bundles/screen-panel-bundle.yaml"
 	var export_result := YamlBundleIO.export_panel_bundle(export_path, {
 		"panel_config": host._panel_view.get_panel_style_config(),
@@ -36,6 +38,8 @@ func test_screen_host_exports_and_reloads_a_yaml_panel_bundle() -> void:
 	assert_eq(loaded["badge_config"].tint, Color(0.75, 0.88, 1.0, 1.0))
 	assert_eq(loaded["button_config"].background_tint, Color(0.8, 0.9, 1.0, 1.0))
 	assert_almost_eq(float(loaded["button_config"].source_states["hover"]["scale"]), 1.02, 0.0001)
+	assert_almost_eq(float(loaded["button_config"].source_interactions["pressed"]["speed"]), 0.05, 0.0001)
+	assert_eq(str(loaded["button_config"].source_interactions["pressed"]["ease_type"]), "crisp")
 	assert_true(String(loaded["panel_config"].badge_preset_path).ends_with("screen-panel-bundle.badge.yaml"))
 	assert_true(String(loaded["panel_config"].primary_button_preset_path).ends_with("screen-panel-bundle.button.yaml"))
 

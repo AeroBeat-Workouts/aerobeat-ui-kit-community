@@ -21,6 +21,8 @@ func test_panel_bundle_loader_materializes_typed_child_configs() -> void:
 	assert_eq(config.primary_button_config.interaction_tint, Color(0.4, 0.82, 1.0, 1.0))
 	assert_almost_eq(float(config.primary_button_config.source_states["hover"]["tint_strength"]), 0.34, 0.0001)
 	assert_almost_eq(float(config.primary_button_config.source_states["pressed"]["scale"]), 0.988, 0.0001)
+	assert_almost_eq(float(config.primary_button_config.source_interactions["hover"]["speed"]), 0.12, 0.0001)
+	assert_eq(str(config.primary_button_config.source_interactions["pressed"]["ease_type"]), "snappy")
 	assert_almost_eq(float(config.shader_parameters["blur"]), 4.2, 0.0001)
 	assert_eq(config.shader_parameters["tint"], Color(0.92, 0.96, 1.0, 0.22))
 	assert_almost_eq(config.frame_alpha_boost, 0.18, 0.0001)

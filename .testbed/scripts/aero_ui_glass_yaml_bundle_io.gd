@@ -203,6 +203,10 @@ static func _build_button_document(button_config: ButtonConfig, button_overrides
 			"source_2d": _state_map_document(button_overrides.get("source_states", button_config.source_states) as Dictionary),
 			"hybrid_world": _state_map_document(button_overrides.get("hybrid_states", button_config.hybrid_states) as Dictionary),
 		},
+		"interaction": {
+			"source_2d": _interaction_map_document(button_overrides.get("source_interactions", button_config.source_interactions) as Dictionary),
+			"hybrid_world": _interaction_map_document(button_overrides.get("hybrid_interactions", button_config.hybrid_interactions) as Dictionary),
+		},
 		"presentation": {
 			"hybrid_world": {
 				"label_alpha": float(button_overrides.get("hybrid_label_alpha", button_config.hybrid_label_alpha)),
@@ -223,6 +227,17 @@ static func _state_map_document(states: Dictionary) -> Dictionary:
 			"shadow_size": int(state.get("shadow_size", 0)),
 			"tint_strength": float(state.get("tint_strength", 0.0)),
 			"scale": float(state.get("scale", 1.0)),
+		}
+	return document
+
+
+static func _interaction_map_document(interactions: Dictionary) -> Dictionary:
+	var document: Dictionary = {}
+	for phase in ["hover", "pressed"]:
+		var interaction := interactions.get(phase, ButtonConfig.DEFAULT_INTERACTION_TWEEN) as Dictionary
+		document[phase] = {
+			"speed": float(interaction.get("speed", ButtonConfig.DEFAULT_INTERACTION_TWEEN["speed"])),
+			"ease_type": str(interaction.get("ease_type", ButtonConfig.DEFAULT_INTERACTION_TWEEN["ease_type"])),
 		}
 	return document
 

@@ -371,9 +371,16 @@ const BUTTON_EDITOR_HYBRID_CONTROLS := [
 	{"name": "button_hybrid_label_alpha", "label": "label_alpha", "min": 0.0, "max": 1.0, "step": 0.01, "default": 0.98},
 	{"name": "button_hybrid_meta_alpha", "label": "meta_alpha", "min": 0.0, "max": 1.0, "step": 0.01, "default": 0.7},
 	{"name": "button_hybrid_hover_tint_strength", "label": "hover_tint_strength", "min": 0.0, "max": 1.0, "step": 0.01, "default": 0.34},
-	{"name": "button_hybrid_pressed_tint_strength", "label": "pressed_tint_strength", "min": 0.0, "max": 1.0, "step": 0.01, "default": 0.72},
 	{"name": "button_hybrid_hover_scale", "label": "hover_scale", "min": 0.9, "max": 1.1, "step": 0.001, "default": 1.012},
+	{"name": "button_hybrid_hover_speed", "label": "hover_speed", "min": 0.0, "max": 0.4, "step": 0.01, "default": 0.12},
+	{"name": "button_hybrid_pressed_tint_strength", "label": "pressed_tint_strength", "min": 0.0, "max": 1.0, "step": 0.01, "default": 0.72},
 	{"name": "button_hybrid_pressed_scale", "label": "pressed_scale", "min": 0.9, "max": 1.1, "step": 0.001, "default": 0.988},
+	{"name": "button_hybrid_pressed_speed", "label": "pressed_speed", "min": 0.0, "max": 0.4, "step": 0.01, "default": 0.08},
+]
+
+const BUTTON_EDITOR_OPTION_CONTROLS := [
+	{"name": "button_hybrid_hover_ease_type", "label": "hover_ease_type", "default": "smooth", "options": [{"label": "Smooth", "value": "smooth"}, {"label": "Linear", "value": "linear"}, {"label": "Snappy", "value": "snappy"}, {"label": "Soft", "value": "soft"}, {"label": "Crisp", "value": "crisp"}]},
+	{"name": "button_hybrid_pressed_ease_type", "label": "pressed_ease_type", "default": "snappy", "options": [{"label": "Smooth", "value": "smooth"}, {"label": "Linear", "value": "linear"}, {"label": "Snappy", "value": "snappy"}, {"label": "Soft", "value": "soft"}, {"label": "Crisp", "value": "crisp"}]},
 ]
 
 @export var auto_rotate := true
@@ -402,6 +409,7 @@ var _base_rotation := Vector3.ZERO
 var _background_mode_selector: OptionButton
 var _float_sliders: Dictionary = {}
 var _color_pickers: Dictionary = {}
+var _option_selectors: Dictionary = {}
 var _preset_status_label: Label
 var _contract_status_label: RichTextLabel
 var _save_dialog: FileDialog
@@ -1139,6 +1147,7 @@ func _build_controls() -> void:
 	controls_list.add_theme_constant_override("separation", 24)
 	_float_sliders.clear()
 	_color_pickers.clear()
+	_option_selectors.clear()
 	_background_mode_selector = null
 	_preset_status_label = null
 	_contract_status_label = null
@@ -1287,7 +1296,7 @@ func _make_yaml_actions_block(title_text: String, section_key: String, subtitle_
 	return wrapper
 
 
-func _make_parameter_section(title_text: String, float_configs: Array, color_configs: Array) -> Control:
+func _make_parameter_section(title_text: String, float_configs: Array, color_configs: Array, option_configs: Array = []) -> Control:
 	var wrapper := VBoxContainer.new()
 	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	wrapper.add_theme_constant_override("separation", 8)
@@ -1301,6 +1310,8 @@ func _make_parameter_section(title_text: String, float_configs: Array, color_con
 		wrapper.add_child(_make_float_control(config))
 	for config in color_configs:
 		wrapper.add_child(_make_color_control(config))
+	for config in option_configs:
+		wrapper.add_child(_make_option_control(config))
 
 	return wrapper
 
@@ -1396,6 +1407,33 @@ func _make_color_control(config: Dictionary) -> Control:
 
 	_color_pickers[str(config["name"])] = picker
 	return wrapper
+
+
+func _make_option_control(config: Dictionary) -> Control:
+	var wrapper := VBoxContainer.new()
+	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var label := Label.new()
+	label.text = str(config["label"])
+	wrapper.add_child(label)
+
+	var selector := OptionButton.new()
+	selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var options := config.get("options", []) as Array
+	for option in options:
+		var option_dict := option as Dictionary
+		selector.add_item(str(option_dict.get("label", option_dict.get("value", "option"))))
+		selector.set_item_metadata(selector.item_count - 1, str(option_dict.get("value", "")))
+	selector.item_selected.connect(_on_option_value_selected.bind(str(config["name"]), selector))
+	wrapper.add_child(selector)
+
+	_option_selectors[str(config["name"])] = selector
+	return wrapper
+
+
+func _on_option_value_selected(index: int, parameter_name: String, selector: OptionButton) -> void:
+	var value := str(selector.get_item_metadata(index))
+	_set_live_control_value(parameter_name, value)
 
 
 func _setup_preset_dialogs() -> void:
@@ -1743,8 +1781,16 @@ func _get_live_control_value(parameter_name: String) -> Variant:
 			return _panel_ui.get_primary_button_style_config().hybrid_states.get("pressed", {}).get("tint_strength", 0.0) if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
 		"button_hybrid_hover_scale":
 			return _panel_ui.get_primary_button_style_config().hybrid_states.get("hover", {}).get("scale", 1.0) if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
+		"button_hybrid_hover_speed":
+			return _panel_ui.get_primary_button_style_config().hybrid_interactions.get("hover", {}).get("speed", 0.12) if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
+		"button_hybrid_hover_ease_type":
+			return _panel_ui.get_primary_button_style_config().hybrid_interactions.get("hover", {}).get("ease_type", "smooth") if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
 		"button_hybrid_pressed_scale":
 			return _panel_ui.get_primary_button_style_config().hybrid_states.get("pressed", {}).get("scale", 1.0) if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
+		"button_hybrid_pressed_speed":
+			return _panel_ui.get_primary_button_style_config().hybrid_interactions.get("pressed", {}).get("speed", 0.08) if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
+		"button_hybrid_pressed_ease_type":
+			return _panel_ui.get_primary_button_style_config().hybrid_interactions.get("pressed", {}).get("ease_type", "snappy") if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
 		_:
 			return get_panel_shader_parameter(parameter_name)
 
@@ -1771,7 +1817,7 @@ func _set_live_control_value(parameter_name: String, value: Variant) -> void:
 				"badge_tint":
 					badge_config.tint = value if value is Color else badge_config.tint
 			_apply_badge_config_to_host_views(badge_config)
-		"button_hybrid_label_alpha", "button_hybrid_meta_alpha", "button_border_width", "button_radius_delta", "button_background_tint", "button_interaction_tint", "button_hybrid_hover_tint_strength", "button_hybrid_pressed_tint_strength", "button_hybrid_hover_scale", "button_hybrid_pressed_scale":
+		"button_hybrid_label_alpha", "button_hybrid_meta_alpha", "button_border_width", "button_radius_delta", "button_background_tint", "button_interaction_tint", "button_hybrid_hover_tint_strength", "button_hybrid_pressed_tint_strength", "button_hybrid_hover_scale", "button_hybrid_hover_speed", "button_hybrid_hover_ease_type", "button_hybrid_pressed_scale", "button_hybrid_pressed_speed", "button_hybrid_pressed_ease_type":
 			var button_config = _panel_ui.get_primary_button_style_config() if is_instance_valid(_panel_ui) else null
 			if button_config == null:
 				return
@@ -1794,8 +1840,16 @@ func _set_live_control_value(parameter_name: String, value: Variant) -> void:
 					button_config.hybrid_states["pressed"]["tint_strength"] = float(value)
 				"button_hybrid_hover_scale":
 					button_config.hybrid_states["hover"]["scale"] = float(value)
+				"button_hybrid_hover_speed":
+					button_config.hybrid_interactions["hover"]["speed"] = float(value)
+				"button_hybrid_hover_ease_type":
+					button_config.hybrid_interactions["hover"]["ease_type"] = str(value)
 				"button_hybrid_pressed_scale":
 					button_config.hybrid_states["pressed"]["scale"] = float(value)
+				"button_hybrid_pressed_speed":
+					button_config.hybrid_interactions["pressed"]["speed"] = float(value)
+				"button_hybrid_pressed_ease_type":
+					button_config.hybrid_interactions["pressed"]["ease_type"] = str(value)
 			_apply_button_config_to_host_views(button_config)
 		_:
 			set_panel_shader_parameter(parameter_name, value)
@@ -1849,6 +1903,17 @@ func _sync_single_control_from_panel(parameter_name: String) -> void:
 			var value_label: Label = slider.get_meta("value_label") as Label
 			if value_label:
 				value_label.text = _format_float(slider.value)
+		return
+
+	if _option_selectors.has(parameter_name):
+		var selector: OptionButton = _option_selectors[parameter_name] as OptionButton
+		if selector:
+			for index in range(selector.item_count):
+				if str(selector.get_item_metadata(index)) == str(value):
+					selector.set_block_signals(true)
+					selector.select(index)
+					selector.set_block_signals(false)
+					break
 		return
 
 	if _color_pickers.has(parameter_name):

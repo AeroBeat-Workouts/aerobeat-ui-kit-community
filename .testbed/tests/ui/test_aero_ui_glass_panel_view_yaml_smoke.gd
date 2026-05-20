@@ -39,15 +39,45 @@ func test_canonical_panel_view_scene_loads_yaml_backed_style_bundle_on_startup()
 		"toggle_on": false,
 	}
 	panel._refresh_primary_action_visual()
+	await get_tree().create_timer(0.15).timeout
 	panel._sync_preview_shell()
 	var frame_border_before := panel.preview_frame.get_theme_stylebox("panel") as StyleBoxFlat
 	var badge_border_before := panel.preview_badge.get_theme_stylebox("panel") as StyleBoxFlat
 	assert_false(frame_border_before.border_color.is_equal_approx(panel.TOGGLE_ON_ACCENT))
 	assert_false(badge_border_before.border_color.is_equal_approx(panel.TOGGLE_ON_ACCENT))
 	assert_true(panel.primary_action_body.scale.x > 1.0)
+	var hover_scale := panel.primary_action_body.scale.x
+
+	panel._target_states[panel.TARGET_PRIMARY] = {
+		"hovered": true,
+		"pressed": true,
+		"dragging": false,
+		"toggle_on": false,
+	}
+	panel._refresh_primary_action_visual()
+	await get_tree().create_timer(0.12).timeout
+	assert_true(panel.primary_action_body.scale.x < hover_scale)
+
+	panel._target_states[panel.TARGET_PRIMARY] = {
+		"hovered": false,
+		"pressed": false,
+		"dragging": false,
+		"toggle_on": true,
+	}
+	panel._refresh_primary_action_visual()
+	await get_tree().create_timer(0.15).timeout
+	assert_almost_eq(panel.primary_action_body.scale.x, 1.0, 0.0001)
+
+	var tween_finished := false
+	panel.TweenAlphaChildren(0.35, 0.0, "linear", func() -> void:
+		tween_finished = true
+	)
+	await get_tree().process_frame
+	assert_true(tween_finished)
+	assert_almost_eq(panel.badge_view.modulate.a, 0.35, 0.0001)
+	assert_almost_eq(panel.primary_button_view.modulate.a, 0.35, 0.0001)
 
 	panel.set_presentation_mode(panel.PRESENTATION_MODE_HYBRID_WORLD_SPACE)
 	await get_tree().process_frame
 	assert_almost_eq(panel.preview_badge_label.modulate.a, 0.9, 0.0001)
 	assert_almost_eq(panel.primary_action_label.modulate.a, 0.99, 0.0001)
-	assert_true(panel.primary_action_body.scale.x > 1.0)

@@ -11,6 +11,10 @@ const DEFAULT_STATE := {
 	"tint_strength": 0.0,
 	"scale": 1.0,
 }
+const DEFAULT_INTERACTION_TWEEN := {
+	"speed": 0.12,
+	"ease_type": "smooth",
+}
 
 var source_path := ""
 var variant := "default"
@@ -33,12 +37,27 @@ var hybrid_states := {
 	"hover": {"fill_delta": 0.25, "border_delta": 0.46, "shadow_alpha": 0.24, "shadow_size": 12, "tint_strength": 0.34, "scale": 1.012},
 	"pressed": {"fill_delta": 0.31, "border_delta": 0.50, "shadow_alpha": 0.28, "shadow_size": 12, "tint_strength": 0.72, "scale": 0.988},
 }
+var source_interactions := {
+	"hover": {"speed": 0.12, "ease_type": "smooth"},
+	"pressed": {"speed": 0.08, "ease_type": "snappy"},
+}
+var hybrid_interactions := {
+	"hover": {"speed": 0.12, "ease_type": "smooth"},
+	"pressed": {"speed": 0.08, "ease_type": "snappy"},
+}
 
 
 func get_state(is_hybrid_world: bool, phase: String) -> Dictionary:
 	var source: Dictionary = hybrid_states if is_hybrid_world else source_states
 	var state: Dictionary = source.get(phase, source.get("rest", DEFAULT_STATE)) as Dictionary
 	return _duplicate_state(state)
+
+
+func get_interaction_tween(is_hybrid_world: bool, phase: String) -> Dictionary:
+	var source: Dictionary = hybrid_interactions if is_hybrid_world else source_interactions
+	var fallback_phase := phase if source.has(phase) else "hover"
+	var interaction: Dictionary = source.get(fallback_phase, DEFAULT_INTERACTION_TWEEN) as Dictionary
+	return _duplicate_interaction_tween(interaction)
 
 
 func get_label_alpha(is_hybrid_world: bool) -> float:
@@ -57,4 +76,11 @@ func _duplicate_state(state: Dictionary) -> Dictionary:
 		"shadow_size": int(state.get("shadow_size", 0)),
 		"tint_strength": float(state.get("tint_strength", 0.0)),
 		"scale": float(state.get("scale", 1.0)),
+	}
+
+
+func _duplicate_interaction_tween(interaction: Dictionary) -> Dictionary:
+	return {
+		"speed": float(interaction.get("speed", DEFAULT_INTERACTION_TWEEN["speed"])),
+		"ease_type": str(interaction.get("ease_type", DEFAULT_INTERACTION_TWEEN["ease_type"])),
 	}
