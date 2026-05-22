@@ -238,11 +238,12 @@ func _publish_mouse_button_to_contract(event: InputEventMouseButton) -> bool:
 		return false
 
 	var had_hover_before_release := _mouse_hover_active
+	var published_target_path := _proof_button.get_path() if inside_card or _mouse_card_capture else NodePath()
 	var published := _publish_to_screen_adapter(event, {
 		"host_surface": "screen_2d_card",
 		"target_resolution": "preview_button_path",
 		"capture_continuity": _mouse_card_capture,
-	})
+	}, published_target_path)
 	if not published:
 		return false
 
@@ -267,7 +268,7 @@ func _publish_release_hover_exit(screen_position: Vector2) -> void:
 		"target_resolution": "preview_button_path",
 		"synthetic_hover_exit": true,
 		"release_outside_cleanup": true,
-	})
+	}, NodePath())
 
 
 func _publish_window_hover_exit() -> void:
@@ -281,7 +282,7 @@ func _publish_window_hover_exit() -> void:
 		"target_resolution": "preview_button_path",
 		"synthetic_hover_exit": true,
 		"window_mouse_exit": true,
-	})
+	}, NodePath())
 	_mouse_hover_active = false
 	_last_forwarded_panel_event = "publish mouse hover exit -> window exit"
 	_refresh_contract_status()
@@ -292,11 +293,12 @@ func _publish_mouse_motion_to_contract(event: InputEventMouseMotion) -> bool:
 	if not inside_card and not _mouse_card_capture and not _mouse_hover_active:
 		return false
 
+	var published_target_path := _proof_button.get_path() if inside_card or _mouse_card_capture else NodePath()
 	var published := _publish_to_screen_adapter(event, {
 		"host_surface": "screen_2d_card",
 		"target_resolution": "preview_button_path",
 		"capture_continuity": _mouse_card_capture,
-	})
+	}, published_target_path)
 	if not published:
 		return false
 
@@ -322,7 +324,7 @@ func _publish_screen_touch_to_contract(event: InputEventScreenTouch) -> bool:
 		"host_surface": "screen_2d_card",
 		"target_resolution": "preview_button_path",
 		"capture_continuity": has_capture,
-	})
+	}, _proof_button.get_path())
 	if not published:
 		return false
 
@@ -346,7 +348,7 @@ func _publish_screen_drag_to_contract(event: InputEventScreenDrag) -> bool:
 		"target_resolution": "preview_button_path",
 		"capture_continuity": true,
 		"inside_card": inside_card,
-	})
+	}, _proof_button.get_path())
 	if not published:
 		return false
 
@@ -354,10 +356,12 @@ func _publish_screen_drag_to_contract(event: InputEventScreenDrag) -> bool:
 	return true
 
 
-func _publish_to_screen_adapter(event: InputEvent, metadata: Dictionary = {}) -> bool:
+func _publish_to_screen_adapter(event: InputEvent, metadata: Dictionary = {}, target_path: NodePath = NodePath()) -> bool:
 	if screen_input_adapter == null or not is_instance_valid(_proof_button):
 		return false
-	return screen_input_adapter.publish_input_event(event, _proof_button.get_path(), metadata)
+	var merged_metadata := metadata.duplicate(true)
+	merged_metadata["respect_empty_target_path"] = true
+	return screen_input_adapter.publish_input_event(event, target_path, merged_metadata)
 
 
 func _is_screen_position_inside_proof_card(screen_position: Vector2) -> bool:
