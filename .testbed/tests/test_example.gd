@@ -11,7 +11,9 @@ func test_hidden_testbed_manifest_stays_ui_kit_focused() -> void:
 	assert_string_contains(manifest_text, '"aerobeat-input-core"', "Hybrid contract proof should pin aerobeat-input-core in the hidden testbed")
 
 	var addon_keys := _extract_addon_keys(manifest_text)
-	assert_eq(addon_keys, ["aerobeat-ui-core", "aerobeat-input-core", "gut"], "Hidden testbed should only declare UI-kit-scoped and approved shared interaction-contract dependencies")
+	assert_string_contains(manifest_text, '"aerobeat-spatial-ui-core"', "Hybrid spatial cutover should pin aerobeat-spatial-ui-core in the hidden testbed")
+	assert_string_contains(manifest_text, '"aerobeat-spatial-ui-mouse"', "Hybrid spatial cutover should pin aerobeat-spatial-ui-mouse in the hidden testbed")
+	assert_eq(addon_keys, ["aerobeat-ui-kit-community", "aerobeat-ui-core", "aerobeat-input-core", "aerobeat-spatial-ui-core", "aerobeat-spatial-ui-mouse", "gut"], "Hidden testbed should only declare the repo-local package plus approved shared interaction-contract/spatial-provider dependencies")
 
 func _extract_addon_keys(manifest_text: String) -> Array[String]:
 	var keys: Array[String] = []

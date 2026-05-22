@@ -18,6 +18,16 @@
       "checkout": "22c4666efe96ba64b0f23907202a411000d72d41",
       "subfolder": "/"
     },
+    "aerobeat-spatial-ui-core": {
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-spatial-ui-core.git",
+      "checkout": "91310478091e6435c9f94e52b1cf7b768ef601aa",
+      "subfolder": "/"
+    },
+    "aerobeat-spatial-ui-mouse": {
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-spatial-ui-mouse.git",
+      "checkout": "980f524a3810048c7d1ba0811ccfa48a62b9aeb5",
+      "subfolder": "/"
+    },
     // GUT drives the repo-local test suite inside the hidden testbed/workbench.
     "gut": {
       "url": "git@github.com:bitwes/Gut.git",

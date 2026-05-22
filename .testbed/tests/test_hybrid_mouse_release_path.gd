@@ -49,8 +49,9 @@ func test_mouse_motion_button_mask_drop_synthesizes_release_completion() -> void
 	motion_release.button_mask = 0
 	assert_true(scene._publish_mouse_motion_to_contract(motion_release))
 	assert_eq(scene._last_contract_phase, "hover_move")
-	assert_false(scene._mouse_left_button_down)
-	assert_false(scene._mouse_panel_capture)
+	var mouse_state: Dictionary = scene._current_mouse_runtime_state()
+	assert_false(bool(mouse_state.get("left_button_down", true)))
+	assert_false(bool(mouse_state.get("capture_active", true)))
 	assert_true(_primary_toggle_on(scene))
 	assert_eq(_primary_card(scene).button_pressed, true)
 	assert_string_contains(scene._last_release_target_path, "PrimaryActionButton")
