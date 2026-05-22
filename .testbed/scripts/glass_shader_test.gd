@@ -99,6 +99,11 @@ func _input(event: InputEvent) -> void:
 		_refresh_contract_status()
 
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_MOUSE_EXIT:
+		_publish_window_hover_exit()
+
+
 func _configure_info_panel_layout() -> void:
 	if is_instance_valid(controls_panel):
 		controls_panel.custom_minimum_size.x = INFO_PANEL_MIN_WIDTH
@@ -263,6 +268,23 @@ func _publish_release_hover_exit(screen_position: Vector2) -> void:
 		"synthetic_hover_exit": true,
 		"release_outside_cleanup": true,
 	})
+
+
+func _publish_window_hover_exit() -> void:
+	if not _mouse_hover_active or _mouse_card_capture:
+		return
+	var hover_exit := InputEventMouseMotion.new()
+	hover_exit.position = Vector2(-1.0, -1.0)
+	hover_exit.relative = Vector2.ZERO
+	_publish_to_screen_adapter(hover_exit, {
+		"host_surface": "screen_2d_card",
+		"target_resolution": "preview_button_path",
+		"synthetic_hover_exit": true,
+		"window_mouse_exit": true,
+	})
+	_mouse_hover_active = false
+	_last_forwarded_panel_event = "publish mouse hover exit -> window exit"
+	_refresh_contract_status()
 
 
 func _publish_mouse_motion_to_contract(event: InputEventMouseMotion) -> bool:
