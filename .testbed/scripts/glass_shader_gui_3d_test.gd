@@ -452,6 +452,8 @@ const BUTTON_EDITOR_OPTION_CONTROLS := [
 	{"name": "button_hybrid_pressed_ease_type", "label": "pressed_ease_type", "default": "snappy", "options": [{"label": "Smooth", "value": "smooth"}, {"label": "Linear", "value": "linear"}, {"label": "Snappy", "value": "snappy"}, {"label": "Soft", "value": "soft"}, {"label": "Crisp", "value": "crisp"}]},
 ]
 
+const SECTION_SPACER_HEIGHT := 56.0
+
 @export var auto_rotate := true
 @export_range(0.0, 90.0, 0.1) var auto_rotate_speed_deg := 36.0
 @export_range(0.0, 120.0, 0.1) var manual_rotate_speed_deg := 54.0
@@ -1221,27 +1223,27 @@ func _build_controls() -> void:
 	_preset_status_label = null
 	_contract_status_label = null
 
-	controls_list.add_child(_make_section_block("panel", [
+	_append_controls_section(_make_section_block("panel", [
 		_make_background_mode_control(),
 		_make_yaml_actions_block("", PRESET_SECTION_PANEL, "Root panel YAML with badge/button references."),
 		_make_parameter_section("live shader values", PanelViewScript.FLOAT_CONTROLS, PanelViewScript.COLOR_CONTROLS),
 		_make_filtered_parameter_section("hybrid presentation", HYBRID_FLOAT_CONTROLS, PANEL_PRESENTATION_FLOAT_PARAMETER_NAMES, [], []),
 		_make_filtered_parameter_section("3d panel material", HYBRID_FLOAT_CONTROLS, HYBRID_ONLY_FLOAT_PARAMETER_NAMES, HYBRID_COLOR_CONTROLS, HYBRID_ONLY_COLOR_PARAMETER_NAMES),
-	]))
-	controls_list.add_child(_make_section_block("badge", [
+	], SECTION_SPACER_HEIGHT))
+	_append_controls_section(_make_section_block("badge", [
 		_make_yaml_actions_block("", PRESET_SECTION_BADGE, "Badge component YAML."),
 		_make_parameter_section("shared badge config", BADGE_EDITOR_BASE_CONTROLS, BADGE_EDITOR_COLOR_CONTROLS),
 		_make_float_parameter_section("hybrid presentation", BADGE_EDITOR_HYBRID_CONTROLS),
-	]))
-	controls_list.add_child(_make_section_block("primary button", [
+	], SECTION_SPACER_HEIGHT))
+	_append_controls_section(_make_section_block("primary button", [
 		_make_yaml_actions_block("", PRESET_SECTION_BUTTON, "Primary button component YAML."),
 		_make_parameter_section("shared button config", BUTTON_EDITOR_BASE_CONTROLS, BUTTON_EDITOR_COLOR_CONTROLS),
 		_make_float_parameter_section("hybrid presentation + interaction", BUTTON_EDITOR_HYBRID_CONTROLS),
-	]))
-	controls_list.add_child(_make_section_block("input debug", [
+	], SECTION_SPACER_HEIGHT))
+	_append_controls_section(_make_section_block("input debug", [
 		_make_preset_status_block(),
 		_make_contract_status_block(),
-	]))
+	], SECTION_SPACER_HEIGHT), false)
 
 	var tail_spacer := Control.new()
 	tail_spacer.custom_minimum_size = Vector2(0.0, 8.0)
@@ -1308,7 +1310,15 @@ func _make_contract_status_block() -> Control:
 	return panel
 
 
-func _make_section_block(title_text: String, blocks: Array) -> Control:
+func _append_controls_section(section: Control, include_spacer: bool = true) -> void:
+	controls_list.add_child(section)
+	if include_spacer:
+		var spacer := Control.new()
+		spacer.custom_minimum_size = Vector2(0.0, SECTION_SPACER_HEIGHT)
+		controls_list.add_child(spacer)
+
+
+func _make_section_block(title_text: String, blocks: Array, block_spacer_height: float = 0.0) -> Control:
 	var wrapper := VBoxContainer.new()
 	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	wrapper.add_theme_constant_override("separation", 8)
@@ -1317,9 +1327,16 @@ func _make_section_block(title_text: String, blocks: Array) -> Control:
 	title.text = title_text
 	wrapper.add_child(title)
 
+	var visible_block_index := 0
 	for block in blocks:
-		if block is Control:
-			wrapper.add_child(block)
+		if not (block is Control):
+			continue
+		if visible_block_index > 0 and block_spacer_height > 0.0:
+			var spacer := Control.new()
+			spacer.custom_minimum_size = Vector2(0.0, block_spacer_height)
+			wrapper.add_child(spacer)
+		wrapper.add_child(block)
+		visible_block_index += 1
 
 	return wrapper
 
