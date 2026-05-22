@@ -150,3 +150,42 @@ func test_screen_host_release_outside_card_emits_hover_exit_and_returns_idle() -
 	assert_eq(host._panel_view.primary_button_view._last_visual_phase, "rest")
 	assert_false(host._mouse_hover_active)
 	assert_eq(host._last_contract_phase, "hover_exit")
+
+
+func test_screen_host_input_release_outside_card_emits_hover_exit_and_returns_idle() -> void:
+	var host = SCREEN_HOST_SCENE.instantiate()
+	add_child_autofree(host)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	var button := host._proof_button as Control
+	assert_not_null(button)
+	var rect := button.get_global_rect()
+	var inside := rect.get_center()
+	var outside := rect.position + Vector2(rect.size.x + 24.0, rect.size.y * 0.5)
+
+	var hover := InputEventMouseMotion.new()
+	hover.position = inside
+	hover.relative = Vector2.ZERO
+	host._input(hover)
+	await get_tree().process_frame
+	assert_eq(host._contract_status_label.text, "Hovered target: PrimaryActionButton\nInteraction state: hover")
+
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = inside
+	host._input(press)
+	await get_tree().process_frame
+	assert_eq(host._contract_status_label.text, "Hovered target: PrimaryActionButton\nInteraction state: pressed")
+
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.pressed = false
+	release.position = outside
+	host._input(release)
+	await get_tree().process_frame
+	assert_eq(host._contract_status_label.text, "Hovered target: none\nInteraction state: idle")
+	assert_eq(host._panel_view.primary_button_view._last_visual_phase, "rest")
+	assert_false(host._mouse_hover_active)
+	assert_eq(host._last_contract_phase, "hover_exit")

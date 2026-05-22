@@ -232,6 +232,7 @@ func _publish_mouse_button_to_contract(event: InputEventMouseButton) -> bool:
 	if not event.pressed and not inside_card and not _mouse_card_capture:
 		return false
 
+	var had_hover_before_release := _mouse_hover_active
 	var published := _publish_to_screen_adapter(event, {
 		"host_surface": "screen_2d_card",
 		"target_resolution": "preview_button_path",
@@ -245,11 +246,23 @@ func _publish_mouse_button_to_contract(event: InputEventMouseButton) -> bool:
 			_mouse_card_capture = true
 		elif not event.pressed:
 			_mouse_card_capture = false
-			if not inside_card:
-				_mouse_hover_active = false
+			if not inside_card and had_hover_before_release:
+				_publish_release_hover_exit(event.position)
 
 	_last_forwarded_panel_event = "publish mouse %s -> proof card%s" % ["press" if event.pressed else "release", " (captured)" if _mouse_card_capture and not inside_card else ""]
 	return true
+
+
+func _publish_release_hover_exit(screen_position: Vector2) -> void:
+	var hover_exit := InputEventMouseMotion.new()
+	hover_exit.position = screen_position
+	hover_exit.relative = Vector2.ZERO
+	_publish_to_screen_adapter(hover_exit, {
+		"host_surface": "screen_2d_card",
+		"target_resolution": "preview_button_path",
+		"synthetic_hover_exit": true,
+		"release_outside_cleanup": true,
+	})
 
 
 func _publish_mouse_motion_to_contract(event: InputEventMouseMotion) -> bool:
