@@ -1,6 +1,6 @@
 [gd_resource type="ShaderMaterial" format=3 uid="uid://b8gig6bjblm21"]
 
-[ext_resource type="Shader" uid="uid://k02i58pk5keo" path="res://assets/BinbunVFX_Vol2/FrostedGlass/shader/scatter_glass.gdshader" id="1_xt41m"]
+[ext_resource type="Shader" uid="uid://dm74oepphh5yj" path="res://addons/aerobeat-ui-kit-community/assets/BinbunVFX_Vol2/FrostedGlass/shader/scatter_glass.gdshader" id="1_xt41m"]
 
 [sub_resource type="Gradient" id="Gradient_xt41m"]
 colors = PackedColorArray(0.446777, 0.44677705, 0.44677705, 1, 1, 1, 1, 1)

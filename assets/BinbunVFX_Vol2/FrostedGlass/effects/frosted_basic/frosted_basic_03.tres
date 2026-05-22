@@ -1,6 +1,6 @@
 [gd_resource type="ShaderMaterial" format=3 uid="uid://c3q57x4mnlvvq"]
 
-[ext_resource type="Shader" uid="uid://2c0efi678hda" path="res://assets/BinbunVFX_Vol2/FrostedGlass/shader/frosted_glass.gdshader" id="1_oytj4"]
+[ext_resource type="Shader" uid="uid://bkd4mea6bglk8" path="res://addons/aerobeat-ui-kit-community/assets/BinbunVFX_Vol2/FrostedGlass/shader/frosted_glass.gdshader" id="1_oytj4"]
 
 [sub_resource type="Gradient" id="Gradient_501q4"]
 colors = PackedColorArray(0.581033, 0.58103293, 0.5810329, 1, 1, 1, 1, 1)
@@ -15,9 +15,9 @@ color_ramp = SubResource("Gradient_501q4")
 [resource]
 render_priority = 0
 shader = ExtResource("1_oytj4")
-shader_parameter/color = Color(0.81186336, 0.99999994, 0.9025312, 1)
+shader_parameter/color = Color(0.7367137, 0.9381673, 0.90572673, 1)
 shader_parameter/color_coat = 0.0
-shader_parameter/oilyness = 0.1
+shader_parameter/oilyness = 0.00999999977648
 shader_parameter/rim_amount = 0.1999999955296
 shader_parameter/rim_shape = 3.99999991431732
 shader_parameter/rim_color = Color(0.7862939, 1, 0.9002, 1)

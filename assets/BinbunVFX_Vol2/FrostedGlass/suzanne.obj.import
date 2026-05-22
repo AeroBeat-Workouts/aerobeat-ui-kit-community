@@ -4,14 +4,14 @@ importer="wavefront_obj"
 importer_version=1
 type="Mesh"
 uid="uid://bi4of1srk6ty4"
-path="res://.godot/imported/suzanne.obj-0a80fb0d6fd1eac3de4f5eccb05e8cf8.mesh"
+path="res://.godot/imported/suzanne.obj-51db7dc3a4c03087d4f1d8a27338e611.mesh"
 
 [deps]
 
-files=["res://.godot/imported/suzanne.obj-0a80fb0d6fd1eac3de4f5eccb05e8cf8.mesh"]
+files=["res://.godot/imported/suzanne.obj-51db7dc3a4c03087d4f1d8a27338e611.mesh"]
 
-source_file="res://assets/BinbunVFX_Vol2/FrostedGlass/suzanne.obj"
-dest_files=["res://.godot/imported/suzanne.obj-0a80fb0d6fd1eac3de4f5eccb05e8cf8.mesh", "res://.godot/imported/suzanne.obj-0a80fb0d6fd1eac3de4f5eccb05e8cf8.mesh"]
+source_file="res://addons/aerobeat-ui-kit-community/assets/BinbunVFX_Vol2/FrostedGlass/suzanne.obj"
+dest_files=["res://.godot/imported/suzanne.obj-51db7dc3a4c03087d4f1d8a27338e611.mesh", "res://.godot/imported/suzanne.obj-51db7dc3a4c03087d4f1d8a27338e611.mesh"]
 
 [params]
 

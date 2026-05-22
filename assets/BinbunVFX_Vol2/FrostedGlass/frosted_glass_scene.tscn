@@ -1,15 +1,15 @@
 [gd_scene format=3 uid="uid://b8gny0ytjbesg"]
 
-[ext_resource type="Texture2D" uid="uid://ed44j8f3a8us" path="res://assets/BinbunVFX_Vol2/shared/story_studio_02_1k.hdr" id="1_1nner"]
-[ext_resource type="Shader" uid="uid://mvwi25cb826n" path="res://assets/BinbunVFX_Vol2/shared/shader/checker.gdshader" id="2_05c4a"]
-[ext_resource type="Material" uid="uid://bgtrwfexuvmwc" path="res://assets/BinbunVFX_Vol2/FrostedGlass/effects/frosted_basic/frosted_basic_01.tres" id="4_6sigg"]
-[ext_resource type="Material" uid="uid://c3q57x4mnlvvq" path="res://assets/BinbunVFX_Vol2/FrostedGlass/effects/frosted_basic/frosted_basic_03.tres" id="4_uthxb"]
-[ext_resource type="Material" uid="uid://c3ciejpi1wx0l" path="res://assets/BinbunVFX_Vol2/FrostedGlass/effects/frosted_basic/frosted_basic_04.tres" id="5_uthxb"]
-[ext_resource type="Material" uid="uid://dx45owd8775ys" path="res://assets/BinbunVFX_Vol2/FrostedGlass/effects/frosted_rough/frosted_rough_04.tres" id="6_uthxb"]
-[ext_resource type="ArrayMesh" uid="uid://bi4of1srk6ty4" path="res://assets/BinbunVFX_Vol2/FrostedGlass/suzanne.obj" id="7_ra775"]
-[ext_resource type="Material" uid="uid://daq6yfd8herpo" path="res://assets/BinbunVFX_Vol2/FrostedGlass/effects/frosted_rough/frosted_rough_03.tres" id="8_uthxb"]
-[ext_resource type="Material" uid="uid://d3kckg1ed7i3y" path="res://assets/BinbunVFX_Vol2/FrostedGlass/effects/scatter_glass/scatter_glass_04.tres" id="9_uthxb"]
-[ext_resource type="Material" uid="uid://b8gig6bjblm21" path="res://assets/BinbunVFX_Vol2/FrostedGlass/effects/scatter_glass/scatter_glass_03.tres" id="10_jpkn6"]
+[ext_resource type="Texture2D" uid="uid://ed44j8f3a8us" path="res://addons/aerobeat-ui-kit-community/assets/BinbunVFX_Vol2/shared/story_studio_02_1k.hdr" id="1_1nner"]
+[ext_resource type="Shader" uid="uid://bpea6u445hajr" path="res://addons/aerobeat-ui-kit-community/assets/BinbunVFX_Vol2/shared/shader/checker.gdshader" id="2_05c4a"]
+[ext_resource type="Material" uid="uid://bgtrwfexuvmwc" path="res://addons/aerobeat-ui-kit-community/assets/BinbunVFX_Vol2/FrostedGlass/effects/frosted_basic/frosted_basic_01.tres" id="4_6sigg"]
+[ext_resource type="Material" uid="uid://c3q57x4mnlvvq" path="res://addons/aerobeat-ui-kit-community/assets/BinbunVFX_Vol2/FrostedGlass/effects/frosted_basic/frosted_basic_03.tres" id="4_uthxb"]
+[ext_resource type="Material" uid="uid://c3ciejpi1wx0l" path="res://addons/aerobeat-ui-kit-community/assets/BinbunVFX_Vol2/FrostedGlass/effects/frosted_basic/frosted_basic_04.tres" id="5_uthxb"]
+[ext_resource type="Material" uid="uid://dx45owd8775ys" path="res://addons/aerobeat-ui-kit-community/assets/BinbunVFX_Vol2/FrostedGlass/effects/frosted_rough/frosted_rough_04.tres" id="6_uthxb"]
+[ext_resource type="ArrayMesh" uid="uid://bi4of1srk6ty4" path="res://addons/aerobeat-ui-kit-community/assets/BinbunVFX_Vol2/FrostedGlass/suzanne.obj" id="7_ra775"]
+[ext_resource type="Material" uid="uid://daq6yfd8herpo" path="res://addons/aerobeat-ui-kit-community/assets/BinbunVFX_Vol2/FrostedGlass/effects/frosted_rough/frosted_rough_03.tres" id="8_uthxb"]
+[ext_resource type="Material" uid="uid://d3kckg1ed7i3y" path="res://addons/aerobeat-ui-kit-community/assets/BinbunVFX_Vol2/FrostedGlass/effects/scatter_glass/scatter_glass_04.tres" id="9_uthxb"]
+[ext_resource type="Material" uid="uid://b8gig6bjblm21" path="res://addons/aerobeat-ui-kit-community/assets/BinbunVFX_Vol2/FrostedGlass/effects/scatter_glass/scatter_glass_03.tres" id="10_jpkn6"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_ip3vt"]
 
@@ -234,7 +234,9 @@ mesh = SubResource("SphereMesh_jpkn6")
 
 [node name="MeshInstance3D2" type="MeshInstance3D" parent="." unique_id=1417771990]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -2.08)
+visible = false
 mesh = SubResource("BoxMesh_6ps8k")
+surface_material_override/0 = ExtResource("4_uthxb")
 
 [node name="basic" type="Node3D" parent="." unique_id=861118153]
 visible = false
@@ -274,3 +276,6 @@ mesh = SubResource("BoxMesh_jpkn6")
 transform = Transform3D(0.51204276, 0.4164319, -0.7512632, 0, -0.8746196, -0.48480946, -0.85895985, 0.2482432, -0.4478427, 15, 1.5, 0)
 material_override = ExtResource("10_jpkn6")
 mesh = SubResource("SphereMesh_uthxb")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=2125019977]
+transform = Transform3D(1, 0, 0, 0, 0.9341422, 0.35690108, 0, -0.35690108, 0.9341422, 1.4142199, 2.5047014, 2.3027503)

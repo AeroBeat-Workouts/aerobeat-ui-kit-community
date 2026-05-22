@@ -1,6 +1,6 @@
 [gd_resource type="ShaderMaterial" format=3 uid="uid://c3ciejpi1wx0l"]
 
-[ext_resource type="Shader" uid="uid://2c0efi678hda" path="res://assets/BinbunVFX_Vol2/FrostedGlass/shader/frosted_glass.gdshader" id="1_eqx48"]
+[ext_resource type="Shader" uid="uid://bkd4mea6bglk8" path="res://addons/aerobeat-ui-kit-community/assets/BinbunVFX_Vol2/FrostedGlass/shader/frosted_glass.gdshader" id="1_eqx48"]
 
 [resource]
 render_priority = 0
