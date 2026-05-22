@@ -1,5 +1,12 @@
 extends Node3D
 
+# Phase 1 ownership-boundary freeze note:
+# - This proof host currently owns world-hit projection, hover-owner transitions,
+#   press/drag capture continuity, and projected target resolution for the hybrid 3D
+#   reference surface.
+# - That ownership is temporary reference truth only. Phase 2 should extract reusable
+#   helper/provider layers into aerobeat-spatial-ui-core and aerobeat-spatial-ui-mouse
+#   without redefining the canonical interaction contract here.
 const PANEL_VIEW_SCENE_PATH := "res://ui/views/aero_ui_glass_panel_view.tscn"
 const HYBRID_SHADER_PATH := "res://assets/shaders/glass-panel-hybrid-3d.gdshader"
 const UI_OVERLAY_SHADER_PATH := "res://assets/shaders/glass-panel-ui-overlay-3d.gdshader"
@@ -591,6 +598,10 @@ func _inject_panel_view_interaction_bus() -> void:
 
 
 func _forward_world_panel_input(event: InputEvent) -> bool:
+	# Reference-only host seam:
+	# this repo still demonstrates the host-driven 3D path end-to-end so Phase 2 has a
+	# stable extraction target. Reusable spatial helper/provider code should move out to
+	# the spatial-ui repos instead of continuing to accumulate in ui-kit-community.
 	if hybrid_input_adapter == null or panel_input_surface == null or camera_3d == null:
 		return false
 

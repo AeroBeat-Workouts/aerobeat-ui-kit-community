@@ -1,5 +1,12 @@
 extends Control
 
+# Phase 1 ownership-boundary freeze note:
+# - The canonical interaction contract, event taxonomy, bus, and native 2D bridge
+#   ownership remain in aerobeat-input-core.
+# - This proof host may keep narrow reference wiring to the contract for now, but it
+#   must not grow into a second contract owner.
+# - Phase 2 should extract only reusable bridge/provider logic into owning repos while
+#   leaving this scene as a consumer/example surface.
 const PANEL_VIEW_SCENE_PATH := "res://ui/views/aero_ui_glass_panel_view.tscn"
 const PANEL_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/panel"
 const BADGE_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/badge"
@@ -182,6 +189,10 @@ func _attach_contract_nodes_to_proof_button() -> void:
 
 
 func _ensure_interaction_contract_nodes() -> void:
+	# Consumer-side reference seam only:
+	# this scene wires the proof card to the shared input-core contract objects, while
+	# reusable contract ownership stays in aerobeat-input-core and consumer binding
+	# behavior stays in aerobeat-ui-core.
 	if interaction_bus == null:
 		interaction_bus = AeroUiInteractionBus.new()
 		interaction_bus.name = "AeroUiInteractionBus"
