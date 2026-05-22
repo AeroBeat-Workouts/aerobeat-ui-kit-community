@@ -296,6 +296,75 @@ const HYBRID_COLOR_CONTROLS := [
 	},
 ]
 
+const HYBRID_CONTROL_SECTIONS := [
+	{
+		"label": "Scene controls",
+		"spacing_after": 18.0,
+		"builders": ["_make_background_mode_control", "_make_preset_actions_block"],
+	},
+	{
+		"label": "Glass body",
+		"spacing_after": 18.0,
+		"float_names": [
+			"blur",
+			"warp_intensity",
+			"strength_x",
+			"strength_y",
+			"offset_x",
+			"offset_y",
+			"corner_radius",
+			"edge_smoothness",
+			"edge_width",
+			"chromatic_strength",
+			"tint_strength",
+			"body_frost_strength",
+			"background_subdue",
+			"interior_chroma",
+		],
+	},
+	{
+		"label": "World lighting",
+		"spacing_after": 18.0,
+		"float_names": [
+			"world_rim_refraction",
+			"fresnel_power",
+			"fresnel_strength",
+			"face_highlight",
+			"face_veil_strength",
+			"perimeter_frost_boost",
+		],
+	},
+	{
+		"label": "UI embed + overlay",
+		"spacing_after": 18.0,
+		"float_names": [
+			"ui_alpha_gain",
+			"ui_brightness",
+			"ui_embed_strength",
+			"ui_overlay_alpha",
+			"ui_overlay_brightness",
+			"ui_overlay_shadow_strength",
+			"ui_overlay_tint_mix",
+		],
+	},
+	{
+		"label": "Hybrid shell",
+		"spacing_after": 18.0,
+		"float_names": [
+			"hybrid_inner_border_brightness",
+			"hybrid_inner_border_alpha",
+			"hybrid_badge_fill_alpha",
+			"hybrid_badge_border_alpha",
+			"hybrid_badge_label_alpha",
+		],
+	},
+	{
+		"label": "Color tuning",
+		"spacing_after": 8.0,
+		"color_names": ["tint", "edge_color", "ui_overlay_tint"],
+	},
+]
+
 const PARAMETER_ALIASES := {
 	"edge_highlight": {"target": "edge_color"},
 	"edge_smoothness": {"target": "edge_softness", "scale": 0.01},
@@ -1230,7 +1299,7 @@ func _make_contract_status_block() -> Control:
 	panel.add_child(padding)
 
 	var status := RichTextLabel.new()
-	status.custom_minimum_size = Vector2(0.0, 164.0)
+	status.custom_minimum_size = Vector2(0.0, 92.0)
 	status.bbcode_enabled = true
 	status.fit_content = true
 	status.scroll_active = false
@@ -2022,31 +2091,62 @@ func _refresh_status() -> void:
 	if _contract_status_label == null or panel_pivot == null:
 		return
 
+	var interaction_target := _current_interaction_target_label()
+	var state_label := _current_interaction_state_label()
 	var lines := [
-		"[b]Hybrid 3D Glass Panel / Input-Core Contract Proof[/b]",
-		"[color=#cbd5e1]Space[/color] auto rotation: %s" % ("ON" if auto_rotate else "OFF"),
-		"[color=#cbd5e1]WASD / Arrows[/color] pitch and yaw the wrapper",
-		"[color=#cbd5e1]R[/color] reset wrapper rotation",
-		"[color=#cbd5e1]1 / 2 / 3 / 4[/color] source viewport background: %s" % _background_mode_name(get_preview_background_mode()),
-		"[color=#cbd5e1]Mouse / touch[/color] are ray-picked locally, projected into the panel surface, then published through HybridSubViewportInputAdapter.",
-		"",
-		"Pitch: %.1f°" % panel_pivot.rotation_degrees.x,
-		"Yaw: %.1f°" % panel_pivot.rotation_degrees.y,
-		"Mouse capture: %s" % ("ON" if _mouse_panel_capture else "OFF"),
-		"Hover active: %s" % ("YES" if _mouse_hover_active else "NO"),
-		"Surface currently hit: %s" % ("YES" if _last_surface_hover_hit else "NO"),
-		"Hover target path: %s" % _path_label(_mouse_hover_target_path),
-		"Active owner path: %s" % _path_label(_mouse_owner_target_path),
-		"Live projected target: %s" % _path_label(_last_live_target_path),
-		"Last release target: %s" % (_last_release_target_path if _last_release_target_path != "" else "none"),
-		"Active touches: %d" % _active_touch_state.size(),
-		"Published target path: %s" % (_last_contract_target_path if _last_contract_target_path != "" else "waiting"),
-		"Source variant: %s" % _last_contract_source_variant,
-		"Phase: %s" % _last_contract_phase,
-		"Surface ID: %s" % _last_contract_surface_id,
-		"Last contract publish: %s" % _last_forwarded_panel_event,
+		"[b]Hybrid input status[/b]",
+		"[color=#cbd5e1]Interacting with:[/color] %s" % interaction_target,
+		"[color=#cbd5e1]Current state:[/color] %s" % state_label,
 	]
 	_contract_status_label.text = "\n".join(lines)
+
+
+func _current_interaction_target_label() -> String:
+	if _mouse_owner_target_path != NodePath():
+		return _path_label(_mouse_owner_target_path)
+	if _mouse_hover_target_path != NodePath():
+		return _path_label(_mouse_hover_target_path)
+	if _last_live_target_path != NodePath():
+		return _path_label(_last_live_target_path)
+	if _last_contract_target_path != "":
+		return _path_label(NodePath(_last_contract_target_path))
+	return "none"
+
+
+func _current_interaction_state_label() -> String:
+	if _active_touch_state.size() > 0:
+		return "touch %s" % _phase_label(_last_contract_phase)
+	if _mouse_left_button_down or _mouse_panel_capture:
+		return "mouse %s" % _phase_label(_last_contract_phase)
+	if _mouse_hover_active:
+		return "mouse hover"
+	if _last_contract_phase != "waiting" and _last_contract_phase != "":
+		return _phase_label(_last_contract_phase)
+	return "idle"
+
+
+func _phase_label(phase: String) -> String:
+	match StringName(phase):
+		AeroUiInteractionTypes.PHASE_PRESS_BEGIN:
+			return "press"
+		AeroUiInteractionTypes.PHASE_PRESS_HOLD:
+			return "holding"
+		AeroUiInteractionTypes.PHASE_DRAG_BEGIN:
+			return "drag start"
+		AeroUiInteractionTypes.PHASE_DRAG_MOVE:
+			return "dragging"
+		AeroUiInteractionTypes.PHASE_DRAG_END:
+			return "drag end"
+		AeroUiInteractionTypes.PHASE_PRESS_END:
+			return "release"
+		AeroUiInteractionTypes.PHASE_HOVER_ENTER, AeroUiInteractionTypes.PHASE_HOVER_MOVE:
+			return "hover"
+		AeroUiInteractionTypes.PHASE_HOVER_EXIT:
+			return "hover exit"
+		AeroUiInteractionTypes.PHASE_CANCEL:
+			return "cancel"
+		_:
+			return phase if phase != "waiting" and phase != "" else "idle"
 
 
 func _background_mode_name(mode: int) -> String:
