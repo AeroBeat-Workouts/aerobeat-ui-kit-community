@@ -1,6 +1,12 @@
 {
   "$schema": "https://chickensoft.games/schemas/addons.schema.json",
   "addons": {
+    // Mount the current repo package from the repo root so testbed sessions can inspect repo-owned assets.
+    "aerobeat-ui-kit-community": {
+      "url": "..",
+      "source": "symlink",
+      "subfolder": "/"
+    },
     // The hidden testbed stays focused on shared UI-kit development.
     "aerobeat-ui-core": {
       "url": "git@github.com:AeroBeat-Workouts/aerobeat-ui-core.git",
