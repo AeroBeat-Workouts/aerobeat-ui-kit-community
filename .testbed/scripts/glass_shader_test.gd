@@ -93,7 +93,7 @@ func _ready() -> void:
 	call_deferred("_refresh_contract_status")
 
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if _forward_screen_panel_input(event):
 		get_viewport().set_input_as_handled()
 		_refresh_contract_status()
