@@ -6,6 +6,8 @@ extends Node3D
 # - Reusable projected-surface helpers now come from aerobeat-spatial-ui-core.
 # - Reusable mouse hover/capture/publication lifecycle now comes from
 #   aerobeat-spatial-ui-mouse.
+# - Reusable touch lifecycle/runtime continuity now comes from
+#   aerobeat-spatial-ui-touch.
 # - The canonical interaction contract still belongs to aerobeat-input-core.
 const PANEL_VIEW_SCENE_PATH := "res://ui/views/aero_ui_glass_panel_view.tscn"
 const HYBRID_SHADER_PATH := "res://assets/shaders/glass-panel-hybrid-3d.gdshader"
@@ -25,6 +27,8 @@ const SpatialProjectionHelperScript = preload("res://addons/aerobeat-spatial-ui-
 const SpatialRectTargetResolverScript = preload("res://addons/aerobeat-spatial-ui-core/src/helpers/providers/aero_spatial_rect_target_resolver.gd")
 const SpatialUiMouseProviderScript = preload("res://addons/aerobeat-spatial-ui-mouse/src/providers/mouse/aero_spatial_ui_mouse_provider.gd")
 const SpatialUiMouseProviderConfigScript = preload("res://addons/aerobeat-spatial-ui-mouse/src/providers/mouse/aero_spatial_ui_mouse_provider_config.gd")
+const SpatialUiTouchProviderScript = preload("res://addons/aerobeat-spatial-ui-touch/src/providers/touch/aero_spatial_ui_touch_provider.gd")
+const SpatialUiTouchProviderConfigScript = preload("res://addons/aerobeat-spatial-ui-touch/src/providers/touch/aero_spatial_ui_touch_provider_config.gd")
 
 const AUTO_YAW_AMPLITUDE_DEG := 26.0
 const AUTO_PITCH_AMPLITUDE_DEG := 10.0
@@ -503,7 +507,7 @@ var _spatial_surface_descriptor: AeroSpatialSurfaceDescriptor
 var _spatial_projection_helper: AeroSpatialProjectionHelper = SpatialProjectionHelperScript.new()
 var _spatial_target_resolver: AeroSpatialRectTargetResolver = SpatialRectTargetResolverScript.new()
 var _spatial_mouse_provider: AeroSpatialUiMouseProvider
-var _active_touch_state: Dictionary = {}
+var _spatial_touch_provider = null
 var _last_release_target_path := ""
 var _last_forwarded_panel_event := "waiting for normalized panel input"
 var _last_contract_phase := "waiting"
@@ -606,6 +610,13 @@ func _build_spatial_provider_runtime() -> void:
 	mouse_config.host_surface = "PanelInputSurface"
 	mouse_config.target_resolution = "rect_target_specs"
 	_spatial_mouse_provider = SpatialUiMouseProviderScript.new(mouse_config)
+
+	var touch_config = SpatialUiTouchProviderConfigScript.new()
+	touch_config.pointer_id_prefix = "touch_"
+	touch_config.drag_threshold_pixels = hybrid_input_adapter.drag_threshold_pixels if hybrid_input_adapter != null else 12.0
+	touch_config.host_surface = "PanelInputSurface"
+	touch_config.target_resolution = "rect_target_specs"
+	_spatial_touch_provider = SpatialUiTouchProviderScript.new(touch_config)
 	_refresh_spatial_surface_descriptor()
 
 
@@ -637,6 +648,10 @@ func _refresh_spatial_surface_descriptor() -> void:
 
 func _current_mouse_runtime_state() -> Dictionary:
 	return _spatial_mouse_provider.describe_runtime_state() if _spatial_mouse_provider != null else {}
+
+
+func _current_touch_runtime_state() -> Dictionary:
+	return _spatial_touch_provider.describe_runtime_state() if _spatial_touch_provider != null else {}
 
 
 func _forward_world_panel_input(event: InputEvent) -> bool:
@@ -712,83 +727,37 @@ func _publish_mouse_release_from_motion(event: InputEventMouseMotion, hit: Dicti
 
 
 func _publish_screen_touch_to_contract(event: InputEventScreenTouch) -> bool:
-	var pointer_id := StringName("touch_%s" % event.index)
-	var previous_state: Dictionary = _active_touch_state.get(pointer_id, {})
-	var previous_projected: Dictionary = previous_state.get("projected_data", {})
-	var previous_owner: NodePath = previous_state.get("owner_target_path", NodePath())
-	if event.canceled:
-		if previous_projected.is_empty():
-			return false
-		_publish_projected_phase(AeroUiInteractionTypes.PHASE_CANCEL, pointer_id, previous_projected, {
-			"source_type": AeroUiInteractionTypes.SOURCE_TYPE_TOUCH,
-			"source_variant": AeroUiInteractionTypes.SOURCE_VARIANT_SCREEN_TOUCH,
-			"button": AeroUiInteractionTypes.BUTTON_CONTACT,
-			"primary": event.index == 0,
-			"pressed": false,
-			"raw_event_class": &"InputEventScreenTouch",
-			"raw_metadata": {"index": event.index, "canceled": true}
-		})
-		_active_touch_state.erase(pointer_id)
-		_last_forwarded_panel_event = "publish touch cancel #%d" % event.index
-		return true
-
-	var hit := _screen_position_to_panel_hit(event.position)
-	var has_hit: bool = bool(hit.get("hit", false))
-	var live_target_path: NodePath = _resolve_projected_target_path_from_hit(hit) if has_hit else NodePath()
-	if event.pressed and (not has_hit or live_target_path == NodePath()):
+	if _spatial_touch_provider == null or hybrid_input_adapter == null or _spatial_surface_descriptor == null:
 		return false
-	if not event.pressed and not has_hit and previous_projected.is_empty():
-		return false
-
-	var owner_target_path := previous_owner
-	if event.pressed:
-		owner_target_path = live_target_path
-	var published_target_path := owner_target_path if owner_target_path != NodePath() else live_target_path
-	var projected_data := _build_projected_data(event.position, hit, previous_projected, published_target_path, live_target_path)
-	hybrid_input_adapter.publish_from_input_event(event, projected_data, {"pointer_id": pointer_id})
-	if event.pressed:
-		_active_touch_state[pointer_id] = {
-			"projected_data": projected_data,
-			"owner_target_path": owner_target_path,
-		}
-	else:
-		_last_release_target_path = str(projected_data.get("target_path", NodePath()))
-		_active_touch_state.erase(pointer_id)
-	_last_forwarded_panel_event = "publish touch %s #%d -> %.0f, %.0f • %s" % [
-		"press" if event.pressed else "release",
-		event.index,
-		projected_data["surface_position"].x,
-		projected_data["surface_position"].y,
-		_path_label(projected_data.get("target_path", NodePath()))
-	]
-	return true
+	var published: bool = _spatial_touch_provider.publish_input_event(
+		hybrid_input_adapter,
+		_spatial_surface_descriptor,
+		event,
+		_screen_position_to_panel_hit(event.position),
+		{"host_surface": "PanelInputSurface", "target_resolution": "rect_target_specs"}
+	)
+	if published:
+		var state := _current_touch_runtime_state()
+		_last_release_target_path = str(state.get("last_release_target_path", _last_release_target_path))
+		_last_forwarded_panel_event = str(state.get("last_forwarded_panel_event", _last_forwarded_panel_event))
+	return published
 
 
 func _publish_screen_drag_to_contract(event: InputEventScreenDrag) -> bool:
-	var pointer_id := StringName("touch_%s" % event.index)
-	var previous_state: Dictionary = _active_touch_state.get(pointer_id, {})
-	if previous_state.is_empty():
+	if _spatial_touch_provider == null or hybrid_input_adapter == null or _spatial_surface_descriptor == null:
 		return false
-
-	var previous_projected: Dictionary = previous_state.get("projected_data", {})
-	var owner_target_path: NodePath = previous_state.get("owner_target_path", NodePath())
-	var hit := _screen_position_to_panel_hit(event.position)
-	var has_hit: bool = bool(hit.get("hit", false))
-	var live_target_path: NodePath = _resolve_projected_target_path_from_hit(hit) if has_hit else NodePath()
-	var projected_data := _build_projected_data(event.position, hit, previous_projected, owner_target_path, live_target_path)
-	hybrid_input_adapter.publish_from_input_event(event, projected_data, {"pointer_id": pointer_id})
-	_active_touch_state[pointer_id] = {
-		"projected_data": projected_data,
-		"owner_target_path": owner_target_path,
-	}
-	_last_forwarded_panel_event = "publish touch drag #%d -> %.0f, %.0f • owner %s • hover %s" % [
-		event.index,
-		projected_data["surface_position"].x,
-		projected_data["surface_position"].y,
-		_path_label(owner_target_path),
-		_path_label(live_target_path)
-	]
-	return true
+	var published: bool = _spatial_touch_provider.publish_input_event(
+		hybrid_input_adapter,
+		_spatial_surface_descriptor,
+		event,
+		_screen_position_to_panel_hit(event.position),
+		{"host_surface": "PanelInputSurface", "target_resolution": "rect_target_specs"}
+	)
+	if published:
+		var state := _current_touch_runtime_state()
+		_last_release_target_path = str(state.get("last_release_target_path", _last_release_target_path))
+		_last_forwarded_panel_event = str(state.get("last_forwarded_panel_event", _last_forwarded_panel_event))
+	return published
 
 
 func _publish_projected_phase(
@@ -2020,6 +1989,17 @@ func _refresh_status() -> void:
 
 
 func _current_interaction_target_label() -> String:
+	var touch_state := _current_touch_runtime_state()
+	var active_touch_state: Dictionary = touch_state.get("active_touch_state", {})
+	if not active_touch_state.is_empty():
+		var pointer_id = active_touch_state.keys()[0]
+		var pointer_state: Dictionary = active_touch_state.get(pointer_id, {})
+		var owner_target_path: NodePath = pointer_state.get("owner_target_path", NodePath())
+		var live_touch_target_path: NodePath = pointer_state.get("live_target_path", NodePath())
+		if owner_target_path != NodePath():
+			return _path_label(owner_target_path)
+		if live_touch_target_path != NodePath():
+			return _path_label(live_touch_target_path)
 	var mouse_state := _current_mouse_runtime_state()
 	var capture_target_path: NodePath = mouse_state.get("capture_target_path", NodePath())
 	var hover_target_path: NodePath = mouse_state.get("hover_target_path", NodePath())
@@ -2036,7 +2016,8 @@ func _current_interaction_target_label() -> String:
 
 
 func _current_interaction_state_label() -> String:
-	if _active_touch_state.size() > 0:
+	var touch_state := _current_touch_runtime_state()
+	if int(touch_state.get("active_pointer_count", 0)) > 0:
 		return "touch %s" % _phase_label(_last_contract_phase)
 	var mouse_state := _current_mouse_runtime_state()
 	if bool(mouse_state.get("left_button_down", false)) or bool(mouse_state.get("capture_active", false)):
