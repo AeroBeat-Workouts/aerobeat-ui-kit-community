@@ -1984,16 +1984,12 @@ func _refresh_status() -> void:
 
 func _current_interaction_target_label() -> String:
 	var touch_state := _current_touch_runtime_state()
-	var active_touch_state: Dictionary = touch_state.get("active_touch_state", {})
-	if not active_touch_state.is_empty():
-		var pointer_id = active_touch_state.keys()[0]
-		var pointer_state: Dictionary = active_touch_state.get(pointer_id, {})
-		var owner_target_path: NodePath = pointer_state.get("owner_target_path", NodePath())
-		var live_touch_target_path: NodePath = pointer_state.get("live_target_path", NodePath())
-		if owner_target_path != NodePath():
-			return _path_label(owner_target_path)
-		if live_touch_target_path != NodePath():
-			return _path_label(live_touch_target_path)
+	var owner_target_path: NodePath = touch_state.get("active_owner_target_path", NodePath())
+	var live_touch_target_path: NodePath = touch_state.get("active_live_target_path", NodePath())
+	if owner_target_path != NodePath():
+		return _path_label(owner_target_path)
+	if live_touch_target_path != NodePath():
+		return _path_label(live_touch_target_path)
 	var mouse_state := _current_mouse_runtime_state()
 	var capture_target_path: NodePath = mouse_state.get("capture_target_path", NodePath())
 	var hover_target_path: NodePath = mouse_state.get("hover_target_path", NodePath())
