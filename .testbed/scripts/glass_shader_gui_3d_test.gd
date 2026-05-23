@@ -24,7 +24,6 @@ const BadgeConfigLoader = preload("res://ui/configs/loaders/aero_ui_glass_badge_
 const ButtonConfigLoader = preload("res://ui/configs/loaders/aero_ui_glass_primary_button_config_loader.gd")
 const SpatialSurfaceDescriptorScript = preload("res://addons/aerobeat-spatial-ui-core/src/helpers/surfaces/aero_spatial_surface_descriptor.gd")
 const SpatialProjectionHelperScript = preload("res://addons/aerobeat-spatial-ui-core/src/helpers/providers/aero_spatial_projection_helper.gd")
-const SpatialRectTargetResolverScript = preload("res://addons/aerobeat-spatial-ui-core/src/helpers/providers/aero_spatial_rect_target_resolver.gd")
 const SpatialUiMouseProviderScript = preload("res://addons/aerobeat-spatial-ui-mouse/src/providers/mouse/aero_spatial_ui_mouse_provider.gd")
 const SpatialUiMouseProviderConfigScript = preload("res://addons/aerobeat-spatial-ui-mouse/src/providers/mouse/aero_spatial_ui_mouse_provider_config.gd")
 const SpatialUiTouchProviderScript = preload("res://addons/aerobeat-spatial-ui-touch/src/providers/touch/aero_spatial_ui_touch_provider.gd")
@@ -505,7 +504,6 @@ var _pending_save_section := PRESET_SECTION_PANEL
 var _pending_load_section := PRESET_SECTION_PANEL
 var _spatial_surface_descriptor: AeroSpatialSurfaceDescriptor
 var _spatial_projection_helper: AeroSpatialProjectionHelper = SpatialProjectionHelperScript.new()
-var _spatial_target_resolver: AeroSpatialRectTargetResolver = SpatialRectTargetResolverScript.new()
 var _spatial_mouse_provider: AeroSpatialUiMouseProvider
 var _spatial_touch_provider = null
 var _last_release_target_path := ""
@@ -812,31 +810,27 @@ func _build_projected_data(
 	live_target_path: NodePath = NodePath()
 ) -> Dictionary:
 	_refresh_spatial_surface_descriptor()
-	var mouse_state := _current_mouse_runtime_state()
-	var resolution_result = _spatial_target_resolver.resolve_target(_spatial_surface_descriptor, hit) if _spatial_surface_descriptor != null else null
-	var resolution_metadata: Dictionary = resolution_result.raw_metadata.duplicate(true) if resolution_result != null else {}
-	if not resolution_metadata.has("host_surface"):
-		resolution_metadata["host_surface"] = "PanelInputSurface"
-	if not resolution_metadata.has("target_resolution"):
-		resolution_metadata["target_resolution"] = "rect_target_specs"
-	resolution_metadata["hover_target_path"] = str(mouse_state.get("hover_target_path", NodePath()))
-	resolution_metadata["owner_target_path"] = str(mouse_state.get("capture_target_path", NodePath()))
-	return _spatial_projection_helper.build_projected_data(
+	if _spatial_touch_provider == null or _spatial_surface_descriptor == null:
+		return {}
+	var context := {
+		"host_surface": "PanelInputSurface",
+		"target_resolution": "rect_target_specs",
+	}
+	return _spatial_touch_provider.build_projected_data_for_hit(
 		_spatial_surface_descriptor,
 		hit,
+		context,
 		previous_projected,
 		explicit_target_path,
-		live_target_path,
-		resolution_metadata
+		live_target_path
 	)
 
 
 func _resolve_projected_target_path_from_hit(hit: Dictionary) -> NodePath:
 	_refresh_spatial_surface_descriptor()
-	if _spatial_surface_descriptor == null:
+	if _spatial_touch_provider == null or _spatial_surface_descriptor == null:
 		return NodePath()
-	var result = _spatial_target_resolver.resolve_target(_spatial_surface_descriptor, hit)
-	return result.target_path if result != null else NodePath()
+	return _spatial_touch_provider.resolve_target_path_for_hit(_spatial_surface_descriptor, hit)
 
 
 func _resolve_projected_target_path(surface_position: Vector2, surface_uv: Vector2 = Vector2(-1.0, -1.0)) -> NodePath:

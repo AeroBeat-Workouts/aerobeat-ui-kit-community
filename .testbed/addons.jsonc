@@ -30,7 +30,7 @@
     },
     "aerobeat-spatial-ui-touch": {
       "url": "git@github.com:AeroBeat-Workouts/aerobeat-spatial-ui-touch.git",
-      "checkout": "9fc9cf0fcf87a4a5c9a60ae29db8ff5bd6b46f92",
+      "checkout": "187c7a4414651f588dba690e82ea46966adbc89f",
       "subfolder": "/"
     },
     // GUT drives the repo-local test suite inside the hidden testbed/workbench.
