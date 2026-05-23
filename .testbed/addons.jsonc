@@ -33,6 +33,11 @@
       "checkout": "5dca2a717c55028136067b128981a37605e602fc",
       "subfolder": "/"
     },
+    "aerobeat-spatial-ui-xr": {
+      "url": "git@github.com:AeroBeat-Workouts/aerobeat-spatial-ui-xr.git",
+      "checkout": "c7d8cce",
+      "subfolder": "/"
+    },
     // GUT drives the repo-local test suite inside the hidden testbed/workbench.
     "gut": {
       "url": "git@github.com:bitwes/Gut.git",
