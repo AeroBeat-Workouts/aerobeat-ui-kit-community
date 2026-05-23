@@ -25,7 +25,7 @@
     },
     "aerobeat-spatial-ui-mouse": {
       "url": "git@github.com:AeroBeat-Workouts/aerobeat-spatial-ui-mouse.git",
-      "checkout": "980f524a3810048c7d1ba0811ccfa48a62b9aeb5",
+      "checkout": "54a8d036323a9cc4c367dcebcd1381fa260eede0",
       "subfolder": "/"
     },
     // GUT drives the repo-local test suite inside the hidden testbed/workbench.
