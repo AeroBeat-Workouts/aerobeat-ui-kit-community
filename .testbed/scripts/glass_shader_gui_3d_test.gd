@@ -652,6 +652,10 @@ func _current_touch_runtime_state() -> Dictionary:
 	return _spatial_touch_provider.describe_runtime_state() if _spatial_touch_provider != null else {}
 
 
+func _current_touch_interaction_summary() -> Dictionary:
+	return _spatial_touch_provider.describe_interaction_summary() if _spatial_touch_provider != null else {}
+
+
 func _forward_world_panel_input(event: InputEvent) -> bool:
 	# Reference-only host seam:
 	# this repo still demonstrates the host-driven 3D path end-to-end so Phase 2 has a
@@ -735,9 +739,9 @@ func _publish_screen_touch_to_contract(event: InputEventScreenTouch) -> bool:
 		{"host_surface": "PanelInputSurface", "target_resolution": "rect_target_specs"}
 	)
 	if published:
-		var state := _current_touch_runtime_state()
-		_last_release_target_path = str(state.get("last_release_target_path", _last_release_target_path))
-		_last_forwarded_panel_event = str(state.get("last_forwarded_panel_event", _last_forwarded_panel_event))
+		var summary := _current_touch_interaction_summary()
+		_last_release_target_path = str(summary.get("last_release_target_path", _last_release_target_path))
+		_last_forwarded_panel_event = str(summary.get("last_forwarded_panel_event", _last_forwarded_panel_event))
 	return published
 
 
@@ -752,9 +756,9 @@ func _publish_screen_drag_to_contract(event: InputEventScreenDrag) -> bool:
 		{"host_surface": "PanelInputSurface", "target_resolution": "rect_target_specs"}
 	)
 	if published:
-		var state := _current_touch_runtime_state()
-		_last_release_target_path = str(state.get("last_release_target_path", _last_release_target_path))
-		_last_forwarded_panel_event = str(state.get("last_forwarded_panel_event", _last_forwarded_panel_event))
+		var summary := _current_touch_interaction_summary()
+		_last_release_target_path = str(summary.get("last_release_target_path", _last_release_target_path))
+		_last_forwarded_panel_event = str(summary.get("last_forwarded_panel_event", _last_forwarded_panel_event))
 	return published
 
 
@@ -1983,13 +1987,10 @@ func _refresh_status() -> void:
 
 
 func _current_interaction_target_label() -> String:
-	var touch_state := _current_touch_runtime_state()
-	var owner_target_path: NodePath = touch_state.get("active_owner_target_path", NodePath())
-	var live_touch_target_path: NodePath = touch_state.get("active_live_target_path", NodePath())
-	if owner_target_path != NodePath():
-		return _path_label(owner_target_path)
-	if live_touch_target_path != NodePath():
-		return _path_label(live_touch_target_path)
+	var touch_summary := _current_touch_interaction_summary()
+	var preferred_touch_target_path: NodePath = touch_summary.get("preferred_target_path", NodePath())
+	if preferred_touch_target_path != NodePath():
+		return str(touch_summary.get("preferred_target_label", _path_label(preferred_touch_target_path)))
 	var mouse_state := _current_mouse_runtime_state()
 	var capture_target_path: NodePath = mouse_state.get("capture_target_path", NodePath())
 	var hover_target_path: NodePath = mouse_state.get("hover_target_path", NodePath())
@@ -2006,9 +2007,9 @@ func _current_interaction_target_label() -> String:
 
 
 func _current_interaction_state_label() -> String:
-	var touch_state := _current_touch_runtime_state()
-	if int(touch_state.get("active_pointer_count", 0)) > 0:
-		return "touch %s" % _phase_label(_last_contract_phase)
+	var touch_summary := _current_touch_interaction_summary()
+	if bool(touch_summary.get("is_touch_active", false)):
+		return "touch %s" % _phase_label(str(touch_summary.get("state_phase", _last_contract_phase)))
 	var mouse_state := _current_mouse_runtime_state()
 	if bool(mouse_state.get("left_button_down", false)) or bool(mouse_state.get("capture_active", false)):
 		return "mouse %s" % _phase_label(_last_contract_phase)
