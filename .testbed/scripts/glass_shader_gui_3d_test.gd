@@ -658,6 +658,10 @@ func _current_touch_interaction_summary() -> Dictionary:
 	return _spatial_touch_provider.describe_interaction_summary() if _spatial_touch_provider != null else {}
 
 
+func _current_touch_verification_probe() -> Dictionary:
+	return _spatial_touch_provider.describe_verification_probe() if _spatial_touch_provider != null else {}
+
+
 func _forward_world_panel_input(event: InputEvent) -> bool:
 	# Reference-only host seam:
 	# this repo still demonstrates the host-driven 3D path end-to-end so Phase 2 has a
