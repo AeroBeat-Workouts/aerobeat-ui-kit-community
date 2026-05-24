@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-24  
 **Status:** In Progress  
-**Last Updated:** 2026-05-24 12:44 EDT  
+**Last Updated:** 2026-05-24 13:13 EDT
 **Blocked Reason:** None  
 **Agent:** `byte`
 
@@ -153,9 +153,9 @@ The current mouse lane has a provider-owned verification harness, but it is stil
 **Files Created/Deleted/Modified:**
 - docs/notes only
 
-**Status:** ⏳ Pending
+**Status:** ✅ Coder complete / QA pending
 
-**Results:** Pending.
+**Results:** Added a durable downstream trust-boundary note at `docs/notes/2026-05-24-ui-kit-community-provider-trust-boundary.md` and updated `README.md` so `aerobeat-ui-kit-community` now states the current spatial-family split explicitly from the consumer side. The new docs lock that provider repos (`aerobeat-spatial-ui-mouse`, `...-touch`, `...-xr`) must prove packaged-provider semantics and provider-owned runtime truth in their own repo-local harnesses/tests first, while this repo proves downstream installed-addon consumption, proof-host composition, and composed contract-aware UI behavior. The README also now reflects that the hidden testbed may intentionally pin `aerobeat-input-core` plus `aerobeat-spatial-ui-*` packages when validating downstream composition, rather than implying only `aerobeat-ui-core` belongs there. This slice stayed docs-only, aligns with `REF-01`, `REF-02`, and the provider-harness parity standard already recorded in Task 1, and does not widen into runtime or proof-scene implementation.
 
 ---
 
