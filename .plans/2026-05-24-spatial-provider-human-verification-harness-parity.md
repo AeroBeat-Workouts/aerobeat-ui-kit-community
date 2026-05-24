@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-24  
 **Status:** In Progress  
-**Last Updated:** 2026-05-24 11:33 EDT  
+**Last Updated:** 2026-05-24 11:37 EDT  
 **Blocked Reason:** None  
 **Agent:** `byte`
 
@@ -68,7 +68,7 @@ The current mouse lane has a provider-owned verification harness, but it is stil
 
 **Status:** ✅ Complete
 
-**Results:** Researched the current mouse lane harness (`REF-03`, `REF-04`) plus its repo-local support/tests and wrote the parity standard to `docs/notes/2026-05-24-spatial-provider-human-verification-harness-parity-standard.md`. The standard defines what counts as a provider-owned human-verifiable harness across the spatial family: provider repos must own a hidden `.testbed` harness that exercises the packaged provider directly, publishes through the canonical `aerobeat-input-core` contract path, exposes both normalized event truth and provider-owned runtime/debug truth, and pairs the scene with repo-local tests. It also locks the non-ownership boundary: these harnesses must not absorb world-hit acquisition, hybrid proof-scene composition, downstream host UX proof, canonical verification-status policy, or shared-helper ownership. The current mouse lane already provides the reference shape for this standard: synthetic projected-hit bench in the provider repo, packaged-provider identity/readout, runtime-state snapshot exposure, off-surface release coverage, and explicit non-promotion of `verification_status`. This gives touch and XR a concrete parity bar without widening into implementation or downstream UI-kit work.
+**Results:** Researched the current mouse lane harness (`REF-03`, `REF-04`) plus its repo-local support/tests and wrote the parity standard to `docs/notes/2026-05-24-spatial-provider-human-verification-harness-parity-standard.md`. The standard defines what counts as a provider-owned human-verifiable harness across the spatial family: provider repos must own a hidden `.testbed` harness that exercises the packaged provider directly, publishes through the canonical `aerobeat-input-core` contract path, exposes both normalized event truth and provider-owned runtime/debug truth, and pairs the scene with repo-local tests. It also locks the non-ownership boundary: these harnesses must not absorb world-hit acquisition, hybrid proof-scene composition, downstream host UX proof, canonical verification-status policy, or shared-helper ownership. The current mouse lane already provides the reference shape for this standard: synthetic projected-hit bench in the provider repo, packaged-provider identity/readout, runtime-state snapshot exposure, off-surface release coverage, and explicit non-promotion of `verification_status`. This gives touch and XR a concrete parity bar without widening into implementation or downstream UI-kit work. Auditor pass: reviewed against `REF-01`, `REF-02`, `REF-03`, and `REF-04`; the packet is durable and precise enough to guide touch/XR/mouse without reopening ownership confusion, clearly separates provider-owned harness proof from downstream `aerobeat-ui-kit-community` integration proof, states the required semantic/runtime/debug proof categories plus explicit non-ownership boundaries, and shows no hidden scope drift into making `aerobeat-spatial-ui-core` a runtime demo host or `aerobeat-ui-kit-community` the first semantic truth source again.
 
 ---
 
