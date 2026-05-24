@@ -22,6 +22,11 @@ func test_explicit_mouse_release_completes_primary_toggle() -> void:
 	assert_true(_primary_toggle_on(scene))
 	assert_eq(_primary_card(scene).button_pressed, true)
 	assert_string_contains(scene._last_release_target_path, "PrimaryActionButton")
+	var release_snapshot: Dictionary = scene.describe_mouse_verification_snapshot()
+	assert_eq(str(release_snapshot.get("verification_status", "")), "prototype")
+	assert_eq(str(release_snapshot.get("capture_target_path", "not-empty")), "")
+	assert_false(bool(release_snapshot.get("left_button_down", true)))
+	assert_string_contains(str(release_snapshot.get("last_release_target_path", "")), "PrimaryActionButton")
 
 	scene.queue_free()
 
@@ -55,6 +60,11 @@ func test_mouse_motion_button_mask_drop_synthesizes_release_completion() -> void
 	assert_true(_primary_toggle_on(scene))
 	assert_eq(_primary_card(scene).button_pressed, true)
 	assert_string_contains(scene._last_release_target_path, "PrimaryActionButton")
+	var motion_release_snapshot: Dictionary = scene.describe_mouse_verification_snapshot()
+	assert_eq(str(motion_release_snapshot.get("verification_status", "")), "prototype")
+	assert_eq(str(motion_release_snapshot.get("capture_target_path", "not-empty")), "")
+	assert_false(bool(motion_release_snapshot.get("left_button_down", true)))
+	assert_string_contains(str(motion_release_snapshot.get("last_release_target_path", "")), "PrimaryActionButton")
 
 	scene.queue_free()
 

@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://c2e8r3lq6g0xp"]
+
+[ext_resource type="Script" path="res://scripts/glass_shader_xr_provider_proof.gd" id="1_script"]
+
+[node name="GlassShaderXrProviderProof" type="Node3D"]
+script = ExtResource("1_script")
