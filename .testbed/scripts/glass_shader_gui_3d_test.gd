@@ -24,7 +24,6 @@ const BadgeConfigLoader = preload("res://ui/configs/loaders/aero_ui_glass_badge_
 const ButtonConfigLoader = preload("res://ui/configs/loaders/aero_ui_glass_primary_button_config_loader.gd")
 const SpatialSurfaceDescriptorScript = preload("res://addons/aerobeat-spatial-ui-core/src/helpers/surfaces/aero_spatial_surface_descriptor.gd")
 const SpatialProjectionHelperScript = preload("res://addons/aerobeat-spatial-ui-core/src/helpers/providers/aero_spatial_projection_helper.gd")
-const SPATIAL_UI_MOUSE_PROVIDER_SCRIPT_PATH := "res://addons/aerobeat-spatial-ui-mouse/src/providers/mouse/aero_spatial_ui_mouse_provider.gd"
 const SpatialUiMouseProviderScript = preload("res://addons/aerobeat-spatial-ui-mouse/src/providers/mouse/aero_spatial_ui_mouse_provider.gd")
 const SpatialUiMouseProviderConfigScript = preload("res://addons/aerobeat-spatial-ui-mouse/src/providers/mouse/aero_spatial_ui_mouse_provider_config.gd")
 const SpatialUiTouchProviderScript = preload("res://addons/aerobeat-spatial-ui-touch/src/providers/touch/aero_spatial_ui_touch_provider.gd")
@@ -515,7 +514,6 @@ var _last_contract_surface_id := String(HYBRID_SURFACE_ID)
 var _last_contract_verification_status := "waiting"
 var _last_contract_verification_notes := "No normalized interaction published yet."
 var _last_contract_target_path := ""
-var _mouse_provider_runtime_seam := "AeroSpatialUiMouseProvider (installed packaged seam)"
 
 
 func _ready() -> void:
@@ -656,10 +654,6 @@ func _current_touch_runtime_state() -> Dictionary:
 
 func _current_touch_interaction_summary() -> Dictionary:
 	return _spatial_touch_provider.describe_interaction_summary() if _spatial_touch_provider != null else {}
-
-
-func _current_touch_verification_probe() -> Dictionary:
-	return _spatial_touch_provider.describe_verification_probe() if _spatial_touch_provider != null else {}
 
 
 func _forward_world_panel_input(event: InputEvent) -> bool:
@@ -1978,54 +1972,16 @@ func _axis_strength(negative_primary: Key, positive_primary: Key, negative_secon
 	return float(positive) - float(negative)
 
 
-func describe_mouse_verification_snapshot() -> Dictionary:
-	var mouse_state := _current_mouse_runtime_state()
-	return {
-		"provider_lane": "mouse",
-		"packaged_provider_active": _spatial_mouse_provider != null,
-		"provider_runtime_source": _mouse_provider_runtime_seam,
-		"provider_runtime_path": SPATIAL_UI_MOUSE_PROVIDER_SCRIPT_PATH,
-		"source_variant": _last_contract_source_variant,
-		"phase": _last_contract_phase,
-		"target_path": _last_contract_target_path,
-		"verification_status": _last_contract_verification_status,
-		"verification_notes": _last_contract_verification_notes,
-		"hover_target_path": str(mouse_state.get("hover_target_path", NodePath())),
-		"capture_target_path": str(mouse_state.get("capture_target_path", NodePath())),
-		"left_button_down": bool(mouse_state.get("left_button_down", false)),
-		"last_live_target_path": str(mouse_state.get("last_live_target_path", NodePath())),
-		"last_release_target_path": str(mouse_state.get("last_release_target_path", "")),
-		"last_forwarded_panel_event": str(mouse_state.get("last_forwarded_panel_event", _last_forwarded_panel_event)),
-	}
-
-
 func _refresh_status() -> void:
 	if _contract_status_label == null or panel_pivot == null:
 		return
 
 	var interaction_target := _current_interaction_target_label()
 	var state_label := _current_interaction_state_label()
-	var verification_snapshot := describe_mouse_verification_snapshot()
 	var lines := [
-		"[b]Hybrid input verification HUD[/b]",
+		"[b]Hybrid input status[/b]",
 		"[color=#cbd5e1]Interacting with:[/color] %s" % interaction_target,
 		"[color=#cbd5e1]Current state:[/color] %s" % state_label,
-		"[color=#cbd5e1]Provider lane:[/color] %s" % verification_snapshot.get("provider_lane", "mouse"),
-		"[color=#cbd5e1]Packaged provider active:[/color] %s" % str(verification_snapshot.get("packaged_provider_active", false)),
-		"[color=#cbd5e1]Provider seam:[/color] %s" % verification_snapshot.get("provider_runtime_source", "missing"),
-		"[color=#cbd5e1]Source variant:[/color] %s" % verification_snapshot.get("source_variant", "waiting"),
-		"[color=#cbd5e1]Phase:[/color] %s" % verification_snapshot.get("phase", "waiting"),
-		"[color=#cbd5e1]Target path:[/color] %s" % _path_label(verification_snapshot.get("target_path", "")),
-		"[color=#cbd5e1]Verification status:[/color] %s" % verification_snapshot.get("verification_status", "waiting"),
-		"[color=#cbd5e1]Verification notes:[/color] %s" % verification_snapshot.get("verification_notes", "No normalized interaction published yet."),
-		"",
-		"[b]Mouse provider runtime snapshot[/b]",
-		"hover_target_path = %s" % _path_label(verification_snapshot.get("hover_target_path", "")),
-		"capture_target_path = %s" % _path_label(verification_snapshot.get("capture_target_path", "")),
-		"left_button_down = %s" % str(verification_snapshot.get("left_button_down", false)),
-		"last_live_target_path = %s" % _path_label(verification_snapshot.get("last_live_target_path", "")),
-		"last_release_target_path = %s" % _path_label(verification_snapshot.get("last_release_target_path", "")),
-		"last_forwarded_panel_event = %s" % verification_snapshot.get("last_forwarded_panel_event", "waiting for normalized panel input"),
 	]
 	_contract_status_label.text = "\n".join(lines)
 
