@@ -850,6 +850,190 @@ With the first real touch-runtime slice now audit-closed, the next honest slice 
 
 ---
 
+## Phase 8 Planning — Parallel touch/XR continuation from the new stable baseline
+
+With both the touch lane and XR bootstrap lane now audit-closed to their latest safe stopping points, the next approved move is to run the next touch extraction slice and the first XR runtime slice in parallel. These lanes are allowed to proceed concurrently because they target different provider repos and different proof-host seams, but both must keep the same ownership guardrails intact: no contract-owner drift into provider repos, no helper-owner drift out of `aerobeat-spatial-ui-core`, and no host-local world-hit / scene-composition ownership being quietly pulled into the providers.
+
+### Task 32: Extract the next touch runtime seam beyond provider-owned summaries
+
+**Bead ID:** `aerobeat-spatial-ui-touch-a6h` (coder), `aerobeat-spatial-ui-touch-mq4` (qa), `aerobeat-spatial-ui-touch-r58` (auditor)  
+**SubAgent:** `primary`  
+**Role:** `coder` → `qa` → `auditor`  
+**References:** `REF-04`, `REF-06`, `REF-08`  
+**Prompt:** Continue the touch lane from the audit-closed continuity/owner-state summary seam. Claim bead `aerobeat-spatial-ui-touch-a6h` at start with `bd update aerobeat-spatial-ui-touch-a6h --status in_progress --json`. Extract the next truthful reusable touch runtime seam beyond the provider-owned continuity/owner-state summaries into `aerobeat-spatial-ui-touch`, while keeping world-hit acquisition, proof-scene composition, contract ownership, and shared-helper ownership in their current homes. Preserve downstream packaged proof and touch `verification_status == unverified`. Run all relevant repo-local validation plus the minimum downstream consumer proof needed in `aerobeat-ui-kit-community`. Commit and push to `main` in each touched repo by default, then leave a clear handoff note in the bead and plan-oriented summary for QA. Do not close the QA/auditor beads yourself.
+
+**Folders Created/Deleted/Modified:**
+- `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-spatial-ui-touch/`
+- `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-ui-kit-community/` only where needed for consumer proof hookup
+
+**Files Created/Deleted/Modified:**
+- touch runtime/provider files, tests, docs, and consumer proof glue needed for the next runtime seam
+- no contract-owner, shared-helper-owner, or host-world-hit-owner drift
+
+**Status:** ✅ Audit passed
+
+**Results:** Parallel lane approved and execution launched on 2026-05-23. Coder completed the next touch runtime seam and landed `aerobeat-spatial-ui-touch` commit `5dca2a7` plus downstream consumer proof commit `4c2765f`. The extracted seam is a provider-owned interaction summary snapshot (`describe_interaction_summary()`) that moved active-touch/preferred-target/phase/release-feedback summary ownership into `aerobeat-spatial-ui-touch` while keeping world-hit acquisition, proof-scene composition, contract ownership, shared-helper ownership, and `unverified` truth in the correct homes. Initial QA confirmed the seam itself and all targeted touch proofs passed, but found one lane-relevant downstream manifest smoke expectation still pinned to the previous touch package commit. A narrow retry then landed in `aerobeat-ui-kit-community` commit `07c8e92`, updating only `.testbed/tests/test_example.gd` so the hidden manifest smoke truthfully matches the current touch package commit and addon-key set. QA rerun then passed cleanly for the lane: `aerobeat-spatial-ui-touch` passed `9/9` tests with `129` asserts, and the downstream touch-focused proofs plus manifest smoke passed `7/7` with `76` asserts, while the remaining broader UI-kit failures were verified to be unrelated to this touch lane. Independent audit then passed and closed the lane, confirming the new seam remains strictly provider-owned, the consumer host now truly consumes provider-owned summary fields instead of reconstructing lane state locally, world-hit acquisition and proof-scene composition remain host-local, ownership/truth boundaries remain correct, REF-08 semantics still hold, and the manifest retry was truthful without widening scope.
+
+---
+
+### Task 33: Extract the first real XR lifecycle/runtime slice into `aerobeat-spatial-ui-xr`
+
+**Bead ID:** `aerobeat-spatial-ui-xr-4io` (coder), `aerobeat-spatial-ui-xr-w2n` (qa), `aerobeat-spatial-ui-xr-rv3` (auditor)  
+**SubAgent:** `primary`  
+**Role:** `coder` → `qa` → `auditor`  
+**References:** `REF-04`, `REF-08`, `REF-10`, `REF-11`  
+**Prompt:** Begin the first real XR lifecycle/runtime extraction slice from the audit-closed XR packet stack and XR bootstrap repo. Claim bead `aerobeat-spatial-ui-xr-4io` at start with `bd update aerobeat-spatial-ui-xr-4io --status in_progress --json`. Move only truthful reusable XR lifecycle/runtime behavior into `aerobeat-spatial-ui-xr`; keep XR rig wiring, world-hit acquisition, authored proof-scene composition, contract semantics, and shared-helper ownership outside the repo. Preserve downstream packaged proof requirements and keep XR `verification_status == unverified` unless the existing upstream truth truly changes. Run all relevant repo-local validation plus the minimum downstream consumer proof needed in `aerobeat-ui-kit-community`. Commit and push to `main` in each touched repo by default, then leave a clear handoff note in the bead and plan-oriented summary for QA. Do not close the QA/auditor beads yourself.
+
+**Folders Created/Deleted/Modified:**
+- `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-spatial-ui-xr/`
+- `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-ui-kit-community/` only where needed for consumer proof hookup
+
+**Files Created/Deleted/Modified:**
+- XR runtime/provider files, tests, docs, and consumer proof glue needed for the first runtime slice
+- no XR rig-owner, host-world-hit-owner, contract-owner, or shared-helper-owner drift
+
+**Status:** ✅ Audit passed
+
+**Results:** Parallel lane approved and execution launched on 2026-05-23. Coder completed the first real XR lifecycle/runtime seam and landed `aerobeat-spatial-ui-xr` commit `c7d8cce` plus downstream consumer proof commit `9c3edf6`. The extracted seam is a provider-owned XR pointer lifecycle/runtime state machine that accepts host-supplied projected/world hits, resolves targets through shared helpers, publishes through `XrUiInputAdapter`, preserves press-owner continuity, locks active `source_variant` (`xr_ray` / `xr_direct`), emits `drag_end` before `press_end`, and reserves `cancel` for interrupted continuity. QA then passed on the lane: the XR repo full suite passed (`7/7`, `142` asserts), the XR-specific downstream packaged-provider proof passed (`2/2`, `29` asserts), and ownership/truth boundaries remained correct. The broader `aerobeat-ui-kit-community` suite is still not globally green, but its unrelated existing failures were verified to be outside the XR lane. Independent audit then passed and closed the lane, confirming the seam is genuinely limited to reusable XR lifecycle/runtime behavior, rig wiring/world-hit acquisition/proof-scene composition remain outside the repo, `verification_status` remains `unverified`, `source_type == xr` semantics and stable `source_variant` continuity are truthful, and the packaged downstream proof is real and lane-relevant.
+
+---
+
+## Phase 9 Planning — Push toward full functionality with explicit manual-verification scenes
+
+Derrick has now made the next requirement explicit: do not stop at code-only seam extraction if the repos still lack a truthful way for a human to prove they actually work. From this point on, the rollout must push toward functional completeness *and* include repo-level or downstream test-scene coverage wherever headless tests stop short of proving real interactive behavior. The next immediate move is to define, per lane, the next executable completion slice together with the concrete manual-verification/test-scene packet so future implementation can land both runtime behavior and a believable human-checkable surface.
+
+### Task 34: Define the next touch completion slice and manual verification scene packet
+
+**Bead ID:** `aerobeat-spatial-ui-touch-bjo` (research), `aerobeat-spatial-ui-touch-88i` (auditor)  
+**SubAgent:** `primary`  
+**Role:** `research` → `auditor`  
+**References:** `REF-04`, `REF-06`, `REF-08`  
+**Prompt:** Starting from the now-audit-closed touch interaction-summary baseline, define the next executable touch completion slice and the concrete manual-verification/test-scene packet needed so Derrick can verify the touch provider works beyond pure code tests. Identify the next truthful provider-owned runtime seam, what must remain host-local, which repo should own any new reusable test scene(s), what downstream proof scene changes belong in `aerobeat-ui-kit-community`, what exact human verification steps the scene should enable, and what automated tests should accompany it. Keep this as a durable execution packet, not implementation yet.
+
+**Folders Created/Deleted/Modified:**
+- `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-spatial-ui-touch/`
+- `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-ui-kit-community/` only if a durable planning note there is strictly needed
+
+**Files Created/Deleted/Modified:**
+- planning/docs only for the packet definition
+- no runtime behavior changes yet
+
+**Status:** ⏳ Pending
+
+**Results:** Execution approved on 2026-05-23; awaiting research results.
+
+---
+
+### Task 35: Define the next XR completion slice and manual verification scene packet
+
+**Bead ID:** `aerobeat-spatial-ui-xr-zfw` (research), `aerobeat-spatial-ui-xr-ply` (auditor)  
+**SubAgent:** `primary`  
+**Role:** `research` → `auditor`  
+**References:** `REF-04`, `REF-08`, `REF-10`, `REF-11`  
+**Prompt:** Starting from the now-audit-closed first XR runtime slice baseline, define the next executable XR completion slice and the concrete manual-verification/test-scene packet needed so Derrick can verify the XR provider works beyond pure code tests. Identify the next truthful provider-owned runtime seam, what must remain outside the provider repo, which repo should own any new reusable XR test scene(s), what downstream proof scene changes belong in `aerobeat-ui-kit-community`, what exact human verification steps the scene should enable, and what automated tests should accompany it. Keep this as a durable execution packet, not implementation yet.
+
+**Folders Created/Deleted/Modified:**
+- `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-spatial-ui-xr/`
+- `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-ui-kit-community/` only if a durable planning note there is strictly needed
+
+**Files Created/Deleted/Modified:**
+- planning/docs only for the packet definition
+- no runtime behavior changes yet
+
+**Status:** ⏳ Pending
+
+**Results:** Execution approved on 2026-05-23; awaiting research results.
+
+---
+
+### Task 36: Define the next mouse completion slice and manual verification scene packet
+
+**Bead ID:** `aerobeat-spatial-ui-mouse-15m` (research), `aerobeat-spatial-ui-mouse-1r7` (auditor)  
+**SubAgent:** `primary`  
+**Role:** `research` → `auditor`  
+**References:** `REF-04`, `REF-06`, `REF-08`  
+**Prompt:** Starting from the current audit-closed mouse provider baseline, define the next executable mouse completion slice and the concrete manual-verification/test-scene packet needed so Derrick can verify the mouse provider works beyond pure code tests. Identify the next truthful provider-owned runtime seam or completion gap, what must remain outside the provider repo, which repo should own any new reusable mouse test scene(s), what downstream proof scene changes belong in `aerobeat-ui-kit-community`, what exact human verification steps the scene should enable, and what automated tests should accompany it. Keep this as a durable execution packet, not implementation yet.
+
+**Folders Created/Deleted/Modified:**
+- `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-spatial-ui-mouse/`
+- `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-ui-kit-community/` only if a durable planning note there is strictly needed
+
+**Files Created/Deleted/Modified:**
+- planning/docs only for the packet definition
+- no runtime behavior changes yet
+
+**Status:** ⏳ Pending
+
+**Results:** Execution approved on 2026-05-23; awaiting research results.
+
+---
+
+### Task 37: Audit GDScript `class_name` collisions across the AeroBeat spatial UI polyrepo set
+
+**Bead ID:** `aerobeat-ui-kit-community-063l` (research), `aerobeat-ui-kit-community-7vrv` (auditor)  
+**SubAgent:** `primary`  
+**Role:** `research` → `auditor`  
+**References:** `REF-09`, `REF-11`  
+**Prompt:** Audit the current AeroBeat spatial UI polyrepo family and nearby upstream consumer/dependency repos for GDScript global `class_name` collisions. Because GDScript has no namespaces, inventory all declared `class_name` values in the relevant repos, identify any existing duplicates or high-risk near-duplicates that could collide when these repos are consumed together upstream, and produce a durable report with exact file paths, collision severity, and recommended renames or guardrails. The audit must include at minimum `aerobeat-spatial-ui-core`, `aerobeat-spatial-ui-mouse`, `aerobeat-spatial-ui-touch`, `aerobeat-spatial-ui-xr`, `aerobeat-input-core`, `aerobeat-ui-core`, and `aerobeat-ui-kit-community`, and should widen to other relevant AeroBeat polyrepos if they contain overlapping Godot addon/runtime class surfaces.
+
+**Folders Created/Deleted/Modified:**
+- `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-ui-kit-community/`
+- other AeroBeat repos may be read for inspection, but not modified during the research pass
+
+**Files Created/Deleted/Modified:**
+- durable audit notes/report only
+- no runtime behavior changes yet
+
+**Status:** ✅ Complete / handed off
+
+**Results:** Completed on 2026-05-23. The family-level collision audit was written, committed, and independently audit-passed. It confirmed the spatial UI family itself is currently safe to consume together from a root-runtime `class_name` perspective, while also surfacing broader embedded-copy/input-family overlap and later broader runtime-family follow-up candidates. Per Derrick, follow-on remediation for the class-name issue will continue under another agent's separate plan, so this lane is complete for the purposes of the current spatial/UI orchestration plan.
+
+---
+
+### Task 38: Define a polyrepo-wide GDScript `class_name` collision guardrail and input-family overlap remediation packet
+
+**Bead ID:** `aerobeat-ui-kit-community-51mx` (research), `aerobeat-ui-kit-community-y1xm` (auditor)  
+**SubAgent:** `primary`  
+**Role:** `research` → `auditor`  
+**References:** `REF-09`, `REF-11`  
+**Prompt:** Starting from the new class-name collision audit, define the executable guardrail packet for a polyrepo-wide GDScript global `class_name` scanner that can run across `/home/derrick/.openclaw/workspace/projects/aerobeat/`, report exact clashes with file paths and repo ownership, and fail appropriately when dangerous duplicates are introduced. The packet must also explicitly address the immediate producer/consumer embedded-copy overlap risk in the AeroBeat input family, including what should be scanned, how duplicate severity should be classified, what should count as an allowed/known overlap vs a blocking collision, and what the first remediation slice should be if the input-family overlap needs cleanup or stronger loading rules. Keep this as a durable execution packet, not implementation yet.
+
+**Folders Created/Deleted/Modified:**
+- `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-ui-kit-community/`
+- other AeroBeat repos may be read for inspection, but not modified during the research pass
+
+**Files Created/Deleted/Modified:**
+- durable notes/report only
+- no runtime behavior changes yet
+
+**Status:** ✅ Complete / handed off
+
+**Results:** Completed on 2026-05-23 for this plan lane. The reusable guardrail packet was written, corrected to match Derrick's required tool shape, independently audit-passed, then implemented as the workspace-level `/workspace/scripts/scan-godot-class-names` tool with `--repo <name>` plus a matching Godot skill update. QA passed and confirmed the tool is committed/pushed and already finds real runtime-family collisions. Per Derrick, any further class-name remediation or follow-on planning now moves to another agent's separate plan, so this lane is complete for the current spatial/UI plan.
+
+---
+
+### Task 39: Reconcile the shared `aerobeat-ui-kit-community` baseline for touch and XR manual-proof coexistence
+
+**Bead ID:** `aerobeat-ui-kit-community-gq94` (coder), `aerobeat-ui-kit-community-n315` (qa), `aerobeat-ui-kit-community-rqui` (auditor)  
+**SubAgent:** `primary`  
+**Role:** `coder` → `qa` → `auditor`  
+**References:** `REF-04`, `REF-08`, `REF-10`, `REF-11`  
+**Prompt:** Reconcile the shared `aerobeat-ui-kit-community` consumer baseline so the new touch manual-probe path and the new XR proof-host path can coexist cleanly on `main` without broken delegation, incomplete handoff reporting, or scope drift. Preserve host ownership of world-hit acquisition / proof-scene composition, preserve package/provider ownership boundaries, keep touch probe delegation intact, keep XR proof-host delegation intact, and leave mouse HUD work undisturbed. The result should make the shared consumer repo an honest combined baseline for final QA/audit on touch, mouse, and XR.
+
+**Folders Created/Deleted/Modified:**
+- `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-ui-kit-community/`
+- touch/XR provider repos only if a narrowly necessary consumer-compatibility fix is proven
+
+**Files Created/Deleted/Modified:**
+- shared UI-kit proof-host / probe / tests / manifest files needed for clean coexistence
+- no contract-owner, shared-helper-owner, world-hit-owner, or provider-boundary drift
+
+**Status:** ✅ Audit passed
+
+**Results:** Added on 2026-05-23 after touch QA passed at its reported commits, mouse QA passed cleanly, and XR functional QA passed but failed scope hygiene because the shared `aerobeat-ui-kit-community` baseline was not yet reconciled across the touch and XR lanes. The shared baseline was then reconciled in `aerobeat-ui-kit-community` commit `803ff75`, restoring the missing touch manual-probe delegation seam while leaving XR proof-host flow and mouse HUD work intact. QA confirmed current-`main` coexistence with `15/15` targeted downstream touch/XR/mouse-relevant proofs passing (`194` asserts), after which XR reran cleanly and the remaining touch, mouse, and XR manual-proof lanes all audit-closed on the reconciled baseline.
+
+---
+
 ## Active Blockers / Guardrails
 
 1. **Do not let `spatial-ui-core` drift into contract ownership.** It is helper-layer only.
@@ -861,9 +1045,9 @@ With the first real touch-runtime slice now audit-closed, the next honest slice 
 
 ## Final Results
 
-**Status:** ✅ Phase 0 Complete / ✅ Phase 1 Complete / ✅ Phase 2 Complete / ✅ Phase 3 Complete / ✅ Phase 4 Complete / ✅ Phase 5 Complete / 🚧 Phase 6 In Progress / 🚧 Phase 7 In Progress
+**Status:** ✅ Phase 0 Complete / ✅ Phase 1 Complete / ✅ Phase 2 Complete / ✅ Phase 3 Complete / ✅ Phase 4 Complete / ✅ Phase 5 Complete / ✅ Phase 6 Complete / ✅ Phase 7 Complete / ✅ Phase 8 Complete / ✅ Phase 9 Complete / ✅ Plan Complete
 
-**What We Built:** A durable cross-repo planning package for the `aerobeat-spatial-ui-*` family, then completed and audit-closed the full Phase 0 bootstrap cleanup across `aerobeat-spatial-ui-core`, `aerobeat-spatial-ui-mouse`, and `aerobeat-template-spatial-ui`, followed by a full Phase 1 boundary freeze across those repos plus the consumer/reference side in `aerobeat-ui-kit-community`, followed by the first real Phase 2 extraction/cutover pass: shared helper extraction into `aerobeat-spatial-ui-core`, mouse-provider extraction into `aerobeat-spatial-ui-mouse`, and proof-host cutover in `aerobeat-ui-kit-community`, followed by a fully audit-closed Phase 3 that removed the provider-local fallback from `aerobeat-spatial-ui-mouse`, proved packaged resolver ownership through downstream-style installed-addon validation, and tightened `aerobeat-ui-kit-community` so the proof host demonstrates the packaged resolver route end-to-end on the consumer side while narrowing the remaining local seams explicitly, followed by a fully audit-closed Phase 4 that hardened both the public architecture docs and the spatial adapter template so future work inherits the correct post-Phase-3 ownership split instead of drifting back toward consumer-repo fallback ownership, followed by a fully audit-closed Phase 5 packet stack for touch and a fully audit-closed Phase 6/7 progression that established `aerobeat-spatial-ui-touch` as a truthful bootstrap repo, extracted multiple real touch-provider seams into it with downstream packaged proof, and established `aerobeat-spatial-ui-xr` as a truthful bootstrap repo plus an audit-closed XR packet stack for future runtime extraction.
+**What We Built:** A durable cross-repo planning package for the `aerobeat-spatial-ui-*` family, then completed and audit-closed the full Phase 0 bootstrap cleanup across `aerobeat-spatial-ui-core`, `aerobeat-spatial-ui-mouse`, and `aerobeat-template-spatial-ui`, followed by a full Phase 1 boundary freeze across those repos plus the consumer/reference side in `aerobeat-ui-kit-community`, followed by the first real Phase 2 extraction/cutover pass: shared helper extraction into `aerobeat-spatial-ui-core`, mouse-provider extraction into `aerobeat-spatial-ui-mouse`, and proof-host cutover in `aerobeat-ui-kit-community`, followed by a fully audit-closed Phase 3 that removed the provider-local fallback from `aerobeat-spatial-ui-mouse`, proved packaged resolver ownership through downstream-style installed-addon validation, and tightened `aerobeat-ui-kit-community` so the proof host demonstrates the packaged resolver route end-to-end on the consumer side while narrowing the remaining local seams explicitly, followed by a fully audit-closed Phase 4 that hardened both the public architecture docs and the spatial adapter template so future work inherits the correct post-Phase-3 ownership split instead of drifting back toward consumer-repo fallback ownership, followed by a fully audit-closed Phase 5 packet stack for touch, a fully audit-closed Phase 6/7 progression that established `aerobeat-spatial-ui-touch` as a truthful bootstrap repo, extracted multiple real touch-provider seams into it with downstream packaged proof, and established `aerobeat-spatial-ui-xr` as a truthful bootstrap repo plus an audit-closed XR packet stack for future runtime extraction, and finally a fully audit-closed Phase 8 parallel execution pass that advanced both lanes together: touch gained a provider-owned interaction-summary seam with a truthful downstream manifest expectation refresh, and XR gained its first real reusable lifecycle/runtime extraction seam with packaged downstream proof. Phase 9 then completed the manual-proof and shared-consumer closeout: touch gained a provider-owned verification-probe seam plus downstream manual probe, mouse gained a provider-local verification harness plus downstream verification HUD/proofs, XR gained a provider-owned interaction summary plus dedicated downstream proof host, and the shared `aerobeat-ui-kit-community` consumer baseline was reconciled so touch, mouse, and XR coexist cleanly on `main` with all three lanes audit-closed.
 
 **Reference Check:** `REF-01` and `REF-02` remain the canonical input-contract references. `REF-03` through `REF-07` explain the proof-scene motivation and the desktop-truth failures that justified the architecture shift. `REF-08` durably captures the native 2D bridge and semantic parity rules. `REF-09` and `REF-11` grounded the family plan against real local repo patterns and the actual freshly cloned repos rather than guesses.
 
@@ -887,12 +1071,15 @@ With the first real touch-runtime slice now audit-closed, the next honest slice 
 - `9fc9cf0` / `c7b7f89` - First real touch runtime slice plus downstream packaged touch adoption
 - `187c7a4` / `7a91bd8` - Extract delegated projected-target / projected-data seam into touch provider
 - `dedcc8b` / `83e8de4` - Extract touch continuity / owner-state summary seam into touch provider
+- `5dca2a7` / `4c2765f` - Extract touch interaction-summary seam and adopt it in the consumer proof host
+- `07c8e92` - Refresh hidden testbed manifest smoke expectations for the current touch/XR addon state
 - `b3457c8` - Add XR packet stack planning note
 - `363f52f` - Retheme `aerobeat-spatial-ui-xr` as truthful bootstrap lane
+- `c7d8cce` / `9c3edf6` - Extract first real XR lifecycle/runtime seam and add packaged downstream proof
 
 **Lessons Learned:** The architecture direction itself was sound, but the first planning package was not durable enough. The key hardening lessons were: write the ownership boundary explicitly, prevent `spatial-ui-core` from becoming a second contract repo, record the semantic parity matrix before implementation, inspect the real cloned repos instead of trusting the old template bootstrap, separate repo-identity cleanup from later feature extraction so the rollout stays auditable, and use packaged downstream proof at each seam extraction step so consumer truth keeps pace with repo-local refactors.
 
-**Next Slice:** Continue from the new stable baseline in one of two explicit directions: (1) deepen the touch lane by extracting the next reusable runtime seam beyond provider-owned continuity/owner-state summaries while keeping world-hit acquisition host-local, or (2) begin the first real XR lifecycle/runtime extraction slice now that `aerobeat-spatial-ui-xr` has an audit-closed bootstrap repo and an audit-closed XR packet stack. In either case, preserve `REF-08` semantic parity and keep `verification_status` truthful until live validation changes upstream truth.
+**Next Slice:** None in this plan. Spatial/UI rollout slice is complete and archived. Any future work should start from a new plan rooted in the now-audit-closed manual-proof baseline and the reconciled `aerobeat-ui-kit-community` consumer state.
 
 ---
 
