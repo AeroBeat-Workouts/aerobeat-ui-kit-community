@@ -107,14 +107,15 @@ The current mouse lane has a provider-owned verification harness, but it is stil
 - `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-spatial-ui-xr/`
 
 **Files Created/Deleted/Modified:**
-- `.testbed/scenes/` provider-owned XR verification scene(s)
-- `.testbed/scripts/` XR verification harness scripts
-- `.testbed/tests/` XR verification tests
-- supporting docs/README updates as needed
+- `.testbed/scenes/xr_provider_verification_harness.tscn`
+- `.testbed/scripts/xr_provider_verification_harness.gd`
+- `.testbed/tests/support/xr_provider_test_harness.gd`
+- `.testbed/tests/test_xr_provider_verification_harness.gd`
+- `README.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Coder Complete
 
-**Results:** Pending.
+**Results:** Implemented the first provider-owned XR human verification harness in `REF-06` without absorbing downstream ownership. Added `.testbed/scenes/xr_provider_verification_harness.tscn` and `.testbed/scripts/xr_provider_verification_harness.gd`, which instantiate the packaged `AeroSpatialUiXrProvider` via repo-local harness support and expose a live HUD plus synthetic-provider controls for hover, press, drag-to-secondary, release-off-surface, and interruption-only cancel. This keeps XR rig wiring, world-hit acquisition, and proof-host composition out of the provider repo while still letting a human verify packaged-provider identity, canonical contract publication (`source_variant`, `phase`, `target_path`, `verification_status`, `verification_notes`), and truthful runtime state (`owner/live target`, `locked_source_variant`, `last_release_target_path`, `last_terminal_result`, `last_interruption_reason`, `last_forwarded_panel_event`). Expanded `.testbed/tests/support/xr_provider_test_harness.gd` so both tests and the scene share one packaged-provider runtime seam, and added `.testbed/tests/test_xr_provider_verification_harness.gd` to assert harness truth for packaged-provider identity, unpromoted `verification_status == unverified`, release continuity, and interruption-only cancel semantics. Updated `README.md` with the new harness and the explicit verification workflow. Repo-local validation run by coder: `godot --headless --path .testbed --import` ✅, then `godot --headless --path .testbed --script addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit` ✅ (11/11 tests passing, including the new harness coverage). QA and auditor stages are still pending.
 
 ---
 
