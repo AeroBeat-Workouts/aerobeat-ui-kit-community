@@ -42,6 +42,32 @@ func test_spatial_surface_descriptor_localizes_target_rects_to_panel_root() -> v
 	assert_true((primary_spec.get("rect", Rect2()) as Rect2).has_point(((button_rect.position + (button_rect.size * 0.5)) - root_rect.position)))
 
 
+func test_screen_pixel_round_trip_uses_panel_plane_instead_of_collision_face() -> void:
+	var scene := await _spawn_hybrid_scene()
+	var panel := scene.get_node("PanelPivot/PanelViewport").get_child(0)
+	var button: Control = panel.get_node("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton")
+	var root_rect: Rect2 = panel.get_global_rect()
+	var button_local_rect := Rect2(button.get_global_rect().position - root_rect.position, button.get_global_rect().size)
+	var authored_samples := [
+		Vector2(button_local_rect.position.x - 10.0, button_local_rect.position.y + 16.0),
+		Vector2(button_local_rect.position.x - 10.0, button_local_rect.position.y + button_local_rect.size.y - 8.0),
+		Vector2(button_local_rect.position.x + 16.0, button_local_rect.position.y + button_local_rect.size.y + 8.0),
+	]
+
+	for authored_position in authored_samples:
+		assert_false(button_local_rect.has_point(authored_position), "Sanity check: authored sample should stay outside the real primary-button rect")
+		var screen_position := _screen_position_for_authored_position(scene, authored_position)
+		var hit: Dictionary = scene._screen_position_to_panel_hit(Vector2(round(screen_position.x), round(screen_position.y)))
+		var resolved_target: NodePath = scene._resolve_projected_target_path_from_hit(hit)
+		var recovered_authored_position: Vector2 = hit.get("authored_viewport_position", Vector2.ZERO)
+		var raw_metadata: Dictionary = hit.get("raw_metadata", {})
+
+		assert_true(bool(raw_metadata.get("panel_plane_intersection", false)), "Hybrid host should remap screen pixels against the actual panel plane, not the collision box face")
+		assert_almost_eq(hit.get("local_hit", Vector3.ZERO).z, 0.0, 0.0005)
+		assert_false(button_local_rect.has_point(recovered_authored_position), "Recovered authored-space point should stay outside the primary-button rect after pixel round-trip")
+		assert_eq(resolved_target, NodePath(), "Screen-pixel round-trip just outside the button should not resolve to PrimaryActionButton")
+
+
 func test_panel_surface_aspect_matches_authored_card_aspect() -> void:
 	var scene := await _spawn_hybrid_scene()
 	var display_mesh: QuadMesh = scene.panel_display.mesh as QuadMesh
@@ -81,6 +107,22 @@ func _target_for_point(specs: Array, point: Vector2) -> NodePath:
 		if rect.has_point(point):
 			return spec.get("target_path", NodePath())
 	return NodePath()
+
+
+func _screen_position_for_authored_position(scene: Node, authored_position: Vector2) -> Vector2:
+	var root_rect: Rect2 = scene.get_node("PanelPivot/PanelViewport").get_child(0).get_global_rect()
+	var authored_uv := authored_position / root_rect.size
+	var glass_rect: Rect2 = scene._get_authored_glass_rect()
+	var panel_uv := (authored_uv - glass_rect.position) / glass_rect.size
+	var surface_size: Vector2 = scene._get_panel_surface_size()
+	var local_hit := Vector3(
+		(panel_uv.x - 0.5) * surface_size.x,
+		(0.5 - panel_uv.y) * surface_size.y,
+		0.0
+	)
+	var world_point = scene.panel_input_surface.to_global(local_hit)
+	var camera: Camera3D = scene.get_node("Camera3D")
+	return camera.unproject_position(world_point)
 
 
 func _spec_for_target_key(specs: Array, target_key: String) -> Dictionary:

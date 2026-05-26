@@ -801,7 +801,11 @@ func _screen_position_to_panel_hit(screen_position: Vector2) -> Dictionary:
 			"world_direction": ray_direction,
 		}
 
-	var local_hit: Vector3 = panel_input_surface.to_local(hit["position"])
+	var panel_plane_hit := _project_ray_to_panel_plane(ray_origin, ray_direction)
+	if panel_plane_hit.is_empty():
+		return {"hit": false, "screen_position": screen_position, "world_direction": ray_direction}
+
+	var local_hit: Vector3 = panel_plane_hit.get("local_hit", Vector3.ZERO)
 	var panel_size := _get_panel_surface_size()
 	if panel_size.x <= 0.0 or panel_size.y <= 0.0 or _spatial_surface_descriptor == null:
 		return {"hit": false, "screen_position": screen_position, "world_direction": ray_direction}
@@ -813,11 +817,35 @@ func _screen_position_to_panel_hit(screen_position: Vector2) -> Dictionary:
 	return _spatial_projection_helper.build_surface_hit(_spatial_surface_descriptor, panel_uv, {
 		"screen_position": screen_position,
 		"local_hit": local_hit,
-		"world_position": hit["position"],
-		"world_normal": hit.get("normal", Vector3.ZERO),
+		"world_position": panel_plane_hit.get("world_position", hit["position"]),
+		"world_normal": panel_plane_hit.get("world_normal", hit.get("normal", Vector3.ZERO)),
 		"world_direction": ray_direction,
 		"surface_size": panel_size,
+		"raw_metadata": {
+			"panel_plane_intersection": true,
+			"collision_hit_position": hit.get("position", Vector3.ZERO),
+			"collision_hit_local_z": panel_input_surface.to_local(hit.get("position", Vector3.ZERO)).z,
+		},
 	})
+
+
+func _project_ray_to_panel_plane(ray_origin: Vector3, ray_direction: Vector3) -> Dictionary:
+	if panel_input_surface == null:
+		return {}
+	var local_ray_origin := panel_input_surface.to_local(ray_origin)
+	var local_ray_target := panel_input_surface.to_local(ray_origin + ray_direction)
+	var local_ray_direction := local_ray_target - local_ray_origin
+	if is_zero_approx(local_ray_direction.z):
+		return {}
+	var distance_to_plane := -local_ray_origin.z / local_ray_direction.z
+	if distance_to_plane < 0.0:
+		return {}
+	var local_hit := local_ray_origin + (local_ray_direction * distance_to_plane)
+	return {
+		"local_hit": local_hit,
+		"world_position": panel_input_surface.to_global(local_hit),
+		"world_normal": panel_input_surface.global_transform.basis.z.normalized(),
+	}
 
 
 func _build_projected_data(

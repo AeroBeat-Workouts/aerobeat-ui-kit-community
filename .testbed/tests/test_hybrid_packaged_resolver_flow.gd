@@ -47,25 +47,29 @@ func test_non_button_panel_hit_does_not_resolve_to_primary_action_button() -> vo
 	var root_rect: Rect2 = panel.get_global_rect()
 	var button = panel.get_node("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton")
 	var button_rect: Rect2 = button.get_global_rect()
-	var glass_rect: Rect2 = scene._get_authored_glass_rect()
-	var non_button_authored_uv := glass_rect.position + (glass_rect.size * Vector2(0.18, 0.2))
-	var non_button_authored_position := non_button_authored_uv * root_rect.size
+	var button_local_rect := Rect2(button_rect.position - root_rect.position, button_rect.size)
+	var non_button_authored_position := Vector2(button_local_rect.position.x - 10.0, button_local_rect.position.y + 16.0)
+	var non_button_authored_uv := non_button_authored_position / root_rect.size
 
-	assert_false(Rect2(button_rect.position - root_rect.position, button_rect.size).has_point(non_button_authored_position))
+	assert_false(button_local_rect.has_point(non_button_authored_position))
 	assert_eq(scene._resolve_projected_target_path_from_hit({
 		"authored_viewport_position": non_button_authored_position,
 		"authored_uv": non_button_authored_uv,
 		"viewport_position": non_button_authored_position,
 		"surface_position": non_button_authored_position,
-	}), NodePath(), "A non-button authored-space point should not resolve to the primary action button")
+	}), NodePath(), "An authored-space point just outside the real primary-button rect should not resolve to the primary action button")
 
 	var press := InputEventMouseButton.new()
 	press.button_index = MOUSE_BUTTON_LEFT
 	press.pressed = true
-	press.position = _screen_position_for_authored_position(scene, non_button_authored_position)
-	assert_true(scene._publish_mouse_button_to_contract(press))
-	assert_false(str(scene._last_contract_target_path).contains("PrimaryActionButton"))
-	assert_ne(scene._current_mouse_runtime_state().get("last_projected_data", {}).get("raw_metadata", {}).get("matched_target_key", ""), "primary")
+	var screen_position := _screen_position_for_authored_position(scene, non_button_authored_position)
+	press.position = Vector2(round(screen_position.x), round(screen_position.y))
+	var screen_hit: Dictionary = scene._screen_position_to_panel_hit(press.position)
+	assert_true(bool(screen_hit.get("hit", false)), "Rounded desktop pixel should still land on the hybrid panel surface")
+	assert_eq(scene._resolve_projected_target_path_from_hit(screen_hit), NodePath(), "Rounded desktop pixel just outside the button should stay targetless after host projection")
+	if scene._publish_mouse_button_to_contract(press):
+		assert_false(str(scene._last_contract_target_path).contains("PrimaryActionButton"))
+		assert_ne(scene._current_mouse_runtime_state().get("last_projected_data", {}).get("raw_metadata", {}).get("matched_target_key", ""), "primary")
 
 	scene.queue_free()
 
