@@ -32,6 +32,21 @@ func _assert_yaml_backed_panel_defaults(panel: AeroUiGlassPanelView) -> void:
 	assert_eq(panel._panel_style_config.source_path, PANEL_YAML_PATH)
 
 
+func _make_local_mouse_motion(local_position: Vector2) -> InputEventMouseMotion:
+	var event := InputEventMouseMotion.new()
+	event.position = local_position
+	event.relative = Vector2.ZERO
+	return event
+
+
+func _make_local_mouse_button(local_position: Vector2, pressed: bool) -> InputEventMouseButton:
+	var event := InputEventMouseButton.new()
+	event.button_index = MOUSE_BUTTON_LEFT
+	event.pressed = pressed
+	event.position = local_position
+	return event
+
+
 func _collect_visible_label_text(node: Node, texts: Array[String]) -> void:
 	if node is Label:
 		texts.append((node as Label).text)
@@ -134,21 +149,16 @@ func test_screen_host_release_outside_card_emits_hover_exit_and_returns_idle() -
 	var button := host._proof_button as Control
 	assert_not_null(button)
 	var rect := button.get_global_rect()
-	var inside := rect.get_center()
+	var local_inside := button.size * 0.5
 	var outside := rect.position + Vector2(rect.size.x + 24.0, rect.size.y * 0.5)
 
-	var hover := InputEventMouseMotion.new()
-	hover.position = inside
-	hover.relative = Vector2.ZERO
+	var hover := _make_local_mouse_motion(local_inside)
 	assert_true(host._publish_native_targeted_event(hover))
 	await get_tree().process_frame
 	assert_eq(host._contract_status_label.text, "Hovered target: PrimaryActionButton\nInteraction state: hover")
 	assert_eq(host._panel_view.primary_button_view._last_visual_phase, "hover")
 
-	var press := InputEventMouseButton.new()
-	press.button_index = MOUSE_BUTTON_LEFT
-	press.pressed = true
-	press.position = inside
+	var press := _make_local_mouse_button(local_inside, true)
 	assert_true(host._publish_native_targeted_event(press))
 	await get_tree().process_frame
 	assert_eq(host._contract_status_label.text, "Hovered target: PrimaryActionButton\nInteraction state: pressed")
@@ -165,6 +175,28 @@ func test_screen_host_release_outside_card_emits_hover_exit_and_returns_idle() -
 	assert_eq(host._last_contract_phase, "hover_exit")
 
 
+func test_screen_host_gui_input_local_coordinates_are_normalized_to_viewport_hover() -> void:
+	var host = SCREEN_HOST_SCENE.instantiate()
+	add_child_autofree(host)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	var button := host._proof_button as Control
+	assert_not_null(button)
+	var local_inside := button.size * 0.5
+	var expected_screen_position := button.get_global_transform_with_canvas() * local_inside
+
+	var hover := _make_local_mouse_motion(local_inside)
+	host._on_proof_button_gui_input(hover)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	assert_eq(host._contract_status_label.text, "Hovered target: PrimaryActionButton\nInteraction state: hover")
+	var hover_state: Dictionary = host.screen_input_adapter._pointer_states.get(host.screen_input_adapter._hover_pointer_id, {})
+	assert_eq(hover_state.get("last_screen_position", Vector2.ZERO), expected_screen_position)
+	assert_eq(hover_state.get("last_surface_position", Vector2.ZERO), local_inside)
+
+
 func test_screen_host_input_release_outside_card_emits_hover_exit_and_returns_idle() -> void:
 	var host = SCREEN_HOST_SCENE.instantiate()
 	add_child_autofree(host)
@@ -174,20 +206,15 @@ func test_screen_host_input_release_outside_card_emits_hover_exit_and_returns_id
 	var button := host._proof_button as Control
 	assert_not_null(button)
 	var rect := button.get_global_rect()
-	var inside := rect.get_center()
+	var local_inside := button.size * 0.5
 	var outside := rect.position + Vector2(rect.size.x + 24.0, rect.size.y * 0.5)
 
-	var hover := InputEventMouseMotion.new()
-	hover.position = inside
-	hover.relative = Vector2.ZERO
+	var hover := _make_local_mouse_motion(local_inside)
 	host._on_proof_button_gui_input(hover)
 	await get_tree().process_frame
 	assert_eq(host._contract_status_label.text, "Hovered target: PrimaryActionButton\nInteraction state: hover")
 
-	var press := InputEventMouseButton.new()
-	press.button_index = MOUSE_BUTTON_LEFT
-	press.pressed = true
-	press.position = inside
+	var press := _make_local_mouse_button(local_inside, true)
 	host._on_proof_button_gui_input(press)
 	await get_tree().process_frame
 	assert_eq(host._contract_status_label.text, "Hovered target: PrimaryActionButton\nInteraction state: pressed")
@@ -212,9 +239,7 @@ func test_screen_host_window_mouse_exit_clears_hover_and_returns_idle() -> void:
 
 	var button := host._proof_button as Control
 	assert_not_null(button)
-	var hover := InputEventMouseMotion.new()
-	hover.position = button.get_global_rect().get_center()
-	hover.relative = Vector2.ZERO
+	var hover := _make_local_mouse_motion(button.size * 0.5)
 	host._on_proof_button_gui_input(hover)
 	await get_tree().process_frame
 	assert_eq(host._contract_status_label.text, "Hovered target: PrimaryActionButton\nInteraction state: hover")

@@ -262,12 +262,14 @@ func _on_proof_button_mouse_exited() -> void:
 func _publish_native_targeted_event(event: InputEvent) -> bool:
 	if screen_input_adapter == null or not is_instance_valid(_proof_button):
 		return false
-	_remember_pointer_position(event)
+	var normalized_event := _normalize_proof_button_gui_input_event(event)
+	_remember_pointer_position(normalized_event)
 	var published := _publish_to_screen_adapter(
-		event,
+		normalized_event,
 		_native_bridge_metadata({
 			"target_resolution": "native_control_bridge",
 			"native_control_event": "gui_input",
+			"native_control_coordinates": "control_local_to_viewport",
 		}),
 		_proof_button.get_path()
 	)
@@ -275,6 +277,20 @@ func _publish_native_targeted_event(event: InputEvent) -> bool:
 		return false
 	_last_forwarded_panel_event = "native target publish -> %s" % _describe_input_event(event)
 	return true
+
+
+func _normalize_proof_button_gui_input_event(event: InputEvent) -> InputEvent:
+	if not is_instance_valid(_proof_button):
+		return event
+	if event is InputEventMouseMotion:
+		var normalized_motion := (event as InputEventMouseMotion).duplicate() as InputEventMouseMotion
+		normalized_motion.position = _proof_button.get_global_transform_with_canvas() * event.position
+		return normalized_motion
+	if event is InputEventMouseButton:
+		var normalized_button := (event as InputEventMouseButton).duplicate() as InputEventMouseButton
+		normalized_button.position = _proof_button.get_global_transform_with_canvas() * event.position
+		return normalized_button
+	return event
 
 
 func _forward_native_bridge_fallback(event: InputEvent) -> bool:
