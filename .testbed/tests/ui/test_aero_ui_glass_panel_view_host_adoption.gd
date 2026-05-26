@@ -184,7 +184,7 @@ func test_screen_host_input_release_outside_card_emits_hover_exit_and_returns_id
 	release.button_index = MOUSE_BUTTON_LEFT
 	release.pressed = false
 	release.position = outside
-	host._input(release)
+	assert_true(host._publish_mouse_button_to_contract(release))
 	await get_tree().process_frame
 	assert_eq(host._contract_status_label.text, "Hovered target: none\nInteraction state: idle")
 	assert_eq(host._panel_view.primary_button_view._last_visual_phase, "rest")

@@ -77,12 +77,9 @@ var _save_dialog: FileDialog
 var _load_dialog: FileDialog
 var _pending_save_section := PRESET_SECTION_PANEL
 var _pending_load_section := PRESET_SECTION_PANEL
-var _native_mouse_press_active := false
-var _native_hover_active := false
-var _native_touch_owners: Dictionary = {}
 var _mouse_hover_active: bool:
 	get:
-		return _native_hover_active
+		return _is_native_hover_active()
 var _last_pointer_screen_position := Vector2.ZERO
 var _last_forwarded_panel_event := "waiting for normalized panel input"
 var _last_contract_phase := "waiting"
