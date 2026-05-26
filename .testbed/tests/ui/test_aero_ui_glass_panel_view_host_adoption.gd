@@ -104,6 +104,54 @@ func test_screen_host_input_debug_readout_stays_two_lines_during_hover_updates()
 	assert_eq(status.get_content_height(), idle_height)
 
 
+func test_screen_host_disables_adapter_global_input_capture_and_keeps_manual_bridge() -> void:
+	var host = SCREEN_HOST_SCENE.instantiate()
+	add_child_autofree(host)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	assert_not_null(host.screen_input_adapter)
+	assert_false(host.screen_input_adapter.is_processing_input())
+
+	var button := host._proof_button as Control
+	assert_not_null(button)
+	var hover := _make_local_mouse_motion(button.size * 0.5)
+	assert_true(host._publish_native_targeted_event(hover))
+	await get_tree().process_frame
+	assert_eq(host._contract_status_label.text, "Hovered target: PrimaryActionButton\nInteraction state: hover")
+
+
+func test_screen_host_ignores_foreign_adapter_press_state_when_deciding_off_target_motion_ownership() -> void:
+	var host = SCREEN_HOST_SCENE.instantiate()
+	add_child_autofree(host)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	var controls_panel := host.get_node("SplitRoot/ControlsPanel") as Control
+	assert_not_null(controls_panel)
+	var pointer_id = host.screen_input_adapter._hover_pointer_id
+	host.screen_input_adapter._pointer_states[pointer_id] = {
+		"pressed": true,
+		"dragging": false,
+		"hovering": false,
+		"hover_target_path": controls_panel.get_path(),
+		"owner_target_path": controls_panel.get_path(),
+		"target_path": controls_panel.get_path(),
+		"press_screen_position": Vector2(20.0, 20.0),
+		"last_screen_position": Vector2(20.0, 20.0),
+		"last_surface_position": Vector2.ZERO,
+		"button": AeroUiInteractionTypes.BUTTON_PRIMARY,
+	}
+
+	assert_false(host._has_native_mouse_press_owner())
+	var off_target_motion := InputEventMouseMotion.new()
+	off_target_motion.position = Vector2(32.0, 32.0)
+	off_target_motion.relative = Vector2(4.0, 0.0)
+	off_target_motion.button_mask = MOUSE_BUTTON_MASK_LEFT
+	assert_false(host._publish_native_mouse_motion_fallback(off_target_motion))
+	assert_false(host._last_forwarded_panel_event.begins_with("native empty-target publish"))
+
+
 func test_screen_host_mouse_entered_publishes_explicit_hover_for_contract_bound_button() -> void:
 	var host = SCREEN_HOST_SCENE.instantiate()
 	add_child_autofree(host)

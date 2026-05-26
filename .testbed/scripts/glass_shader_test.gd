@@ -210,6 +210,11 @@ func _ensure_interaction_contract_nodes() -> void:
 	screen_input_adapter.surface_type = SCREEN_SURFACE_TYPE
 	screen_input_adapter.drag_threshold_pixels = 12.0
 	screen_input_adapter.emit_hover_events = true
+	# This proof scene publishes only through its native 2D bridge callbacks.
+	# Leaving the adapter's own global _input subscription enabled lets unrelated
+	# viewport clicks (for example, the left controls panel scrollbar) mutate the
+	# adapter press state and confuse the proof-host fallback ownership checks.
+	screen_input_adapter.set_process_input(false)
 	_attach_contract_nodes_to_proof_button()
 
 	if not interaction_bus.interaction_event.is_connected(_on_contract_interaction_event):
@@ -467,12 +472,27 @@ func _get_native_hover_pointer_state() -> Dictionary:
 	return screen_input_adapter._pointer_states.get(screen_input_adapter._hover_pointer_id, {})
 
 
+func _native_mouse_state_targets_proof_button(pointer_state: Dictionary) -> bool:
+	if not is_instance_valid(_proof_button):
+		return false
+	var proof_button_path: NodePath = _proof_button.get_path()
+	if proof_button_path == NodePath():
+		return false
+	for candidate_key: StringName in [&"owner_target_path", &"target_path", &"hover_target_path"]:
+		var candidate: NodePath = pointer_state.get(candidate_key, NodePath()) as NodePath
+		if candidate == proof_button_path:
+			return true
+	return false
+
+
 func _is_native_hover_active() -> bool:
-	return bool(_get_native_hover_pointer_state().get("hovering", false))
+	var pointer_state := _get_native_hover_pointer_state()
+	return bool(pointer_state.get("hovering", false)) and _native_mouse_state_targets_proof_button(pointer_state)
 
 
 func _has_native_mouse_press_owner() -> bool:
-	return bool(_get_native_hover_pointer_state().get("pressed", false))
+	var pointer_state := _get_native_hover_pointer_state()
+	return bool(pointer_state.get("pressed", false)) and _native_mouse_state_targets_proof_button(pointer_state)
 
 
 func _has_native_touch_owner(pointer_index: int) -> bool:
