@@ -15,7 +15,7 @@
     },
     "aerobeat-input-core": {
       "url": "git@github.com:AeroBeat-Workouts/aerobeat-input-core.git",
-      "checkout": "22c4666efe96ba64b0f23907202a411000d72d41",
+      "checkout": "d4b6aa8",
       "subfolder": "/"
     },
     "aerobeat-spatial-ui-core": {

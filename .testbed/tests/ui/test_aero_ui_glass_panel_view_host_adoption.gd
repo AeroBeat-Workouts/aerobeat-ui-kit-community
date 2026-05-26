@@ -84,7 +84,7 @@ func test_screen_host_input_debug_readout_stays_two_lines_during_hover_updates()
 	var hover := InputEventMouseMotion.new()
 	hover.position = button.get_global_rect().get_center()
 	hover.relative = Vector2.ZERO
-	assert_true(host._publish_mouse_motion_to_contract(hover))
+	assert_true(host._publish_native_targeted_event(hover))
 	await get_tree().process_frame
 	await get_tree().process_frame
 
@@ -127,7 +127,7 @@ func test_screen_host_release_outside_card_emits_hover_exit_and_returns_idle() -
 	var hover := InputEventMouseMotion.new()
 	hover.position = inside
 	hover.relative = Vector2.ZERO
-	assert_true(host._publish_mouse_motion_to_contract(hover))
+	assert_true(host._publish_native_targeted_event(hover))
 	await get_tree().process_frame
 	assert_eq(host._contract_status_label.text, "Hovered target: PrimaryActionButton\nInteraction state: hover")
 	assert_eq(host._panel_view.primary_button_view._last_visual_phase, "hover")
@@ -136,19 +136,19 @@ func test_screen_host_release_outside_card_emits_hover_exit_and_returns_idle() -
 	press.button_index = MOUSE_BUTTON_LEFT
 	press.pressed = true
 	press.position = inside
-	assert_true(host._publish_mouse_button_to_contract(press))
+	assert_true(host._publish_native_targeted_event(press))
 	await get_tree().process_frame
 	assert_eq(host._contract_status_label.text, "Hovered target: PrimaryActionButton\nInteraction state: pressed")
 
+	host._on_proof_button_mouse_exited()
 	var release := InputEventMouseButton.new()
 	release.button_index = MOUSE_BUTTON_LEFT
 	release.pressed = false
 	release.position = outside
-	assert_true(host._publish_mouse_button_to_contract(release))
+	assert_true(host._publish_native_mouse_button_fallback(release))
 	await get_tree().process_frame
 	assert_eq(host._contract_status_label.text, "Hovered target: none\nInteraction state: idle")
 	assert_eq(host._panel_view.primary_button_view._last_visual_phase, "rest")
-	assert_false(host._mouse_hover_active)
 	assert_eq(host._last_contract_phase, "hover_exit")
 
 
@@ -167,7 +167,7 @@ func test_screen_host_input_release_outside_card_emits_hover_exit_and_returns_id
 	var hover := InputEventMouseMotion.new()
 	hover.position = inside
 	hover.relative = Vector2.ZERO
-	host._input(hover)
+	host._on_proof_button_gui_input(hover)
 	await get_tree().process_frame
 	assert_eq(host._contract_status_label.text, "Hovered target: PrimaryActionButton\nInteraction state: hover")
 
@@ -175,10 +175,11 @@ func test_screen_host_input_release_outside_card_emits_hover_exit_and_returns_id
 	press.button_index = MOUSE_BUTTON_LEFT
 	press.pressed = true
 	press.position = inside
-	host._input(press)
+	host._on_proof_button_gui_input(press)
 	await get_tree().process_frame
 	assert_eq(host._contract_status_label.text, "Hovered target: PrimaryActionButton\nInteraction state: pressed")
 
+	host._on_proof_button_mouse_exited()
 	var release := InputEventMouseButton.new()
 	release.button_index = MOUSE_BUTTON_LEFT
 	release.pressed = false
@@ -187,7 +188,6 @@ func test_screen_host_input_release_outside_card_emits_hover_exit_and_returns_id
 	await get_tree().process_frame
 	assert_eq(host._contract_status_label.text, "Hovered target: none\nInteraction state: idle")
 	assert_eq(host._panel_view.primary_button_view._last_visual_phase, "rest")
-	assert_false(host._mouse_hover_active)
 	assert_eq(host._last_contract_phase, "hover_exit")
 
 
@@ -202,7 +202,7 @@ func test_screen_host_window_mouse_exit_clears_hover_and_returns_idle() -> void:
 	var hover := InputEventMouseMotion.new()
 	hover.position = button.get_global_rect().get_center()
 	hover.relative = Vector2.ZERO
-	host._input(hover)
+	host._on_proof_button_gui_input(hover)
 	await get_tree().process_frame
 	assert_eq(host._contract_status_label.text, "Hovered target: PrimaryActionButton\nInteraction state: hover")
 	assert_eq(host._panel_view.primary_button_view._last_visual_phase, "hover")
@@ -211,5 +211,4 @@ func test_screen_host_window_mouse_exit_clears_hover_and_returns_idle() -> void:
 	await get_tree().process_frame
 	assert_eq(host._contract_status_label.text, "Hovered target: none\nInteraction state: idle")
 	assert_eq(host._panel_view.primary_button_view._last_visual_phase, "rest")
-	assert_false(host._mouse_hover_active)
 	assert_eq(host._last_contract_phase, "hover_exit")

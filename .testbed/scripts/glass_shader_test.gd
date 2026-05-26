@@ -77,9 +77,13 @@ var _save_dialog: FileDialog
 var _load_dialog: FileDialog
 var _pending_save_section := PRESET_SECTION_PANEL
 var _pending_load_section := PRESET_SECTION_PANEL
-var _mouse_card_capture := false
-var _mouse_hover_active := false
-var _active_touch_capture: Dictionary = {}
+var _native_mouse_press_active := false
+var _native_hover_active := false
+var _native_touch_owners: Dictionary = {}
+var _mouse_hover_active: bool:
+	get:
+		return _native_hover_active
+var _last_pointer_screen_position := Vector2.ZERO
 var _last_forwarded_panel_event := "waiting for normalized panel input"
 var _last_contract_phase := "waiting"
 var _last_contract_source_variant := "waiting"
@@ -94,6 +98,7 @@ func _ready() -> void:
 	_mount_panel_view()
 	_ensure_interaction_contract_nodes()
 	_configure_panel_view_contract()
+	_rewire_native_2d_bridge()
 	_build_controls()
 	_setup_preset_dialogs()
 	call_deferred("_sync_controls_from_panel")
@@ -101,14 +106,14 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if _forward_screen_panel_input(event):
+	if _forward_native_bridge_fallback(event):
 		get_viewport().set_input_as_handled()
 		_refresh_contract_status()
 
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_MOUSE_EXIT:
-		_publish_window_hover_exit()
+		_publish_native_hover_clear("window_mouse_exit")
 
 
 func _configure_info_panel_layout() -> void:
@@ -164,6 +169,7 @@ func _mount_panel_view() -> void:
 	_panel_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_proof_button = _panel_view.get_node_or_null(PREVIEW_BUTTON_PATH) as Control
 	_attach_contract_nodes_to_proof_button()
+	_rewire_native_2d_bridge()
 
 
 func _detach_contract_nodes_from_panel_view() -> void:
@@ -222,149 +228,154 @@ func _configure_panel_view_contract() -> void:
 		"surface_id": SCREEN_SURFACE_ID,
 		"surface_type_label": String(SCREEN_SURFACE_TYPE),
 		"mode_label": "Screen contract proof",
-		"host_summary": "Screen-space host routing now feeds AeroUiInteractionBus through ScreenUiInputAdapter. This card reacts to normalized hover / press / drag / tap phases instead of raw gui_input parsing.",
+		"host_summary": "Native 2D Control truth now feeds AeroUiInteractionBus through ScreenUiInputAdapter. This host only relays native target and empty-target transition events instead of owning manual hover / press capture.",
 	})
 
 
-func _forward_screen_panel_input(event: InputEvent) -> bool:
+func _rewire_native_2d_bridge() -> void:
+	if not is_instance_valid(_proof_button):
+		return
+	var gui_input_callable := Callable(self, "_on_proof_button_gui_input")
+	if not _proof_button.gui_input.is_connected(gui_input_callable):
+		_proof_button.gui_input.connect(gui_input_callable)
+	var mouse_enter_callable := Callable(self, "_on_proof_button_mouse_entered")
+	if not _proof_button.mouse_entered.is_connected(mouse_enter_callable):
+		_proof_button.mouse_entered.connect(mouse_enter_callable)
+	var mouse_exit_callable := Callable(self, "_on_proof_button_mouse_exited")
+	if not _proof_button.mouse_exited.is_connected(mouse_exit_callable):
+		_proof_button.mouse_exited.connect(mouse_exit_callable)
+
+
+func _on_proof_button_gui_input(event: InputEvent) -> void:
+	if _publish_native_targeted_event(event):
+		get_viewport().set_input_as_handled()
+		_refresh_contract_status()
+
+
+func _on_proof_button_mouse_entered() -> void:
+	pass
+
+
+func _on_proof_button_mouse_exited() -> void:
+	if _has_native_mouse_press_owner():
+		return
+	_publish_native_hover_clear("mouse_exited")
+
+
+func _publish_native_targeted_event(event: InputEvent) -> bool:
 	if screen_input_adapter == null or not is_instance_valid(_proof_button):
 		return false
+	_remember_pointer_position(event)
+	var published := _publish_to_screen_adapter(
+		event,
+		_native_bridge_metadata({
+			"target_resolution": "native_control_bridge",
+			"native_control_event": "gui_input",
+		}),
+		_proof_button.get_path()
+	)
+	if not published:
+		return false
+	_last_forwarded_panel_event = "native target publish -> %s" % _describe_input_event(event)
+	return true
 
-	if event is InputEventMouseButton:
-		return _publish_mouse_button_to_contract(event)
+
+func _forward_native_bridge_fallback(event: InputEvent) -> bool:
+	if screen_input_adapter == null or not is_instance_valid(_proof_button):
+		return false
 	if event is InputEventMouseMotion:
-		return _publish_mouse_motion_to_contract(event)
-	if event is InputEventScreenTouch:
-		return _publish_screen_touch_to_contract(event)
+		return _publish_native_mouse_motion_fallback(event)
+	if event is InputEventMouseButton:
+		return _publish_native_mouse_button_fallback(event)
 	if event is InputEventScreenDrag:
-		return _publish_screen_drag_to_contract(event)
+		return _publish_native_touch_drag_fallback(event)
+	if event is InputEventScreenTouch:
+		return _publish_native_touch_release_fallback(event)
 	return false
 
 
-func _publish_mouse_button_to_contract(event: InputEventMouseButton) -> bool:
-	var inside_card := _is_screen_position_inside_proof_card(event.position)
-	if event.pressed and not inside_card:
+func _publish_native_mouse_motion_fallback(event: InputEventMouseMotion) -> bool:
+	if not _has_native_mouse_press_owner() or _is_screen_position_inside_proof_button(event.position):
 		return false
-	if not event.pressed and not inside_card and not _mouse_card_capture:
-		return false
-
-	var had_hover_before_release := _mouse_hover_active
-	var published_target_path := _proof_button.get_path() if inside_card or _mouse_card_capture else NodePath()
-	var published := _publish_to_screen_adapter(event, {
-		"host_surface": "screen_2d_card",
-		"target_resolution": "preview_button_path",
-		"capture_continuity": _mouse_card_capture,
-	}, published_target_path)
+	_remember_pointer_position(event)
+	var published := _publish_to_screen_adapter(event, _native_bridge_metadata({
+		"target_resolution": "native_control_bridge",
+		"native_control_transition": "off_target_motion",
+	}), NodePath())
 	if not published:
 		return false
-
-	if event.button_index == MOUSE_BUTTON_LEFT:
-		if event.pressed and inside_card:
-			_mouse_card_capture = true
-		elif not event.pressed:
-			_mouse_card_capture = false
-			if not inside_card and had_hover_before_release:
-				_publish_release_hover_exit(event.position)
-
-	_last_forwarded_panel_event = "publish mouse %s -> proof card%s" % ["press" if event.pressed else "release", " (captured)" if _mouse_card_capture and not inside_card else ""]
+	_last_forwarded_panel_event = "native empty-target publish -> %s" % _describe_input_event(event)
 	return true
 
 
-func _publish_release_hover_exit(screen_position: Vector2) -> void:
-	var hover_exit := InputEventMouseMotion.new()
-	hover_exit.position = screen_position
-	hover_exit.relative = Vector2.ZERO
-	_publish_to_screen_adapter(hover_exit, {
-		"host_surface": "screen_2d_card",
-		"target_resolution": "preview_button_path",
-		"synthetic_hover_exit": true,
-		"release_outside_cleanup": true,
-	}, NodePath())
+func _publish_native_mouse_button_fallback(event: InputEventMouseButton) -> bool:
+	if event.button_index != MOUSE_BUTTON_LEFT:
+		return false
+	if event.pressed or not _has_native_mouse_press_owner():
+		return false
+	_remember_pointer_position(event)
+	var published := _publish_to_screen_adapter(event, _native_bridge_metadata({
+		"target_resolution": "native_control_bridge",
+		"native_control_transition": "off_target_release",
+	}), NodePath())
+	if not published:
+		return false
+	if _is_native_hover_active():
+		_publish_native_hover_clear("off_target_release_cleanup")
+	_last_forwarded_panel_event = "native empty-target publish -> %s" % _describe_input_event(event)
+	return true
 
 
-func _publish_window_hover_exit() -> void:
-	if not _mouse_hover_active or _mouse_card_capture:
+func _publish_native_touch_drag_fallback(event: InputEventScreenDrag) -> bool:
+	if not _has_native_touch_owner(event.index):
+		return false
+	if _is_screen_position_inside_proof_button(event.position):
+		return false
+	_remember_pointer_position(event)
+	var published := _publish_to_screen_adapter(event, _native_bridge_metadata({
+		"target_resolution": "native_control_bridge",
+		"native_control_transition": "off_target_drag",
+	}), NodePath())
+	if not published:
+		return false
+	_last_forwarded_panel_event = "native empty-target publish -> %s" % _describe_input_event(event)
+	return true
+
+
+func _publish_native_touch_release_fallback(event: InputEventScreenTouch) -> bool:
+	if event.pressed or not _has_native_touch_owner(event.index):
+		return false
+	if _is_screen_position_inside_proof_button(event.position):
+		return false
+	_remember_pointer_position(event)
+	var published := _publish_to_screen_adapter(event, _native_bridge_metadata({
+		"target_resolution": "native_control_bridge",
+		"native_control_transition": "off_target_release",
+	}), NodePath())
+	if not published:
+		return false
+	_last_forwarded_panel_event = "native empty-target publish -> %s" % _describe_input_event(event)
+	return true
+
+
+func _publish_native_hover_clear(reason: String) -> void:
+	if screen_input_adapter == null or not is_instance_valid(_proof_button):
+		return
+	if not _is_native_hover_active() and not _has_native_mouse_press_owner():
 		return
 	var hover_exit := InputEventMouseMotion.new()
-	hover_exit.position = Vector2(-1.0, -1.0)
+	hover_exit.position = _last_pointer_screen_position
 	hover_exit.relative = Vector2.ZERO
-	_publish_to_screen_adapter(hover_exit, {
-		"host_surface": "screen_2d_card",
-		"target_resolution": "preview_button_path",
+	if reason == "window_mouse_exit":
+		hover_exit.position = Vector2(-1.0, -1.0)
+	if _publish_to_screen_adapter(hover_exit, _native_bridge_metadata({
+		"target_resolution": "native_control_bridge",
 		"synthetic_hover_exit": true,
-		"window_mouse_exit": true,
-	}, NodePath())
-	_mouse_hover_active = false
-	_last_forwarded_panel_event = "publish mouse hover exit -> window exit"
-	_refresh_contract_status()
+		"native_control_transition": reason,
+	}), NodePath()):
+		_last_forwarded_panel_event = "native empty-target publish -> synthetic hover exit (%s)" % reason
+		_refresh_contract_status()
 
-
-func _publish_mouse_motion_to_contract(event: InputEventMouseMotion) -> bool:
-	var inside_card := _is_screen_position_inside_proof_card(event.position)
-	if not inside_card and not _mouse_card_capture and not _mouse_hover_active:
-		return false
-
-	var published_target_path := _proof_button.get_path() if inside_card or _mouse_card_capture else NodePath()
-	var published := _publish_to_screen_adapter(event, {
-		"host_surface": "screen_2d_card",
-		"target_resolution": "preview_button_path",
-		"capture_continuity": _mouse_card_capture,
-	}, published_target_path)
-	if not published:
-		return false
-
-	if inside_card:
-		_mouse_hover_active = true
-	elif not _mouse_card_capture:
-		_mouse_hover_active = false
-
-	_last_forwarded_panel_event = "publish mouse motion -> proof card%s" % (" (captured)" if _mouse_card_capture and not inside_card else "")
-	return true
-
-
-func _publish_screen_touch_to_contract(event: InputEventScreenTouch) -> bool:
-	var pointer_id := event.index
-	var has_capture := _active_touch_capture.has(pointer_id)
-	var inside_card := _is_screen_position_inside_proof_card(event.position)
-	if event.pressed and not inside_card:
-		return false
-	if not event.pressed and not inside_card and not has_capture:
-		return false
-
-	var published := _publish_to_screen_adapter(event, {
-		"host_surface": "screen_2d_card",
-		"target_resolution": "preview_button_path",
-		"capture_continuity": has_capture,
-	}, _proof_button.get_path())
-	if not published:
-		return false
-
-	if event.pressed:
-		_active_touch_capture[pointer_id] = true
-	else:
-		_active_touch_capture.erase(pointer_id)
-
-	_last_forwarded_panel_event = "publish touch %s #%d -> proof card%s" % ["press" if event.pressed else "release", event.index, " (captured)" if has_capture and not inside_card else ""]
-	return true
-
-
-func _publish_screen_drag_to_contract(event: InputEventScreenDrag) -> bool:
-	var pointer_id := event.index
-	if not _active_touch_capture.has(pointer_id):
-		return false
-
-	var inside_card := _is_screen_position_inside_proof_card(event.position)
-	var published := _publish_to_screen_adapter(event, {
-		"host_surface": "screen_2d_card",
-		"target_resolution": "preview_button_path",
-		"capture_continuity": true,
-		"inside_card": inside_card,
-	}, _proof_button.get_path())
-	if not published:
-		return false
-
-	_last_forwarded_panel_event = "publish touch drag #%d -> proof card%s" % [event.index, " (captured)" if not inside_card else ""]
-	return true
 
 
 func _publish_to_screen_adapter(event: InputEvent, metadata: Dictionary = {}, target_path: NodePath = NodePath()) -> bool:
@@ -375,10 +386,83 @@ func _publish_to_screen_adapter(event: InputEvent, metadata: Dictionary = {}, ta
 	return screen_input_adapter.publish_input_event(event, target_path, merged_metadata)
 
 
-func _is_screen_position_inside_proof_card(screen_position: Vector2) -> bool:
+func _native_bridge_metadata(extra_metadata: Dictionary = {}) -> Dictionary:
+	var metadata := {
+		"host_surface": "screen_2d_native_button",
+		"bridge_lane": "native_2d",
+	}
+	for key in extra_metadata.keys():
+		metadata[key] = extra_metadata[key]
+	return metadata
+
+
+func _publish_mouse_motion_to_contract(event: InputEventMouseMotion) -> bool:
+	if _is_screen_position_inside_proof_button(event.position):
+		return _publish_native_targeted_event(event)
+	return _publish_native_mouse_motion_fallback(event)
+
+
+func _publish_mouse_button_to_contract(event: InputEventMouseButton) -> bool:
+	if _is_screen_position_inside_proof_button(event.position):
+		return _publish_native_targeted_event(event)
+	return _publish_native_mouse_button_fallback(event)
+
+
+func _publish_screen_touch_to_contract(event: InputEventScreenTouch) -> bool:
+	if event.pressed and _is_screen_position_inside_proof_button(event.position):
+		return _publish_native_targeted_event(event)
+	return _publish_native_touch_release_fallback(event)
+
+
+func _publish_screen_drag_to_contract(event: InputEventScreenDrag) -> bool:
+	if _is_screen_position_inside_proof_button(event.position):
+		return _publish_native_targeted_event(event)
+	return _publish_native_touch_drag_fallback(event)
+
+
+func _get_native_hover_pointer_state() -> Dictionary:
+	if screen_input_adapter == null:
+		return {}
+	return screen_input_adapter._pointer_states.get(screen_input_adapter._hover_pointer_id, {})
+
+
+func _is_native_hover_active() -> bool:
+	return bool(_get_native_hover_pointer_state().get("hovering", false))
+
+
+func _has_native_mouse_press_owner() -> bool:
+	return bool(_get_native_hover_pointer_state().get("pressed", false))
+
+
+func _has_native_touch_owner(pointer_index: int) -> bool:
+	if screen_input_adapter == null:
+		return false
+	var pointer_id := StringName("touch_%s" % pointer_index)
+	return screen_input_adapter._pointer_states.has(pointer_id) \
+		and bool(screen_input_adapter._pointer_states[pointer_id].get("pressed", false))
+
+
+func _remember_pointer_position(event: InputEvent) -> void:
+	if event is InputEventMouseButton or event is InputEventMouseMotion or event is InputEventScreenTouch or event is InputEventScreenDrag:
+		_last_pointer_screen_position = event.position
+
+
+func _is_screen_position_inside_proof_button(screen_position: Vector2) -> bool:
 	if not is_instance_valid(_proof_button):
 		return false
 	return _proof_button.get_global_rect().has_point(screen_position)
+
+
+func _describe_input_event(event: InputEvent) -> String:
+	if event is InputEventMouseMotion:
+		return "mouse motion"
+	if event is InputEventMouseButton:
+		return "mouse %s" % ("press" if event.pressed else "release")
+	if event is InputEventScreenDrag:
+		return "touch drag #%d" % event.index
+	if event is InputEventScreenTouch:
+		return "touch %s #%d" % [("press" if event.pressed else "release"), event.index]
+	return event.get_class()
 
 
 func _on_contract_interaction_event(event: AeroUiInteractionEvent) -> void:
@@ -392,14 +476,6 @@ func _on_contract_interaction_event(event: AeroUiInteractionEvent) -> void:
 	_last_contract_verification_notes = str(event.verification_notes)
 	_last_contract_target_path = str(event.target_path)
 	_last_forwarded_panel_event = "%s • %s • %s" % [event.source_variant, event.phase, event.verification_status]
-
-	match event.phase:
-		AeroUiInteractionTypes.PHASE_HOVER_ENTER:
-			_mouse_hover_active = true
-		AeroUiInteractionTypes.PHASE_HOVER_EXIT, AeroUiInteractionTypes.PHASE_CANCEL:
-			_mouse_hover_active = false
-		_:
-			pass
 
 	_refresh_contract_status()
 
