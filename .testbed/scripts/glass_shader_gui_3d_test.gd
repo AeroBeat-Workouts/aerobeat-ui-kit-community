@@ -625,12 +625,8 @@ func _refresh_spatial_surface_descriptor() -> void:
 		return
 	if _spatial_surface_descriptor == null:
 		_spatial_surface_descriptor = SpatialSurfaceDescriptorScript.new()
-	var localized_target_specs: Array = []
 	var root_rect := _panel_ui.get_global_rect()
-	for spec_variant in _panel_ui.get_interaction_target_specs():
-		if not (spec_variant is Dictionary):
-			continue
-		localized_target_specs.append((spec_variant as Dictionary).duplicate(true))
+	var localized_target_specs := _localize_surface_target_specs(_panel_ui.get_interaction_target_specs(), root_rect)
 	_spatial_surface_descriptor.configure({
 		"surface_id": HYBRID_SURFACE_ID,
 		"surface_path": panel_input_surface.get_path() if is_instance_valid(panel_input_surface) else NodePath(),
@@ -644,6 +640,18 @@ func _refresh_spatial_surface_descriptor() -> void:
 			"surface_size": _get_panel_surface_size(),
 		},
 	})
+
+
+func _localize_surface_target_specs(target_specs: Array, root_rect: Rect2) -> Array:
+	var localized_target_specs: Array = []
+	for spec_variant in target_specs:
+		if not (spec_variant is Dictionary):
+			continue
+		var localized_spec := (spec_variant as Dictionary).duplicate(true)
+		var rect: Rect2 = localized_spec.get("rect", Rect2())
+		localized_spec["rect"] = Rect2(rect.position - root_rect.position, rect.size)
+		localized_target_specs.append(localized_spec)
+	return localized_target_specs
 
 
 func _current_mouse_runtime_state() -> Dictionary:

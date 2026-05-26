@@ -28,6 +28,20 @@ func test_projected_target_lookup_remaps_panel_uv_into_authored_space() -> void:
 	assert_ne(scene._resolve_projected_target_path(panel_uv * Vector2(scene.panel_viewport.size), panel_uv), expected_target)
 
 
+func test_spatial_surface_descriptor_localizes_target_rects_to_panel_root() -> void:
+	var scene := await _spawn_hybrid_scene()
+	var panel := scene.get_node("PanelPivot/PanelViewport").get_child(0)
+	var button: Control = panel.get_node("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton")
+	var root_rect: Rect2 = panel.get_global_rect()
+	var button_rect: Rect2 = button.get_global_rect()
+	var localized_specs: Array = scene._localize_surface_target_specs(panel.get_interaction_target_specs(), root_rect)
+	var primary_spec := _spec_for_target_key(localized_specs, "primary")
+
+	assert_false(primary_spec.is_empty())
+	assert_eq(primary_spec.get("rect", Rect2()), Rect2(button_rect.position - root_rect.position, button_rect.size))
+	assert_true((primary_spec.get("rect", Rect2()) as Rect2).has_point(((button_rect.position + (button_rect.size * 0.5)) - root_rect.position)))
+
+
 func test_panel_surface_aspect_matches_authored_card_aspect() -> void:
 	var scene := await _spawn_hybrid_scene()
 	var display_mesh: QuadMesh = scene.panel_display.mesh as QuadMesh
@@ -67,3 +81,13 @@ func _target_for_point(specs: Array, point: Vector2) -> NodePath:
 		if rect.has_point(point):
 			return spec.get("target_path", NodePath())
 	return NodePath()
+
+
+func _spec_for_target_key(specs: Array, target_key: String) -> Dictionary:
+	for spec_variant in specs:
+		if not (spec_variant is Dictionary):
+			continue
+		var spec: Dictionary = spec_variant
+		if str(spec.get("target_key", "")) == target_key:
+			return spec
+	return {}

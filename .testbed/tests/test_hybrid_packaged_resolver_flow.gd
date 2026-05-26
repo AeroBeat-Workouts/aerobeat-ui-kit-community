@@ -41,6 +41,35 @@ func test_mouse_press_flow_reports_packaged_resolver_metadata_end_to_end() -> vo
 	scene.queue_free()
 
 
+func test_non_button_panel_hit_does_not_resolve_to_primary_action_button() -> void:
+	var scene = await _spawn_hybrid_scene()
+	var panel = scene.get_node("PanelPivot/PanelViewport").get_child(0)
+	var root_rect: Rect2 = panel.get_global_rect()
+	var button = panel.get_node("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton")
+	var button_rect: Rect2 = button.get_global_rect()
+	var glass_rect: Rect2 = scene._get_authored_glass_rect()
+	var non_button_authored_uv := glass_rect.position + (glass_rect.size * Vector2(0.18, 0.2))
+	var non_button_authored_position := non_button_authored_uv * root_rect.size
+
+	assert_false(Rect2(button_rect.position - root_rect.position, button_rect.size).has_point(non_button_authored_position))
+	assert_eq(scene._resolve_projected_target_path_from_hit({
+		"authored_viewport_position": non_button_authored_position,
+		"authored_uv": non_button_authored_uv,
+		"viewport_position": non_button_authored_position,
+		"surface_position": non_button_authored_position,
+	}), NodePath(), "A non-button authored-space point should not resolve to the primary action button")
+
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = _screen_position_for_authored_position(scene, non_button_authored_position)
+	assert_true(scene._publish_mouse_button_to_contract(press))
+	assert_false(str(scene._last_contract_target_path).contains("PrimaryActionButton"))
+	assert_ne(scene._current_mouse_runtime_state().get("last_projected_data", {}).get("raw_metadata", {}).get("matched_target_key", ""), "primary")
+
+	scene.queue_free()
+
+
 func _spawn_hybrid_scene() -> Node:
 	var scene := HYBRID_SCENE.instantiate()
 	add_child_autofree(scene)
@@ -55,7 +84,13 @@ func _primary_button_screen_position(scene: Node) -> Vector2:
 	var button = panel.get_node("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton")
 	var root_rect = panel.get_global_rect()
 	var button_rect = button.get_global_rect()
-	var authored_uv = ((button_rect.position + (button_rect.size * 0.5)) - root_rect.position) / root_rect.size
+	var authored_position = (button_rect.position + (button_rect.size * 0.5)) - root_rect.position
+	return _screen_position_for_authored_position(scene, authored_position)
+
+
+func _screen_position_for_authored_position(scene: Node, authored_position: Vector2) -> Vector2:
+	var root_rect: Rect2 = scene.get_node("PanelPivot/PanelViewport").get_child(0).get_global_rect()
+	var authored_uv := authored_position / root_rect.size
 	var glass_rect = scene._get_authored_glass_rect()
 	var panel_uv = (authored_uv - glass_rect.position) / glass_rect.size
 	var surface_size = scene._get_panel_surface_size()
