@@ -81,15 +81,28 @@ func test_screen_host_input_debug_readout_stays_two_lines_during_hover_updates()
 	var button := host._proof_button as Control
 	assert_not_null(button)
 
-	var hover := InputEventMouseMotion.new()
-	hover.position = button.get_global_rect().get_center()
-	hover.relative = Vector2.ZERO
-	assert_true(host._publish_native_targeted_event(hover))
+	host._on_proof_button_mouse_entered()
 	await get_tree().process_frame
 	await get_tree().process_frame
 
 	assert_eq(status.text, "Hovered target: PrimaryActionButton\nInteraction state: hover")
 	assert_eq(status.get_content_height(), idle_height)
+
+
+func test_screen_host_mouse_entered_publishes_explicit_hover_for_contract_bound_button() -> void:
+	var host = SCREEN_HOST_SCENE.instantiate()
+	add_child_autofree(host)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	host._on_proof_button_mouse_entered()
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	assert_eq(host._contract_status_label.text, "Hovered target: PrimaryActionButton\nInteraction state: hover")
+	assert_eq(host._panel_view.primary_button_view._last_visual_phase, "hover")
+	assert_eq(host._last_contract_phase, "hover_enter")
+	assert_string_contains(host._last_forwarded_panel_event, "synthetic hover enter")
 
 
 func test_hybrid_host_mounts_canonical_aeroui_glass_panel_view_in_both_subviewports() -> void:

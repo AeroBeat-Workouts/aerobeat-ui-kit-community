@@ -250,7 +250,7 @@ func _on_proof_button_gui_input(event: InputEvent) -> void:
 
 
 func _on_proof_button_mouse_entered() -> void:
-	pass
+	_publish_native_hover_enter("mouse_entered")
 
 
 func _on_proof_button_mouse_exited() -> void:
@@ -355,14 +355,27 @@ func _publish_native_touch_release_fallback(event: InputEventScreenTouch) -> boo
 	return true
 
 
+func _publish_native_hover_enter(reason: String) -> void:
+	if screen_input_adapter == null or not is_instance_valid(_proof_button):
+		return
+	if _is_native_hover_active():
+		return
+	var hover_enter := _create_synthetic_hover_motion_event()
+	if _publish_to_screen_adapter(hover_enter, _native_bridge_metadata({
+		"target_resolution": "native_control_bridge",
+		"synthetic_hover_enter": true,
+		"native_control_transition": reason,
+	}), _proof_button.get_path()):
+		_last_forwarded_panel_event = "native target publish -> synthetic hover enter (%s)" % reason
+		_refresh_contract_status()
+
+
 func _publish_native_hover_clear(reason: String) -> void:
 	if screen_input_adapter == null or not is_instance_valid(_proof_button):
 		return
 	if not _is_native_hover_active() and not _has_native_mouse_press_owner():
 		return
-	var hover_exit := InputEventMouseMotion.new()
-	hover_exit.position = _last_pointer_screen_position
-	hover_exit.relative = Vector2.ZERO
+	var hover_exit := _create_synthetic_hover_motion_event()
 	if reason == "window_mouse_exit":
 		hover_exit.position = Vector2(-1.0, -1.0)
 	if _publish_to_screen_adapter(hover_exit, _native_bridge_metadata({
@@ -373,6 +386,21 @@ func _publish_native_hover_clear(reason: String) -> void:
 		_last_forwarded_panel_event = "native empty-target publish -> synthetic hover exit (%s)" % reason
 		_refresh_contract_status()
 
+
+func _create_synthetic_hover_motion_event() -> InputEventMouseMotion:
+	var hover_event := InputEventMouseMotion.new()
+	hover_event.position = _resolve_native_hover_screen_position()
+	hover_event.relative = Vector2.ZERO
+	return hover_event
+
+
+func _resolve_native_hover_screen_position() -> Vector2:
+	if is_instance_valid(_proof_button):
+		var pointer_position := get_viewport().get_mouse_position()
+		if _is_screen_position_inside_proof_button(pointer_position):
+			return pointer_position
+		return _proof_button.get_global_rect().get_center()
+	return _last_pointer_screen_position
 
 
 func _publish_to_screen_adapter(event: InputEvent, metadata: Dictionary = {}, target_path: NodePath = NodePath()) -> bool:
