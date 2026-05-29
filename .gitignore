@@ -27,3 +27,7 @@ Thumbs.db
 
 # Local QA/runtime artifacts
 .temp/
+
+.claude/
+CLAUDE.md
+AGENTS.md
