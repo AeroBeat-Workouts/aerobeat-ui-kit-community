@@ -134,7 +134,7 @@ These files should exist at bootstrap, even if some remain intentionally inert u
    - required baseline dependencies:
      - `aerobeat-input-core`
      - `aerobeat-spatial-ui-core`
-     - `gut`
+     - `aerobeat-vendor-godot-unit-test`
    - no direct dependency on `aerobeat-ui-kit-community`
    - no local `file:` polyrepo shortcuts; use the existing git/SSH convention
 
@@ -249,7 +249,7 @@ Required packages:
 
 - `aerobeat-input-core`
 - `aerobeat-spatial-ui-core`
-- `gut`
+- `aerobeat-vendor-godot-unit-test`
 
 Recommended truth:
 

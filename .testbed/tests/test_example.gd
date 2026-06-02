@@ -17,7 +17,7 @@ func test_hidden_testbed_manifest_stays_ui_kit_focused() -> void:
 	assert_string_contains(manifest_text, '"checkout": "54a8d036323a9cc4c367dcebcd1381fa260eede0"', "Hybrid consumer proof should pin the packaged resolver-capable aerobeat-spatial-ui-mouse commit")
 	assert_string_contains(manifest_text, '"checkout": "b1afd62bb484739a204823c4eff4b31ae9aff294"', "Hybrid touch proof should pin the packaged touch-provider interaction-summary seam commit")
 	assert_string_contains(manifest_text, '"checkout": "803b36b"', "XR proof should pin the packaged XR interaction-summary seam commit")
-	assert_eq(addon_keys, ["aerobeat-ui-kit-community", "aerobeat-ui-core", "aerobeat-input-core", "aerobeat-spatial-ui-core", "aerobeat-spatial-ui-mouse", "aerobeat-spatial-ui-touch", "aerobeat-spatial-ui-xr", "gut"], "Hidden testbed should only declare the repo-local package plus approved shared interaction-contract/spatial-provider dependencies")
+	assert_eq(addon_keys, ["aerobeat-ui-kit-community", "aerobeat-ui-core", "aerobeat-input-core", "aerobeat-spatial-ui-core", "aerobeat-spatial-ui-mouse", "aerobeat-spatial-ui-touch", "aerobeat-spatial-ui-xr", "aerobeat-vendor-godot-unit-test"], "Hidden testbed should only declare the repo-local package plus approved shared interaction-contract/spatial-provider dependencies")
 
 func _extract_addon_keys(manifest_text: String) -> Array[String]:
 	var keys: Array[String] = []

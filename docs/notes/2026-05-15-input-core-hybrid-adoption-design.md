@@ -91,7 +91,7 @@ Current manifest:
 Current entries:
 
 - `aerobeat-ui-core`
-- `gut`
+- `aerobeat-vendor-godot-unit-test`
 
 `aerobeat-input-core` is **not** currently installed into this repo’s `.testbed` dependency graph.
 
@@ -120,7 +120,7 @@ Notes:
 
 ### Project config implications
 
-`project.godot` currently only explicitly enables GUT. That is fine.
+`project.godot` currently only explicitly enables the vendorized GUT plugin. That is fine.
 
 The input-core classes are `class_name` scripts under repo root and should become available after GodotEnv restore/import. No new plugin enablement is required unless the implementation deliberately chooses an autoload plugin later. For this adoption slice, the cleanest path is **scene-local node instancing**, not plugin/autoload changes.
 
