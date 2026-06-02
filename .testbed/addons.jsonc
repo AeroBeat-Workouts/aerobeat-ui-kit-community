@@ -1,44 +1,46 @@
 {
   "$schema": "https://chickensoft.games/schemas/addons.schema.json",
   "addons": {
-    // Mount the current repo package from the repo root so testbed sessions can inspect repo-owned assets.
     "aerobeat-ui-kit-community": {
       "url": "..",
       "source": "symlink",
       "subfolder": "/"
     },
-    // The hidden testbed stays focused on shared UI-kit development.
     "aerobeat-ui-core": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-ui-core.git",
-      "checkout": "f2ed54296117da90c1462699d3705ca4e30783ea",
-      "subfolder": "/"
+      "url": "../../aerobeat-ui-core",
+      "subfolder": "/",
+      "source": "symlink"
     },
     "aerobeat-input-core": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-input-core.git",
-      "checkout": "d4b6aa8",
-      "subfolder": "/"
+      "url": "../../aerobeat-input-core",
+      "subfolder": "/",
+      "source": "symlink"
     },
     "aerobeat-spatial-ui-core": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-spatial-ui-core.git",
-      "checkout": "91310478091e6435c9f94e52b1cf7b768ef601aa",
-      "subfolder": "/"
+      "url": "../../aerobeat-spatial-ui-core",
+      "subfolder": "/",
+      "source": "symlink"
     },
     "aerobeat-spatial-ui-mouse": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-spatial-ui-mouse.git",
-      "checkout": "54a8d036323a9cc4c367dcebcd1381fa260eede0",
-      "subfolder": "/"
+      "url": "../../aerobeat-spatial-ui-mouse",
+      "subfolder": "/",
+      "source": "symlink"
     },
     "aerobeat-spatial-ui-touch": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-spatial-ui-touch.git",
-      "checkout": "b1afd62bb484739a204823c4eff4b31ae9aff294",
-      "subfolder": "/"
+      "url": "../../aerobeat-spatial-ui-touch",
+      "subfolder": "/",
+      "source": "symlink"
     },
     "aerobeat-spatial-ui-xr": {
-      "url": "git@github.com:AeroBeat-Workouts/aerobeat-spatial-ui-xr.git",
-      "checkout": "803b36b",
-      "subfolder": "/"
+      "url": "../../aerobeat-spatial-ui-xr",
+      "subfolder": "/",
+      "source": "symlink"
     },
-    // GUT drives the repo-local test suite inside the hidden testbed/workbench.
+    "aerobeat-tool-headless-manager": {
+      "url": "../../aerobeat-tool-headless-manager",
+      "subfolder": "/",
+      "source": "symlink"
+    },
     "gut": {
       "url": "git@github.com:bitwes/Gut.git",
       "checkout": "main",
