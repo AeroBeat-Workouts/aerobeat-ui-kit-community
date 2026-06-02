@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community
 
 **Date:** 2026-05-20  
-**Status:** In Progress  
+**Status:** Stale  
 **Agent:** Cookie 🍪
 
 ---

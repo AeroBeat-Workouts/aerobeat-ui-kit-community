@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — Decouple 2D and Hybrid Glass Defaults
 
 **Date:** 2026-05-12  
-**Status:** Draft  
+**Status:** Stale  
 **Agent:** Byte 🐈‍⬛
 
 ---

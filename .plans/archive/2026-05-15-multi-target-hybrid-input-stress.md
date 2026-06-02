@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — Multi-Target Hybrid Input Stress Slice
 
 **Date:** 2026-05-15  
-**Status:** Draft  
+**Status:** Stale  
 **Agent:** Byte 🐈‍⬛
 
 ---

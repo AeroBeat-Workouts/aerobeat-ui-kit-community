@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — Hybrid 3D GUI Input Detection
 
 **Date:** 2026-05-15  
-**Status:** Draft  
+**Status:** Stale  
 **Agent:** Byte 🐈‍⬛
 
 ---

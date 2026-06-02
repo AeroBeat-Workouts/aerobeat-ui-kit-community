@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — Desktop-Truth 2D Hover Bug and Hybrid Shader Review
 
 **Date:** 2026-05-22  
-**Status:** Draft  
+**Status:** Stale  
 **Agent:** Byte 🐈‍⬛
 
 ---

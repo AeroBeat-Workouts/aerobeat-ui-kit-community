@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — Hybrid World-Space Glass Panel
 
 **Date:** 2026-05-12  
-**Status:** Draft  
+**Status:** Stale  
 **Agent:** Byte 🐈‍⬛
 
 ---

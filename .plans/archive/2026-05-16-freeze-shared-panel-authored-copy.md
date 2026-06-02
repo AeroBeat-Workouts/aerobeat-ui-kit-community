@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community
 
 **Date:** 2026-05-16  
-**Status:** In Progress  
+**Status:** Stale  
 **Agent:** Byte 🐈‍⬛
 
 ---

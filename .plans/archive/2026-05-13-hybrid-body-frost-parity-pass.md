@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — Hybrid Body Frost Parity Pass
 
 **Date:** 2026-05-13  
-**Status:** In Progress  
+**Status:** Stale  
 **Agent:** Byte 🐈‍⬛
 
 ---

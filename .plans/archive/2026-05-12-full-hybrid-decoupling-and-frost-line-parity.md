@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — Full Hybrid Decoupling and Frost/Line Parity
 
 **Date:** 2026-05-12  
-**Status:** Draft  
+**Status:** Stale  
 **Agent:** Byte 🐈‍⬛
 
 ---

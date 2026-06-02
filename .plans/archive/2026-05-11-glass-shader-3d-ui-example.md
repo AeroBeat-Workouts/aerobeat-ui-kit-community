@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — 3D Glass Shader + Example Scene
 
 **Date:** 2026-05-11  
-**Status:** Draft  
+**Status:** Stale  
 **Agent:** Byte 🐈‍⬛
 
 ---

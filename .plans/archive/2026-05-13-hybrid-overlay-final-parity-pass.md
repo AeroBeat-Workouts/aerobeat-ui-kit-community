@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — Hybrid Overlay Final Parity Pass
 
 **Date:** 2026-05-13  
-**Status:** In Progress  
+**Status:** Stale  
 **Agent:** Byte 🐈‍⬛
 
 ---

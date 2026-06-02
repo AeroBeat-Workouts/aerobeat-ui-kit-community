@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — GodotEnv Assets Symlink for Shader Pack
 
 **Date:** 2026-05-22  
-**Status:** Draft  
+**Status:** Stale  
 **Agent:** Byte 🐈‍⬛
 
 ---

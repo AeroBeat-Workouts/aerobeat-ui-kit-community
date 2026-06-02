@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — Glass Shader Test Scene
 
 **Date:** 2026-05-11  
-**Status:** In Progress  
+**Status:** Stale  
 **Agent:** Byte 🐈‍⬛
 
 ---

@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — Input Core Adoption for Screen-Space 2D UI
 
 **Date:** 2026-05-15  
-**Status:** Draft  
+**Status:** Stale  
 **Agent:** Byte 🐈‍⬛
 
 ---

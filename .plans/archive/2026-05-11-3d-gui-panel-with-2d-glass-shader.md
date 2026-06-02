@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — 3D GUI Panel Using the Original 2D Glass Shader
 
 **Date:** 2026-05-11  
-**Status:** Draft  
+**Status:** Stale  
 **Agent:** Byte 🐈‍⬛
 
 ---

@@ -1,7 +1,7 @@
 # AeroBeat UI Kit Community — Shader Preset JSON Import/Export for 2D and Hybrid Test Scenes
 
 **Date:** 2026-05-13  
-**Status:** In Progress  
+**Status:** Stale  
 **Agent:** Byte 🐈‍⬛
 
 ---
