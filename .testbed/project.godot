@@ -14,6 +14,11 @@ config/name="AeroBeat UI Kit Testbed"
 run/main_scene="res://scenes/glass-shader-test.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 
+[autoload]
+
+AeroHeadlessManager="*res://addons/aerobeat-tool-headless-manager/src/AeroHeadlessManager.gd"
+
+
 [display]
 
 window/size/viewport_width=1600
