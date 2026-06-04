@@ -1,306 +1,119 @@
 # Glass Shader Usage Guide
 
-This repo includes a Godot testbed for a screen-sampling “glass” UI treatment. This guide explains the pattern that is actually implemented here, how to build new 2D UI from it, how to verify that the effect is really working, and how to adapt the same ideas for 3D-facing panels without pretending this repo already ships a finished 3D version.
+This repo supports two glass shader flows:
+
+1. **2D frosted glass UI** — the canonical screen-space `CanvasItem` treatment used directly in the testbed UI.
+2. **Hybrid 3D glass panel** — a world-space panel that composites authored 2D UI through the supported hybrid 3D shaders.
+
+The older native-3D object glass proof has been removed on purpose. This guide documents only the supported paths that still exist in the repo.
 
 ## Source of truth in this repo
 
-Use these files as the canonical reference before copying the effect elsewhere:
+Use these files as the canonical references before copying the effect elsewhere.
 
-### 2D testbed
+### 2D frosted glass
 
-- `.testbed/scenes/glass-shader-test.tscn` — the working 2D test scene and node hierarchy
+- `.testbed/scenes/glass-shader-test.tscn` — working 2D test scene and node hierarchy
 - `.testbed/scripts/glass_shader_test.gd` — live tuning UI, background mode switching, and shell/frame sync logic
-- `.testbed/scripts/glass_debug_backdrop.gd` — the 2D debug backdrop used to make blur and refraction obvious
-- `.testbed/assets/shaders/glass-shader.gdshader` — the 2D canvas-item glass shader
+- `.testbed/scripts/glass_debug_backdrop.gd` — diagnostic 2D backdrop for verifying blur and refraction
+- `assets/shaders/glass-shader.gdshader` — the supported 2D glass shader
 
-### 3D testbed
+### Hybrid 3D glass panel
 
-- `.testbed/scenes/glass-shader-3d-test.tscn` — the new 3D panel scene with a perspective camera and rotation controls
-- `.testbed/scripts/glass_shader_3d_test.gd` — rotation controller and on-screen QA instructions
-- `.testbed/scripts/glass_3d_debug_backdrop.gd` — procedural 3D backdrop with high-contrast bands, grid lines, spheres, and diagonals
-- `.testbed/assets/shaders/glass-panel-3d.gdshader` — the new spatial glass shader used on the panel face
-- `.testbed/scripts/re_qa_capture_3d.gd` — optional capture harness for automated screenshot evidence
+- `.testbed/scenes/glass-shader-gui-3d-test.tscn` — supported world-space hybrid panel proof scene
+- `.testbed/scripts/glass_shader_gui_3d_test.gd` — host script for the hybrid panel, controls, and input verification HUD
+- `.testbed/scripts/glass_3d_debug_backdrop.gd` — shared 3D diagnostic backdrop used by the hybrid scene
+- `assets/shaders/glass-panel-hybrid-3d.gdshader` — supported hybrid world-space glass body shader
+- `assets/shaders/glass-panel-ui-overlay-3d.gdshader` — supported UI overlay shader layered on the hybrid panel
 
 ### Project entry
 
-- `.testbed/project.godot` — opens the hidden testbed project; change `run/main_scene` if you want the 3D example to be the default launch target
+- `.testbed/project.godot` — opens the hidden testbed project; the default launch scene is the 2D frosted glass proof
 
 ## Quick start
 
-If you just want a working starting point, do this:
+### 2D frosted glass flow
 
 1. Open the hidden testbed:
    ```bash
    godot --editor --path .testbed
    ```
 2. Open `.testbed/scenes/glass-shader-test.tscn`.
-3. Copy the `PreviewButton` subtree if you want the same 2D pattern.
-4. Keep this structure:
-   - a flat parent `Button`
-   - a child `ColorRect` that fills the button and holds the `ShaderMaterial`
-   - separate overlay shell nodes for the outer bevel/frame and inner outline
-5. Run the scene and switch `preview_background` to `Debug pattern` or `Hybrid overlay`.
-6. Tune `blur`, `warp_intensity`, `strength_x`, and `strength_y` while watching the background *through* the plate, not just the border styling.
+3. Run the scene.
+4. Switch between `AeroBeat image`, `Debug pattern`, and `Hybrid overlay` backgrounds.
+5. Tune `blur`, `warp_intensity`, `strength_x`, and `strength_y` while watching the background through the glass plate.
 
-If those parameters visibly change the background inside the glass plate, the real effect is alive.
+If those parameters visibly alter the sampled background inside the panel, the 2D glass effect is alive.
+
+### Hybrid 3D flow
+
+1. Open the hidden testbed:
+   ```bash
+   godot --editor --path .testbed
+   ```
+2. Open `.testbed/scenes/glass-shader-gui-3d-test.tscn`.
+3. Run the scene.
+4. Verify the panel renders authored UI through the hybrid material while the 3D debug backdrop remains visible behind it.
+5. Use the scene controls to inspect world-space presentation, overlay readability, and input-contract status.
+
+If the 3D panel shows the authored UI, the backdrop distortion responds to parameter changes, and the interaction HUD continues reporting normalized panel events, the supported hybrid path is wired correctly.
 
 ## What is actually implemented here
 
-The implemented 2D pattern is not “put the shader directly on a button and call it done.” The current working structure is:
+### 2D frosted glass pattern
 
-- `PreviewButton` (`Button`)
-  - `flat = true`
-  - button theme states replaced with `StyleBoxEmpty`
-  - acts as the interaction host and layout box
-- `GlassFill` (`ColorRect`)
-  - stretched to fill the button
-  - owns the `ShaderMaterial`
-  - is the actual screen-sampling glass layer
-- `PreviewFrame` (`Panel`)
-  - outer bevel/highlight shell
-- `InnerBorderInset` + `PreviewInnerBorder` (`Panel`)
-  - inner outline shell
-- content nodes on top
-  - badge, title, body text, hint text
+The supported 2D pattern is a flat control host plus a dedicated shader-backed fill layer.
 
-That layering matters. The glass effect is created by the child `ColorRect` sampling the screen beneath it. The button itself stays visually flat and mostly exists so the control behaves like a normal Godot UI element.
+Typical structure:
+
+- host `Button` or `Control`
+- child `ColorRect` with the `ShaderMaterial`
+- shell overlays for bevel / frame / inner border
+- content nodes above the glass layer
+
+That layering matters. The glass effect comes from the child `ColorRect` sampling the screen behind it. The host control remains responsible for layout and interaction.
+
+### Hybrid 3D pattern
+
+The supported 3D-facing path is not a standalone native spatial glass object anymore. It is a **hybrid** composition:
+
+- authored 2D UI lives inside `SubViewport` content
+- `.testbed/scenes/glass-shader-gui-3d-test.tscn` presents that UI on a world-space panel
+- `glass-panel-hybrid-3d.gdshader` handles the supported glass body treatment
+- `glass-panel-ui-overlay-3d.gdshader` handles the supported overlay pass
+- `.testbed/scripts/glass_3d_debug_backdrop.gd` provides diagnostic world geometry so refraction and readability stay testable
+
+Treat this repo as a reference for a 2D-first panel design that is then composited into 3D space, not as a generic native-3D glass material library.
 
 ## Build a new 2D glass control from scratch
 
-### 1) Create the interaction host
+1. Create a `Button` or `Control` that defines the plate size.
+2. Add a child `ColorRect` that fills the host.
+3. Assign a `ShaderMaterial` using `assets/shaders/glass-shader.gdshader`.
+4. Add separate shell overlays for the frame and inner border.
+5. Put text, badges, and other content above the glass layer.
+6. Keep shell corner treatment synchronized with the shader radius.
 
-Create a `Button` or another `Control` that will define the panel size.
+In this repo, the canonical implementation details live in:
 
-For a clickable element, follow the repo’s pattern:
+- `.testbed/scenes/glass-shader-test.tscn`
+- `.testbed/scripts/glass_shader_test.gd`
 
-- use a `Button`
-- set `flat = true`
-- replace `normal`, `hover`, `pressed`, `focus`, and `disabled` styleboxes with `StyleBoxEmpty`
-- keep text/content in child controls instead of relying on the button’s built-in chrome
+## Validation backgrounds and why they matter
 
-This is what `glass_shader_test.gd` does in `_configure_preview_button()`.
+The 2D proof exposes three useful background modes:
 
-### 2) Add the shader layer as a child `ColorRect`
+- `AeroBeat image` — presentation / taste check
+- `Debug pattern` — truth check for blur and refraction
+- `Hybrid overlay` — realism plus diagnostic contrast
 
-Inside the host control, add a `ColorRect` that fills the parent:
+Use `Debug pattern` first when validating the effect. Pretty art can hide broken sampling or weak distortion.
 
-- anchors preset: full rect
-- `mouse_filter = Ignore`
-- assign a `ShaderMaterial`
-- point it at `.testbed/assets/shaders/glass-shader.gdshader`
+The hybrid 3D proof serves a similar purpose by keeping a high-contrast procedural 3D backdrop behind the world-space panel.
 
-This `ColorRect` is the true glass plate.
+## Parameter guidance
 
-### 3) Add the shell overlays
-
-Add separate shell nodes above the shader layer:
-
-- outer frame/bevel panel
-- inset inner border panel
-
-In this repo, those use `StyleBoxFlat` resources instead of baking every visual detail into the shader. That split is intentional:
-
-- shader handles blur/refraction/tint/highlight response
-- shell panels handle readable bevel/outline structure
-
-### 4) Add content on top
-
-Put labels, badges, icons, and layout containers above the shell layers. Keep them separate from the shader node so the glass stays a background treatment for the control, not the text itself.
-
-### 5) Sync corner treatment with the shader
-
-If you expose `corner_radius`, do not hardcode a shell radius unrelated to the shader. In this repo, `_sync_preview_shell()` converts the normalized shader radius into pixel radii derived from actual control size.
-
-That is required for parity between:
-
-- `GlassFill` shader mask
-- `PreviewFrame`
-- `PreviewInnerBorder`
-
-## Live-tuning workflow in this repo
-
-The intended workflow is the testbed scene, not blind asset editing.
-
-1. Open `.testbed/scenes/glass-shader-test.tscn`.
-2. Run the scene.
-3. Use the left-side control rail built by `.testbed/scripts/glass_shader_test.gd`.
-4. Change one parameter at a time.
-5. Verify the result against `Debug pattern` and `Hybrid overlay` modes.
-6. Once the glass behavior is correct, evaluate whether it still looks good against the AeroBeat image background.
-
-Why this matters:
-
-- the image background is good for taste and composition
-- the debug background is good for truth
-- hybrid mode is good for confirming the effect still reads over a more realistic art backdrop
-
-## Preview background modes and why they matter
-
-The testbed exposes three preview modes:
-
-### AeroBeat image
-
-Uses the background image only.
-
-Use this for:
-
-- final presentation feel
-- checking whether the glass fits the AeroBeat palette
-- judging the full composition
-
-Do **not** rely on this mode alone to decide whether blur/refraction is working. Some images are too forgiving and can hide weak distortion.
-
-### Debug pattern
-
-Uses the scripted backdrop from `.testbed/scripts/glass_debug_backdrop.gd`.
-
-Use this for:
-
-- verifying blur really softens the background
-- verifying warp/refraction really bends visible lines and blocks
-- verifying `strength_x` and `strength_y` are changing the interior distortion profile
-
-This is the best truth-check mode because it contains bands, checker cells, diagonals, circles, and hard-edged blocks that make distortion obvious.
-
-### Hybrid overlay
-
-Shows the AeroBeat image plus the debug pattern overlay.
-
-Use this for:
-
-- checking realism and legibility together
-- confirming the effect survives over a textured/art-directed background
-- catching cases where the shader technically works in debug mode but becomes too subtle in production-looking art
-
-## Parameter guide
-
-These descriptions are grounded in the current shader and testbed.
-
-### `blur`
-
-Controls mip-based blur on the sampled background.
-
-- lower values keep the background sharper
-- higher values frost the background more strongly
-- easiest to judge in `Debug pattern` mode
-
-Recommended starting point from the scene: `4.2`
-
-### `warp_intensity`
-
-Controls how strongly the sampled background is displaced.
-
-- lower values feel flatter/calmer
-- higher values create more obvious bulging/refraction
-- if this looks dead, verify layering first
-
-Recommended starting point: `0.45`
-
-### `strength_x`
-
-Controls the horizontal concentration profile of the warp.
-
-- changing it alters how the distortion distributes across the X axis
-- strong differences are easiest to see against vertical lines or hard-edged blocks
-
-Recommended starting point: `14.0`
-
-### `strength_y`
-
-Controls the vertical concentration profile of the warp.
-
-- this was specifically repaired in this repo so it produces meaningful visible change
-- compare low and high values in `Debug pattern` or `Hybrid overlay`
-- look for the distortion changing across the plate interior, not just edge styling
-
-Recommended starting point: `14.0`
-
-### `corner_radius`
-
-Normalized radius value for the glass shape.
-
-- `0.0` = square corners
-- `1.0` = maximum roundness allowed by the control size
-- the script syncs frame and inner border radii to match this behavior
-
-Recommended starting point: `0.24`
-
-### `tint`
-
-Color and opacity mixed over the sampled background.
-
-- RGB sets the glass hue
-- alpha sets the tint amount
-- too much alpha can make the panel feel painted instead of glass
-
-Recommended starting point: `Color(0.92, 0.96, 1.0, 0.22)`
-
-### `edge_highlight`
-
-Controls the bright edge contribution.
-
-- use it to make the plate silhouette readable
-- too much can turn the look into a stylized outline instead of subtle glass
-
-Recommended starting point: `Color(1.0, 1.0, 1.0, 0.62)`
-
-### `edge_width`
-
-Controls the width of the shader edge highlight region.
-
-- larger values make the edge treatment thicker
-- the script also uses it when syncing the outer frame thickness
-
-Recommended starting point: `2.4`
-
-### Background mode selection
-
-Pick the background mode based on what you are testing:
-
-- use `Debug pattern` when validating actual glass/refraction behavior
-- use `Hybrid overlay` when tuning toward shipping visuals without losing diagnostic contrast
-- use `AeroBeat image` last, for final taste checks
-
-## Major gotchas we found
-
-### 1) Layering can make the shader look “alive” when it is not
-
-The biggest failure mode was node layering. Earlier in the work, the shell/frame styling was visible while the actual screen-sampling layer was effectively hidden behind the stack. That made `corner_radius` and `tint` appear responsive, but `blur`, `warp_intensity`, `strength_x`, and `strength_y` looked weak or dead.
-
-Rule: if the background beneath the plate is not visibly changing, the glass is not really working yet.
-
-### 2) Always verify against a diagnostic background
-
-A pretty art background can hide broken distortion. The debug backdrop exists because you need high-contrast lines, blocks, and shapes to tell whether the shader is really sampling and bending the image beneath it.
-
-Rule: validate behavior in `Debug pattern`, then validate taste in `Hybrid overlay` / `AeroBeat image`.
-
-### 3) `strength_y` needed a real repair
-
-This repo specifically fixed a weak vertical-response problem. The shader now uses axis-normalized coordinates and per-axis distance shaping so `strength_y` changes are visible across the plate interior.
-
-Rule: if vertical response seems too subtle again after future edits, inspect shader math before assuming the control is “good enough.”
-
-### 4) Corner-radius parity is easy to get wrong
-
-The shader uses normalized radius logic based on control size. Hardcoded frame radii will drift out of sync, especially near max roundness.
-
-Rule: derive shell radii from actual control geometry using the same effective size-based logic as the shader.
-
-### 5) Simpler shell treatment worked better here
-
-This repo ended up with a simpler two-layer visible shell treatment:
-
-- the inner glass rectangle / shader-backed fill with inner outline
-- the outer bevel/frame
-
-Extra shadow rectangles were removed on purpose.
-
-Rule: let the shader and two clear shell layers do the work before adding more decorative layers.
-
-## Recommended setup defaults for new 2D elements
-
-If you are making a new element and want a safe starting point, begin near the current scene defaults:
+These values remain good starting points for the 2D frosted path:
 
 - `blur = 4.2`
 - `warp_intensity = 0.45`
@@ -311,81 +124,51 @@ If you are making a new element and want a safe starting point, begin near the c
 - `edge_highlight = Color(1.0, 1.0, 1.0, 0.62)`
 - `edge_width = 2.4`
 
-Then test in this order:
+For the hybrid 3D path, use the scene defaults in `.testbed/scripts/glass_shader_gui_3d_test.gd` as the tuning baseline, because the supported material includes additional world-space, UI-embed, and overlay parameters beyond the 2D shader.
 
-1. `Debug pattern`
-2. `Hybrid overlay`
-3. `AeroBeat image`
+## Major gotchas
 
-## Practical adaptation guidance for 3D-facing UI and panels
+### 1) Layering can fake success
 
-This repo now includes a **real 3D example scene** for glass-panel exploration, but it is still a focused testbed rather than a full productized 3D UI framework. Treat it as the truthful starting point for 3D work in this repo.
+If the frame styling looks good but the background behind the glass does not visibly change, the shader path is not actually working.
 
-### What the 3D example actually does
+### 2) Diagnostic backgrounds are mandatory
 
-The new 3D path uses a perspective camera, a real `Node3D` scene, and a mesh-backed panel instead of faking depth with a 2D control.
+Use the 2D debug backdrop or the 3D debug backdrop to confirm the effect is truly sampling and distorting the scene.
 
-Structure:
+### 3) Corner parity matters
 
-- `PanelPivot` rotates a real 3D panel in space
-- `GlassBody` is a thin `BoxMesh` that gives the panel actual thickness and catches rim light
-- `GlassFace` is a front `QuadMesh` using `.testbed/assets/shaders/glass-panel-3d.gdshader`
-- the 3D shader samples `hint_screen_texture` in a spatial shader, masks to a rounded rectangle, adds edge/fresnel response, and refracts the already-rendered world behind the panel
-- `DebugBackdrop` builds a 3D environment with colored bands, grid lines, spheres, and diagonal bars so blur/refraction remain obvious while the panel rotates
+Keep shader masking and shell geometry synchronized so the visible border treatment matches the glass silhouette.
 
-That means this repo now demonstrates a real 3D-oriented glass panel, not just a 2D shader shown from a flattering angle.
+### 4) Hybrid 3D is still a 2D-authored panel flow
 
-### What transfers well
+Do not treat the surviving 3D support as a general native spatial object shader path. The supported path is specifically the hybrid world-space panel shown in `.testbed/scenes/glass-shader-gui-3d-test.tscn`.
 
-The following concepts do transfer:
+## Suggested checklist
 
-- a separate glass layer should sample or approximate the scene behind it
-- a clear shell structure still matters for readability
-- debug backgrounds / high-contrast verification are still necessary
-- normalized corner and edge systems should stay consistent across the visible layers
-
-### Likely Godot adaptation approaches
-
-For 3D-facing panels in Godot, a practical direction is:
-
-1. Build the panel content in 2D first, where this repo’s pattern is already proven.
-2. Present that UI on a `SubViewport` or texture-backed surface if the panel must live in 3D space.
-3. Recreate the glass shell as either:
-   - a 2D glass layer within the viewport content, or
-   - a 3D material/shader on the panel surface that samples the rendered scene or a captured background texture
-4. Keep a separate shell/highlight treatment instead of asking a single material to solve all readability problems.
-5. Test against geometric backgrounds with lines, blocks, and contrast changes before judging it on polished art.
-
-### What not to overclaim
-
-Do not document or present this repo as already shipping:
-
-- a production 3D glass panel system
-- validated 3D scene-refraction behavior
-- a drop-in XR/mobile/web equivalent
-
-Use this repo as the 2D source pattern and adaptation reference, not as evidence of finished 3D support.
-
-## Suggested checklist when creating a new element
-
-- [ ] Host control is flat and not fighting the shader with default button chrome
-- [ ] Child `ColorRect` holds the `ShaderMaterial`
-- [ ] Glass layer fills the full intended plate area
+- [ ] 2D host control is flat and not fighting default button chrome
+- [ ] Child `ColorRect` owns the 2D glass shader material
 - [ ] Frame and inner border are separate overlay nodes
-- [ ] Content sits above the glass, not inside the shader layer
+- [ ] Content sits above the glass layer
 - [ ] `Debug pattern` clearly shows blur and warp differences
-- [ ] `strength_x` and `strength_y` both produce visible interior changes
-- [ ] `corner_radius` stays aligned between shader, frame, and inner border
-- [ ] `Hybrid overlay` still reads well over realistic art
-- [ ] The final result still works with the simplified two-layer shell treatment
+- [ ] `strength_x` and `strength_y` both change the interior distortion profile
+- [ ] Corner treatment stays aligned between shader and shell
+- [ ] Hybrid 3D panel still renders authored UI through the supported hybrid shaders
+- [ ] Hybrid 3D input HUD still receives normalized panel events
 
 ## Where to start if you want to copy this into a new scene
 
-Start by duplicating or studying:
+For the 2D path, start with:
 
-- the `PreviewButton` subtree in `.testbed/scenes/glass-shader-test.tscn`
-- `_configure_preview_button()` in `.testbed/scripts/glass_shader_test.gd`
-- `_sync_preview_shell()` in `.testbed/scripts/glass_shader_test.gd`
-- the shader uniforms in `.testbed/assets/shaders/glass-shader.gdshader`
+- `.testbed/scenes/glass-shader-test.tscn`
+- `.testbed/scripts/glass_shader_test.gd`
+- `assets/shaders/glass-shader.gdshader`
 
-That combination is the shortest truthful path to building a new glass-flavored 2D control in this repo.
+For the hybrid 3D path, start with:
+
+- `.testbed/scenes/glass-shader-gui-3d-test.tscn`
+- `.testbed/scripts/glass_shader_gui_3d_test.gd`
+- `assets/shaders/glass-panel-hybrid-3d.gdshader`
+- `assets/shaders/glass-panel-ui-overlay-3d.gdshader`
+
+Those files are the shortest truthful path to the supported glass surfaces that remain in this repo.
