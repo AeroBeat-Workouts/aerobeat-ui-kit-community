@@ -16,15 +16,15 @@ Use these files as the canonical references before copying the effect elsewhere.
 - `.testbed/scenes/glass-shader-test.tscn` — working 2D test scene and node hierarchy
 - `.testbed/scripts/glass_shader_test.gd` — live tuning UI, background mode switching, and shell/frame sync logic
 - `.testbed/scripts/glass_debug_backdrop.gd` — diagnostic 2D backdrop for verifying blur and refraction
-- `assets/shaders/glass-shader.gdshader` — the supported 2D glass shader
+- `addons/aerobeat-ui-kit-community/assets/shaders/glass-shader.gdshader` — the supported 2D glass shader
 
 ### Hybrid 3D glass panel
 
 - `.testbed/scenes/glass-shader-gui-3d-test.tscn` — supported world-space hybrid panel proof scene
 - `.testbed/scripts/glass_shader_gui_3d_test.gd` — host script for the hybrid panel, controls, and input verification HUD
 - `.testbed/scripts/glass_3d_debug_backdrop.gd` — shared 3D diagnostic backdrop used by the hybrid scene
-- `assets/shaders/glass-panel-hybrid-3d.gdshader` — supported hybrid world-space glass body shader
-- `assets/shaders/glass-panel-ui-overlay-3d.gdshader` — supported UI overlay shader layered on the hybrid panel
+- `addons/aerobeat-ui-kit-community/assets/shaders/glass-panel-hybrid-3d.gdshader` — supported hybrid world-space glass body shader
+- `addons/aerobeat-ui-kit-community/assets/shaders/glass-panel-ui-overlay-3d.gdshader` — supported UI overlay shader layered on the hybrid panel
 
 ### Project entry
 
@@ -89,7 +89,7 @@ Treat this repo as a reference for a 2D-first panel design that is then composit
 
 1. Create a `Button` or `Control` that defines the plate size.
 2. Add a child `ColorRect` that fills the host.
-3. Assign a `ShaderMaterial` using `assets/shaders/glass-shader.gdshader`.
+3. Assign a `ShaderMaterial` using `addons/aerobeat-ui-kit-community/assets/shaders/glass-shader.gdshader`.
 4. Add separate shell overlays for the frame and inner border.
 5. Put text, badges, and other content above the glass layer.
 6. Keep shell corner treatment synchronized with the shader radius.
@@ -162,13 +162,13 @@ For the 2D path, start with:
 
 - `.testbed/scenes/glass-shader-test.tscn`
 - `.testbed/scripts/glass_shader_test.gd`
-- `assets/shaders/glass-shader.gdshader`
+- `addons/aerobeat-ui-kit-community/assets/shaders/glass-shader.gdshader`
 
 For the hybrid 3D path, start with:
 
 - `.testbed/scenes/glass-shader-gui-3d-test.tscn`
 - `.testbed/scripts/glass_shader_gui_3d_test.gd`
-- `assets/shaders/glass-panel-hybrid-3d.gdshader`
-- `assets/shaders/glass-panel-ui-overlay-3d.gdshader`
+- `addons/aerobeat-ui-kit-community/assets/shaders/glass-panel-hybrid-3d.gdshader`
+- `addons/aerobeat-ui-kit-community/assets/shaders/glass-panel-ui-overlay-3d.gdshader`
 
 Those files are the shortest truthful path to the supported glass surfaces that remain in this repo.

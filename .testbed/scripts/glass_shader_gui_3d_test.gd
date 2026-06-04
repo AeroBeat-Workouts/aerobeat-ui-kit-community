@@ -10,8 +10,8 @@ extends Node3D
 #   aerobeat-spatial-ui-touch.
 # - The canonical interaction contract still belongs to aerobeat-input-core.
 const PANEL_VIEW_SCENE_PATH := "res://ui/views/aero_ui_glass_panel_view.tscn"
-const HYBRID_SHADER_PATH := "res://assets/shaders/glass-panel-hybrid-3d.gdshader"
-const UI_OVERLAY_SHADER_PATH := "res://assets/shaders/glass-panel-ui-overlay-3d.gdshader"
+const HYBRID_SHADER_PATH := "res://addons/aerobeat-ui-kit-community/assets/shaders/glass-panel-hybrid-3d.gdshader"
+const UI_OVERLAY_SHADER_PATH := "res://addons/aerobeat-ui-kit-community/assets/shaders/glass-panel-ui-overlay-3d.gdshader"
 const PANEL_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/panel"
 const BADGE_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/badge"
 const BUTTON_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/button/primary"

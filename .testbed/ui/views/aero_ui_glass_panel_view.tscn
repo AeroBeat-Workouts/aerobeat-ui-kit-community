@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://ui/views/aero_ui_glass_panel_view.gd" id="1_script"]
-[ext_resource type="Shader" uid="uid://cpkp0irsnrqm7" path="res://assets/shaders/glass-shader.gdshader" id="2_shader"]
+[ext_resource type="Shader" uid="uid://cpkp0irsnrqm7" path="res://addons/aerobeat-ui-kit-community/assets/shaders/glass-shader.gdshader" id="2_shader"]
 [ext_resource type="Script" uid="uid://bxhdc78obwfuk" path="res://scripts/glass_debug_backdrop.gd" id="3_script"]
 [ext_resource type="PackedScene" path="res://ui/views/aero_ui_glass_primary_button_view.tscn" id="4_primary_button_scene"]
 [ext_resource type="PackedScene" path="res://ui/views/aero_ui_glass_badge_view.tscn" id="5_badge_view_scene"]
