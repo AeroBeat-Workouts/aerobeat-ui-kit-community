@@ -119,7 +119,7 @@ Use these IDs in implementation notes and audit results so we can prove the rema
 
 **Commits:**
 - `48f36ac` - Prune deprecated glass shader proof path
-- `fdf57ef` - Finalize glass shader prune execution plan
+- `18d65a9` - Finalize glass shader prune execution plan
 
 **Lessons Learned:** The functional cleanup was simple, but the important seam was path ownership: once shaders moved to repo root, `.testbed` still needed an explicit shader-path bridge to preserve existing `res://assets/shaders/...` references without reintroducing duplicate source ownership. A remaining follow-up, if needed later, is cleaning duplicate UID warnings caused by packaged addon shader copies.
 
