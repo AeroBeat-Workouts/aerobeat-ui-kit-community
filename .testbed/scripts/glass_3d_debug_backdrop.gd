@@ -132,9 +132,9 @@ func _build_backdrop() -> void:
 
 
 func _make_box(
-	name: String,
+	node_name: String,
 	size: Vector3,
-	position: Vector3,
+	node_position: Vector3,
 	color: Color,
 	emission_energy: float = 0.0,
 	roughness: float = 0.45,
@@ -145,18 +145,18 @@ func _make_box(
 	mesh.size = size
 
 	var instance := MeshInstance3D.new()
-	instance.name = name
+	instance.name = node_name
 	instance.mesh = mesh
-	instance.position = position
+	instance.position = node_position
 	instance.rotation_degrees = rotation_degrees_value
 	instance.material_override = _make_material(color, emission_energy, roughness, transparency)
 	return instance
 
 
 func _make_sphere(
-	name: String,
+	node_name: String,
 	radius: float,
-	position: Vector3,
+	node_position: Vector3,
 	color: Color,
 	emission_energy: float = 0.0,
 	roughness: float = 0.25
@@ -166,9 +166,9 @@ func _make_sphere(
 	mesh.height = radius * 2.0
 
 	var instance := MeshInstance3D.new()
-	instance.name = name
+	instance.name = node_name
 	instance.mesh = mesh
-	instance.position = position
+	instance.position = node_position
 	instance.material_override = _make_material(color, emission_energy, roughness)
 	return instance
 

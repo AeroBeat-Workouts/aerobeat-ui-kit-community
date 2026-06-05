@@ -864,7 +864,7 @@ func _project_ray_to_panel_plane(ray_origin: Vector3, ray_direction: Vector3) ->
 
 
 func _build_projected_data(
-	screen_position: Vector2,
+	_screen_position: Vector2,
 	hit: Dictionary,
 	previous_projected: Dictionary = {},
 	explicit_target_path: NodePath = NodePath(),
@@ -1635,9 +1635,13 @@ func _load_panel_yaml_from_path(path: String) -> void:
 
 
 func _build_panel_yaml_export() -> Dictionary:
-	var panel_style_config := _panel_ui.get_panel_style_config() if is_instance_valid(_panel_ui) else null
-	var badge_style_config := _panel_ui.get_badge_style_config() if is_instance_valid(_panel_ui) else null
-	var button_style_config := _panel_ui.get_primary_button_style_config() if is_instance_valid(_panel_ui) else null
+	var panel_style_config = null
+	var badge_style_config = null
+	var button_style_config = null
+	if is_instance_valid(_panel_ui):
+		panel_style_config = _panel_ui.get_panel_style_config()
+		badge_style_config = _panel_ui.get_badge_style_config()
+		button_style_config = _panel_ui.get_primary_button_style_config()
 	var panel_shader_parameters: Dictionary = {}
 	for parameter_name in ["blur", "warp_intensity", "strength_x", "strength_y", "offset_x", "offset_y", "corner_radius", "edge_smoothness", "edge_width", "chromatic_strength", "tint", "edge_highlight"]:
 		panel_shader_parameters[parameter_name] = get_panel_shader_parameter(parameter_name)
@@ -1799,49 +1803,96 @@ func _apply_button_config_to_host_views(button_config) -> void:
 
 
 func _get_live_control_value(parameter_name: String) -> Variant:
+	var badge_config = null
+	var button_config = null
+	if is_instance_valid(_panel_ui):
+		badge_config = _panel_ui.get_badge_style_config()
+		button_config = _panel_ui.get_primary_button_style_config()
 	match parameter_name:
 		"badge_base_fill_alpha":
-			return _panel_ui.get_badge_style_config().base_fill_alpha if is_instance_valid(_panel_ui) and _panel_ui.get_badge_style_config() != null else null
+			if badge_config == null:
+				return null
+			return badge_config.base_fill_alpha
 		"badge_base_border_alpha":
-			return _panel_ui.get_badge_style_config().base_border_alpha if is_instance_valid(_panel_ui) and _panel_ui.get_badge_style_config() != null else null
+			if badge_config == null:
+				return null
+			return badge_config.base_border_alpha
 		"badge_base_label_alpha":
-			return _panel_ui.get_badge_style_config().base_label_alpha if is_instance_valid(_panel_ui) and _panel_ui.get_badge_style_config() != null else null
+			if badge_config == null:
+				return null
+			return badge_config.base_label_alpha
 		"badge_hybrid_fill_alpha":
-			return _panel_ui.get_badge_style_config().hybrid_fill_alpha if is_instance_valid(_panel_ui) and _panel_ui.get_badge_style_config() != null else null
+			if badge_config == null:
+				return null
+			return badge_config.hybrid_fill_alpha
 		"badge_hybrid_border_alpha":
-			return _panel_ui.get_badge_style_config().hybrid_border_alpha if is_instance_valid(_panel_ui) and _panel_ui.get_badge_style_config() != null else null
+			if badge_config == null:
+				return null
+			return badge_config.hybrid_border_alpha
 		"badge_hybrid_label_alpha":
-			return _panel_ui.get_badge_style_config().hybrid_label_alpha if is_instance_valid(_panel_ui) and _panel_ui.get_badge_style_config() != null else null
+			if badge_config == null:
+				return null
+			return badge_config.hybrid_label_alpha
 		"badge_tint":
-			return _panel_ui.get_badge_style_config().tint if is_instance_valid(_panel_ui) and _panel_ui.get_badge_style_config() != null else null
+			if badge_config == null:
+				return null
+			return badge_config.tint
 		"button_hybrid_label_alpha":
-			return _panel_ui.get_primary_button_style_config().hybrid_label_alpha if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.hybrid_label_alpha
 		"button_hybrid_meta_alpha":
-			return _panel_ui.get_primary_button_style_config().hybrid_meta_alpha if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.hybrid_meta_alpha
 		"button_border_width":
-			return float(_panel_ui.get_primary_button_style_config().border_width) if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return float(button_config.border_width)
 		"button_radius_delta":
-			return float(_panel_ui.get_primary_button_style_config().radius_delta) if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return float(button_config.radius_delta)
 		"button_background_tint":
-			return _panel_ui.get_primary_button_style_config().background_tint if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.background_tint
 		"button_interaction_tint":
-			return _panel_ui.get_primary_button_style_config().interaction_tint if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.interaction_tint
 		"button_hybrid_hover_tint_strength":
-			return _panel_ui.get_primary_button_style_config().hybrid_states.get("hover", {}).get("tint_strength", 0.0) if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.hybrid_states.get("hover", {}).get("tint_strength", 0.0)
 		"button_hybrid_pressed_tint_strength":
-			return _panel_ui.get_primary_button_style_config().hybrid_states.get("pressed", {}).get("tint_strength", 0.0) if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.hybrid_states.get("pressed", {}).get("tint_strength", 0.0)
 		"button_hybrid_hover_scale":
-			return _panel_ui.get_primary_button_style_config().hybrid_states.get("hover", {}).get("scale", 1.0) if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.hybrid_states.get("hover", {}).get("scale", 1.0)
 		"button_hybrid_hover_speed":
-			return _panel_ui.get_primary_button_style_config().hybrid_interactions.get("hover", {}).get("speed", 0.12) if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.hybrid_interactions.get("hover", {}).get("speed", 0.12)
 		"button_hybrid_hover_ease_type":
-			return _panel_ui.get_primary_button_style_config().hybrid_interactions.get("hover", {}).get("ease_type", "smooth") if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.hybrid_interactions.get("hover", {}).get("ease_type", "smooth")
 		"button_hybrid_pressed_scale":
-			return _panel_ui.get_primary_button_style_config().hybrid_states.get("pressed", {}).get("scale", 1.0) if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.hybrid_states.get("pressed", {}).get("scale", 1.0)
 		"button_hybrid_pressed_speed":
-			return _panel_ui.get_primary_button_style_config().hybrid_interactions.get("pressed", {}).get("speed", 0.08) if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.hybrid_interactions.get("pressed", {}).get("speed", 0.08)
 		"button_hybrid_pressed_ease_type":
-			return _panel_ui.get_primary_button_style_config().hybrid_interactions.get("pressed", {}).get("ease_type", "snappy") if is_instance_valid(_panel_ui) and _panel_ui.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.hybrid_interactions.get("pressed", {}).get("ease_type", "snappy")
 		_:
 			return get_panel_shader_parameter(parameter_name)
 
@@ -1849,7 +1900,9 @@ func _get_live_control_value(parameter_name: String) -> Variant:
 func _set_live_control_value(parameter_name: String, value: Variant) -> void:
 	match parameter_name:
 		"badge_base_fill_alpha", "badge_base_border_alpha", "badge_base_label_alpha", "badge_hybrid_fill_alpha", "badge_hybrid_border_alpha", "badge_hybrid_label_alpha", "badge_tint":
-			var badge_config = _panel_ui.get_badge_style_config() if is_instance_valid(_panel_ui) else null
+			var badge_config = null
+			if is_instance_valid(_panel_ui):
+				badge_config = _panel_ui.get_badge_style_config()
 			if badge_config == null:
 				return
 			match parameter_name:
@@ -1869,7 +1922,9 @@ func _set_live_control_value(parameter_name: String, value: Variant) -> void:
 					badge_config.tint = value if value is Color else badge_config.tint
 			_apply_badge_config_to_host_views(badge_config)
 		"button_hybrid_label_alpha", "button_hybrid_meta_alpha", "button_border_width", "button_radius_delta", "button_background_tint", "button_interaction_tint", "button_hybrid_hover_tint_strength", "button_hybrid_pressed_tint_strength", "button_hybrid_hover_scale", "button_hybrid_hover_speed", "button_hybrid_hover_ease_type", "button_hybrid_pressed_scale", "button_hybrid_pressed_speed", "button_hybrid_pressed_ease_type":
-			var button_config = _panel_ui.get_primary_button_style_config() if is_instance_valid(_panel_ui) else null
+			var button_config = null
+			if is_instance_valid(_panel_ui):
+				button_config = _panel_ui.get_primary_button_style_config()
 			if button_config == null:
 				return
 			match parameter_name:
