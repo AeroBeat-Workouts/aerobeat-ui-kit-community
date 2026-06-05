@@ -100,7 +100,10 @@ func _ensure_action_style() -> void:
 	if _action_style != null:
 		return
 	var existing := primary_action_body.get_theme_stylebox("panel") as StyleBoxFlat
-	_action_style = existing.duplicate() if existing != null else StyleBoxFlat.new()
+	if existing != null:
+		_action_style = existing.duplicate() as StyleBoxFlat
+	else:
+		_action_style = StyleBoxFlat.new()
 	primary_action_body.add_theme_stylebox_override("panel", _action_style)
 
 

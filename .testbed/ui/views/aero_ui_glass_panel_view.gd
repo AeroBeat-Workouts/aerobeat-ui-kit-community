@@ -141,12 +141,12 @@ const COLOR_CONTROLS := [
 @onready var preview_inner_border: Panel = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/InnerBorderInset/PreviewInnerBorder") as Panel
 @onready var badge_view: BadgeViewScript = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Badge") as BadgeViewScript
 @onready var preview_badge: PanelContainer = badge_view
-@onready var preview_badge_label: Label = badge_view.badge_label if is_instance_valid(badge_view) else null
+@onready var preview_badge_label: Label = _resolve_preview_badge_label()
 @onready var primary_button_view: PrimaryButtonViewScript = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton") as PrimaryButtonViewScript
 @onready var primary_action_button: Button = primary_button_view
-@onready var primary_action_body: PanelContainer = primary_button_view.primary_action_body if is_instance_valid(primary_button_view) else null
-@onready var primary_action_label: Label = primary_button_view.primary_action_label if is_instance_valid(primary_button_view) else null
-@onready var primary_action_meta: Label = primary_button_view.primary_action_meta if is_instance_valid(primary_button_view) else null
+@onready var primary_action_body: PanelContainer = _resolve_primary_action_body()
+@onready var primary_action_label: Label = _resolve_primary_action_label()
+@onready var primary_action_meta: Label = _resolve_primary_action_meta()
 @onready var headline_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Headline") as Label
 @onready var body_label: Label = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/Body") as Label
 @onready var content_margin: MarginContainer = get_node_or_null("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin") as MarginContainer
@@ -249,6 +249,30 @@ func _get_default_interaction_bus_path() -> NodePath:
 
 func _get_interaction_bus_node_path() -> NodePath:
 	return INTERACTION_BUS_NODE_NAME
+
+
+func _resolve_preview_badge_label() -> Label:
+	if is_instance_valid(badge_view):
+		return badge_view.badge_label
+	return null
+
+
+func _resolve_primary_action_body() -> PanelContainer:
+	if is_instance_valid(primary_button_view):
+		return primary_button_view.primary_action_body
+	return null
+
+
+func _resolve_primary_action_label() -> Label:
+	if is_instance_valid(primary_button_view):
+		return primary_button_view.primary_action_label
+	return null
+
+
+func _resolve_primary_action_meta() -> Label:
+	if is_instance_valid(primary_button_view):
+		return primary_button_view.primary_action_meta
+	return null
 
 
 func _load_background_texture() -> Texture2D:
@@ -604,17 +628,6 @@ func _refresh_interaction_debug() -> void:
 	if not is_node_ready():
 		return
 
-	var primary_state := _target_state(TARGET_PRIMARY)
-	var primary_event: AeroUiInteractionEvent = primary_state.get("last_event") as AeroUiInteractionEvent
-	var phase_text := "idle"
-	var surface_text := String(interaction_surface_id)
-	if primary_event != null:
-		phase_text = str(primary_event.phase)
-		surface_text = str(primary_event.surface_id)
-	elif _last_interaction_event != null:
-		phase_text = str(_last_interaction_event.phase)
-		surface_text = str(_last_interaction_event.surface_id)
-
 	_sync_preview_shell()
 
 
@@ -632,7 +645,7 @@ func _on_contract_target_tapped(binding: AeroUiContractTargetBinding, event: Aer
 	_refresh_target_visual(binding.target_key)
 
 
-func _on_contract_target_canceled(binding: AeroUiContractTargetBinding, event: AeroUiInteractionEvent) -> void:
+func _on_contract_target_canceled(binding: AeroUiContractTargetBinding, _event: AeroUiInteractionEvent) -> void:
 	_refresh_target_visual(binding.target_key)
 
 

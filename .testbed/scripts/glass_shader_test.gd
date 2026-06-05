@@ -87,9 +87,6 @@ var _load_dialog: FileDialog
 var _environment_dialog: FileDialog
 var _pending_save_section := PRESET_SECTION_PANEL
 var _pending_load_section := PRESET_SECTION_PANEL
-var _mouse_hover_active: bool:
-	get:
-		return _is_native_hover_active()
 var _last_pointer_screen_position := Vector2.ZERO
 var _last_forwarded_panel_event := "waiting for normalized panel input"
 var _last_contract_phase := "waiting"
@@ -1087,44 +1084,94 @@ func _apply_button_config_to_panel_view(panel_view: AeroUiGlassPanelView, button
 	panel_view._refresh_primary_action_visual()
 
 
+func _get_badge_style_config_or_null():
+	if not is_instance_valid(_panel_view):
+		return null
+	return _panel_view.get_badge_style_config()
+
+
+func _get_primary_button_style_config_or_null():
+	if not is_instance_valid(_panel_view):
+		return null
+	return _panel_view.get_primary_button_style_config()
+
+
 func _get_live_control_value(parameter_name: String) -> Variant:
+	var badge_config = _get_badge_style_config_or_null()
+	var button_config = _get_primary_button_style_config_or_null()
 	match parameter_name:
 		"badge_base_fill_alpha":
-			return _panel_view.get_badge_style_config().base_fill_alpha if is_instance_valid(_panel_view) and _panel_view.get_badge_style_config() != null else null
+			if badge_config == null:
+				return null
+			return badge_config.base_fill_alpha
 		"badge_base_border_alpha":
-			return _panel_view.get_badge_style_config().base_border_alpha if is_instance_valid(_panel_view) and _panel_view.get_badge_style_config() != null else null
+			if badge_config == null:
+				return null
+			return badge_config.base_border_alpha
 		"badge_base_label_alpha":
-			return _panel_view.get_badge_style_config().base_label_alpha if is_instance_valid(_panel_view) and _panel_view.get_badge_style_config() != null else null
+			if badge_config == null:
+				return null
+			return badge_config.base_label_alpha
 		"badge_tint":
-			return _panel_view.get_badge_style_config().tint if is_instance_valid(_panel_view) and _panel_view.get_badge_style_config() != null else null
+			if badge_config == null:
+				return null
+			return badge_config.tint
 		"button_source_label_alpha":
-			return _panel_view.get_primary_button_style_config().source_label_alpha if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.source_label_alpha
 		"button_source_meta_alpha":
-			return _panel_view.get_primary_button_style_config().source_meta_alpha if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.source_meta_alpha
 		"button_border_width":
-			return float(_panel_view.get_primary_button_style_config().border_width) if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return float(button_config.border_width)
 		"button_radius_delta":
-			return float(_panel_view.get_primary_button_style_config().radius_delta) if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return float(button_config.radius_delta)
 		"button_background_tint":
-			return _panel_view.get_primary_button_style_config().background_tint if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.background_tint
 		"button_interaction_tint":
-			return _panel_view.get_primary_button_style_config().interaction_tint if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.interaction_tint
 		"button_source_hover_tint_strength":
-			return _panel_view.get_primary_button_style_config().source_states.get("hover", {}).get("tint_strength", 0.0) if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.source_states.get("hover", {}).get("tint_strength", 0.0)
 		"button_source_pressed_tint_strength":
-			return _panel_view.get_primary_button_style_config().source_states.get("pressed", {}).get("tint_strength", 0.0) if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.source_states.get("pressed", {}).get("tint_strength", 0.0)
 		"button_source_hover_scale":
-			return _panel_view.get_primary_button_style_config().source_states.get("hover", {}).get("scale", 1.0) if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.source_states.get("hover", {}).get("scale", 1.0)
 		"button_source_hover_speed":
-			return _panel_view.get_primary_button_style_config().source_interactions.get("hover", {}).get("speed", 0.12) if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.source_interactions.get("hover", {}).get("speed", 0.12)
 		"button_source_hover_ease_type":
-			return _panel_view.get_primary_button_style_config().source_interactions.get("hover", {}).get("ease_type", "smooth") if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.source_interactions.get("hover", {}).get("ease_type", "smooth")
 		"button_source_pressed_scale":
-			return _panel_view.get_primary_button_style_config().source_states.get("pressed", {}).get("scale", 1.0) if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.source_states.get("pressed", {}).get("scale", 1.0)
 		"button_source_pressed_speed":
-			return _panel_view.get_primary_button_style_config().source_interactions.get("pressed", {}).get("speed", 0.08) if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.source_interactions.get("pressed", {}).get("speed", 0.08)
 		"button_source_pressed_ease_type":
-			return _panel_view.get_primary_button_style_config().source_interactions.get("pressed", {}).get("ease_type", "snappy") if is_instance_valid(_panel_view) and _panel_view.get_primary_button_style_config() != null else null
+			if button_config == null:
+				return null
+			return button_config.source_interactions.get("pressed", {}).get("ease_type", "snappy")
 		_:
 			return get_shader_parameter(parameter_name)
 
@@ -1132,7 +1179,7 @@ func _get_live_control_value(parameter_name: String) -> Variant:
 func _set_live_control_value(parameter_name: String, value: Variant) -> void:
 	match parameter_name:
 		"badge_base_fill_alpha", "badge_base_border_alpha", "badge_base_label_alpha", "badge_tint":
-			var badge_config = _panel_view.get_badge_style_config() if is_instance_valid(_panel_view) else null
+			var badge_config = _get_badge_style_config_or_null()
 			if badge_config == null:
 				return
 			match parameter_name:
@@ -1143,10 +1190,11 @@ func _set_live_control_value(parameter_name: String, value: Variant) -> void:
 				"badge_base_label_alpha":
 					badge_config.base_label_alpha = float(value)
 				"badge_tint":
-					badge_config.tint = value if value is Color else badge_config.tint
+					if value is Color:
+						badge_config.tint = value
 			_apply_badge_config_to_panel_view(_panel_view, badge_config)
 		"button_source_label_alpha", "button_source_meta_alpha", "button_border_width", "button_radius_delta", "button_background_tint", "button_interaction_tint", "button_source_hover_tint_strength", "button_source_pressed_tint_strength", "button_source_hover_scale", "button_source_hover_speed", "button_source_hover_ease_type", "button_source_pressed_scale", "button_source_pressed_speed", "button_source_pressed_ease_type":
-			var button_config = _panel_view.get_primary_button_style_config() if is_instance_valid(_panel_view) else null
+			var button_config = _get_primary_button_style_config_or_null()
 			if button_config == null:
 				return
 			match parameter_name:
@@ -1159,9 +1207,11 @@ func _set_live_control_value(parameter_name: String, value: Variant) -> void:
 				"button_radius_delta":
 					button_config.radius_delta = int(round(float(value)))
 				"button_background_tint":
-					button_config.background_tint = value if value is Color else button_config.background_tint
+					if value is Color:
+						button_config.background_tint = value
 				"button_interaction_tint":
-					button_config.interaction_tint = value if value is Color else button_config.interaction_tint
+					if value is Color:
+						button_config.interaction_tint = value
 				"button_source_hover_tint_strength":
 					button_config.source_states["hover"]["tint_strength"] = float(value)
 				"button_source_pressed_tint_strength":

@@ -54,7 +54,10 @@ func apply_visual_state(tokens: Dictionary) -> void:
 		return
 
 	var radius := int(tokens.get("radius", 14))
-	var tint: Color = tokens.get("tint", Color(0.92, 0.96, 1.0, 1.0)) if tokens.get("tint", null) is Color else Color(0.92, 0.96, 1.0, 1.0)
+	var tint := Color(0.92, 0.96, 1.0, 1.0)
+	var tint_value: Variant = tokens.get("tint", null)
+	if tint_value is Color:
+		tint = tint_value
 	_badge_style.bg_color = Color(tint.r, tint.g, tint.b, float(tokens.get("fill_alpha", 0.08)))
 	_badge_style.border_color = Color(tint.r, tint.g, tint.b, float(tokens.get("border_alpha", 0.14)))
 	_badge_style.corner_radius_top_left = radius
