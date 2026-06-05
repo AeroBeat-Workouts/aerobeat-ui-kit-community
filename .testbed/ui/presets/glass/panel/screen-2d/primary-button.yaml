@@ -1,6 +1,6 @@
 schema: aero.ui.glass_primary_button
 schema_version: 1
-variant: literal-badge
+variant: screen-2d-primary-button
 version: v1
 button: { border_width: 2, radius_delta: 5 }
 tint:

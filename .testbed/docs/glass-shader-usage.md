@@ -14,11 +14,11 @@ Use these files as the canonical references before copying the effect elsewhere.
 ### 2D frosted glass
 
 - `.testbed/scenes/glass-shader-test.tscn` — working 2D test scene and node hierarchy
-- `.testbed/scenes/screen-2d-glass-panel-source.tscn` — dedicated 2D-only panel source used by the screen-space example
+- `.testbed/ui/views/screen_2d_glass_panel_view.tscn` — dedicated 2D screen-space panel view used by the screen-space example
 - `.testbed/scripts/glass_shader_test.gd` — live tuning UI, background mode switching, and shell/frame sync logic
 - `.testbed/scripts/glass_debug_backdrop.gd` — diagnostic 2D backdrop for verifying blur and refraction
 - `addons/aerobeat-ui-kit-community/assets/shaders/2d-glass-shader.gdshader` — the supported 2D glass shader
-- `.testbed/ui/presets/glass/panel/2d-glass-shader.default.yaml` — live 2D preset bundle named after the owning shader/path
+- `.testbed/ui/presets/glass/panel/screen-2d/default.yaml` — live 2D screen-space preset bundle
 
 ### Hybrid 3D glass panel
 
@@ -27,7 +27,7 @@ Use these files as the canonical references before copying the effect elsewhere.
 - `.testbed/scripts/glass_3d_debug_backdrop.gd` — shared 3D diagnostic backdrop used by the hybrid scene
 - `addons/aerobeat-ui-kit-community/assets/shaders/3d-glass-panel.gdshader` — supported hybrid world-space glass body shader
 - `addons/aerobeat-ui-kit-community/assets/shaders/3d-glass-ui.gdshader` — supported UI overlay shader layered on the hybrid panel
-- `.testbed/ui/presets/glass/panel/3d-glass-ui.default.yaml` — live hybrid preset bundle named for the composite world-space UI path
+- `.testbed/ui/presets/glass/panel/hybrid-3d/default.yaml` — live hybrid 3D preset bundle
 
 ### Project entry
 

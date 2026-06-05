@@ -1,6 +1,6 @@
 schema: aero.ui.glass_panel
 schema_version: 1
-variant: 3d-glass-ui
+variant: hybrid-3d-glass-panel
 version: v1
 shader:
   blur: 4.2
@@ -18,4 +18,4 @@ shader:
 shell: { frame_alpha_boost: 0.18 }
 presentation:
   hybrid_world: { inner_border_brightness: 1.0, inner_border_alpha: 0.312 }
-parts: { badge_preset: ./3d-glass-ui.default.badge.yaml, primary_button_preset: ./3d-glass-ui.default.button.yaml }
+parts: { badge_preset: ./badge.yaml, primary_button_preset: ./primary-button.yaml }

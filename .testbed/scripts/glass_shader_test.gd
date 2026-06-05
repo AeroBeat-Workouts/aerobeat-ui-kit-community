@@ -7,10 +7,10 @@ extends Control
 #   must not grow into a second contract owner.
 # - Phase 2 should extract only reusable bridge/provider logic into owning repos while
 #   leaving this scene as a consumer/example surface.
-const PANEL_VIEW_SCENE_PATH := "res://scenes/screen-2d-glass-panel-source.tscn"
-const PANEL_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/panel"
-const BADGE_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/badge"
-const BUTTON_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/button/primary"
+const PANEL_VIEW_SCENE_PATH := "res://ui/views/screen_2d_glass_panel_view.tscn"
+const PANEL_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/panel/screen-2d"
+const BADGE_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/panel/screen-2d"
+const BUTTON_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/panel/screen-2d"
 const SCREEN_SURFACE_ID: StringName = &"screen_glass_panel"
 const SCREEN_SURFACE_TYPE: StringName = AeroUiInteractionTypes.SURFACE_TYPE_SCREEN_2D
 const PREVIEW_BUTTON_PATH := NodePath("PreviewCenter/PreviewStack/PrimaryCardButton/ContentMargin/ContentColumn/PrimaryActionButton")
@@ -870,31 +870,31 @@ func _preset_directory_for_section(section_key: String) -> String:
 func _default_filename_for_section(section_key: String) -> String:
 	match section_key:
 		PRESET_SECTION_BADGE:
-			return "2d-glass-shader.default.badge.yaml"
+			return "badge.yaml"
 		PRESET_SECTION_BUTTON:
-			return "2d-glass-shader.default.button.yaml"
+			return "primary-button.yaml"
 		_:
-			return "2d-glass-shader.default.yaml"
+			return "default.yaml"
 
 
 func _export_dialog_title(section_key: String) -> String:
 	match section_key:
 		PRESET_SECTION_BADGE:
-			return "Export AeroUiGlass Badge YAML"
+			return "Export Screen 2D Badge YAML"
 		PRESET_SECTION_BUTTON:
-			return "Export AeroUiGlass Primary Button YAML"
+			return "Export Screen 2D Primary Button YAML"
 		_:
-			return "Export AeroUiGlass Panel YAML"
+			return "Export Screen 2D Panel YAML"
 
 
 func _load_dialog_title(section_key: String) -> String:
 	match section_key:
 		PRESET_SECTION_BADGE:
-			return "Load AeroUiGlass Badge YAML"
+			return "Load Screen 2D Badge YAML"
 		PRESET_SECTION_BUTTON:
-			return "Load AeroUiGlass Primary Button YAML"
+			return "Load Screen 2D Primary Button YAML"
 		_:
-			return "Load AeroUiGlass Panel YAML"
+			return "Load Screen 2D Panel YAML"
 
 
 func _on_save_dialog_file_selected(path: String) -> void:

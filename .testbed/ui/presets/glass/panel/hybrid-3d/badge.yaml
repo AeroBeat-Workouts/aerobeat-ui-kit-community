@@ -1,6 +1,6 @@
 schema: aero.ui.glass_badge
 schema_version: 1
-variant: default
+variant: hybrid-3d-badge
 version: v1
 badge: { corner_radius_px: 14 }
 surface: { fill_alpha: 0.07, border_alpha: 0.14 }

@@ -12,10 +12,10 @@ extends Node3D
 const PANEL_VIEW_SCENE_PATH := "res://ui/views/aero_ui_glass_panel_view.tscn"
 const HYBRID_SHADER_PATH := "res://addons/aerobeat-ui-kit-community/assets/shaders/3d-glass-panel.gdshader"
 const UI_OVERLAY_SHADER_PATH := "res://addons/aerobeat-ui-kit-community/assets/shaders/3d-glass-ui.gdshader"
-const PANEL_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/panel"
-const HYBRID_PANEL_STYLE_BUNDLE_PATH := "res://ui/presets/glass/panel/3d-glass-ui.default.yaml"
-const BADGE_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/badge"
-const BUTTON_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/button/primary"
+const PANEL_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/panel/hybrid-3d"
+const HYBRID_PANEL_STYLE_BUNDLE_PATH := "res://ui/presets/glass/panel/hybrid-3d/default.yaml"
+const BADGE_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/panel/hybrid-3d"
+const BUTTON_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/panel/hybrid-3d"
 const HYBRID_SURFACE_ID: StringName = &"hybrid_glass_panel"
 const HYBRID_SURFACE_TYPE: StringName = AeroUiInteractionTypes.SURFACE_TYPE_HYBRID_3D_GUI
 const HYBRID_POINTER_MOUSE: StringName = &"mouse_0"
@@ -1509,31 +1509,31 @@ func _preset_directory_for_section(section_key: String) -> String:
 func _default_filename_for_section(section_key: String) -> String:
 	match section_key:
 		PRESET_SECTION_BADGE:
-			return "3d-glass-ui.default.badge.yaml"
+			return "badge.yaml"
 		PRESET_SECTION_BUTTON:
-			return "3d-glass-ui.default.button.yaml"
+			return "primary-button.yaml"
 		_:
-			return "3d-glass-ui.default.yaml"
+			return "default.yaml"
 
 
 func _export_dialog_title(section_key: String) -> String:
 	match section_key:
 		PRESET_SECTION_BADGE:
-			return "Export AeroUiGlass Badge YAML"
+			return "Export Hybrid 3D Badge YAML"
 		PRESET_SECTION_BUTTON:
-			return "Export AeroUiGlass Primary Button YAML"
+			return "Export Hybrid 3D Primary Button YAML"
 		_:
-			return "Export Hybrid AeroUiGlass Panel YAML"
+			return "Export Hybrid 3D Panel YAML"
 
 
 func _load_dialog_title(section_key: String) -> String:
 	match section_key:
 		PRESET_SECTION_BADGE:
-			return "Load AeroUiGlass Badge YAML"
+			return "Load Hybrid 3D Badge YAML"
 		PRESET_SECTION_BUTTON:
-			return "Load AeroUiGlass Primary Button YAML"
+			return "Load Hybrid 3D Primary Button YAML"
 		_:
-			return "Load Hybrid AeroUiGlass Panel YAML"
+			return "Load Hybrid 3D Panel YAML"
 
 
 func _on_save_dialog_file_selected(path: String) -> void:

@@ -4,10 +4,8 @@ extends AeroContractConsumerViewBase
 
 # Canonical runtime/view owner for the AeroUiGlass panel architecture.
 #
-# The YAML-authored style contract lives in typed config objects and preset files; this view
-# consumes those configs and owns runtime composition/application. Legacy
-# `glass_shader_panel_source` paths exist only as narrow compatibility aliases around this view,
-# but `AeroUiGlassPanelView` is the runtime source of truth.
+# The YAML-authored style contract lives in typed config objects and shader-family preset files;
+# this view consumes those configs and owns runtime composition/application for the hybrid 3D path.
 const PanelConfigLoaderScript := preload("res://ui/configs/loaders/aero_ui_glass_panel_config_loader.gd")
 const PanelConfigScript := preload("res://ui/configs/types/aero_ui_glass_panel_config.gd")
 const BadgeConfigScript := preload("res://ui/configs/types/aero_ui_glass_badge_config.gd")
@@ -18,7 +16,7 @@ const ElementGroupControllerScript := preload("res://ui/views/shared/aero_ui_ele
 const TweenUtilsScript := preload("res://ui/views/shared/aero_ui_tween_utils.gd")
 
 const BACKGROUND_IMAGE_PATH := "res://assets/images/perfect-hue-may-08-2026-hd.png"
-const DEFAULT_PANEL_STYLE_BUNDLE_PATH := "res://ui/presets/glass/panel/default.yaml"
+const HYBRID_3D_PANEL_STYLE_BUNDLE_PATH := "res://ui/presets/glass/panel/hybrid-3d/default.yaml"
 const TOGGLE_ON_ACCENT := Color(0.4, 0.82, 1.0, 1.0)
 const DEFAULT_INTERACTION_SURFACE_ID: StringName = &"hybrid_glass_panel"
 const DEFAULT_INTERACTION_BUS_PATH := NodePath("../../../AeroUiInteractionBus")
@@ -428,7 +426,7 @@ func load_panel_style_bundle_from_path(path: String) -> PanelConfigScript:
 
 
 func _load_startup_panel_style_bundle() -> void:
-	var config := PanelConfigLoaderScript.load_from_path(DEFAULT_PANEL_STYLE_BUNDLE_PATH)
+	var config := PanelConfigLoaderScript.load_from_path(HYBRID_3D_PANEL_STYLE_BUNDLE_PATH)
 	if config == null or config.source_path == "":
 		return
 	apply_panel_style_bundle(config)

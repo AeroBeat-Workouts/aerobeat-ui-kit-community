@@ -5,17 +5,17 @@ const BadgeLoader := preload("res://ui/configs/loaders/aero_ui_glass_badge_confi
 
 
 func test_panel_bundle_loader_materializes_typed_child_configs() -> void:
-	var config = PanelLoader.load_from_path("res://ui/presets/glass/panel/2d-glass-shader.default.yaml")
+	var config = PanelLoader.load_from_path("res://ui/presets/glass/panel/screen-2d/default.yaml")
 
-	assert_eq(config.variant, "2d-glass-shader")
+	assert_eq(config.variant, "screen-2d-glass-panel")
 	assert_eq(config.version, "v1")
-	assert_eq(config.source_path, "res://ui/presets/glass/panel/2d-glass-shader.default.yaml")
-	assert_eq(config.badge_preset_path, "res://ui/presets/glass/panel/2d-glass-shader.default.badge.yaml")
-	assert_eq(config.primary_button_preset_path, "res://ui/presets/glass/panel/2d-glass-shader.default.button.yaml")
+	assert_eq(config.source_path, "res://ui/presets/glass/panel/screen-2d/default.yaml")
+	assert_eq(config.badge_preset_path, "res://ui/presets/glass/panel/screen-2d/badge.yaml")
+	assert_eq(config.primary_button_preset_path, "res://ui/presets/glass/panel/screen-2d/primary-button.yaml")
 	assert_not_null(config.badge_config)
 	assert_not_null(config.primary_button_config)
-	assert_eq(config.badge_config.variant, "default")
-	assert_eq(config.primary_button_config.variant, "literal-badge")
+	assert_eq(config.badge_config.variant, "screen-2d-badge")
+	assert_eq(config.primary_button_config.variant, "screen-2d-primary-button")
 	assert_eq(config.badge_config.tint, Color(0.92, 0.96, 1.0, 1.0))
 	assert_eq(config.primary_button_config.background_tint, Color(0.92, 0.96, 1.0, 1.0))
 	assert_eq(config.primary_button_config.interaction_tint, Color(0.4, 0.82, 1.0, 1.0))

@@ -1,7 +1,7 @@
 @tool
 extends "res://ui/views/aero_ui_glass_panel_view.gd"
 
-const SCREEN_2D_PANEL_STYLE_BUNDLE_PATH := "res://ui/presets/glass/panel/2d-glass-shader.default.yaml"
+const SCREEN_2D_PANEL_STYLE_BUNDLE_PATH := "res://ui/presets/glass/panel/screen-2d/default.yaml"
 
 
 func _ready() -> void:

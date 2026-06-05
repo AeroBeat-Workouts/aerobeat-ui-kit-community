@@ -1,7 +1,0 @@
-[gd_scene format=3 uid="uid://dr44hkv4e5aaa"]
-
-[ext_resource type="PackedScene" path="res://scenes/screen-2d-glass-panel-source.tscn" id="1_panel_view"]
-[ext_resource type="Script" path="res://scripts/glass_shader_panel_source.gd" id="2_script"]
-
-[node name="GlassShaderPanelSource" instance=ExtResource("1_panel_view")]
-script = ExtResource("2_script")

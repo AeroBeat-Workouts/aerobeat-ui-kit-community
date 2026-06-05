@@ -2,10 +2,10 @@ extends GutTest
 
 const SCREEN_HOST_SCENE := preload("res://scenes/glass-shader-test.tscn")
 const HYBRID_HOST_SCENE := preload("res://scenes/glass-shader-gui-3d-test.tscn")
-const SCREEN_PANEL_VIEW_SCRIPT_PATH := "res://scripts/screen_2d_glass_panel_source.gd"
+const SCREEN_PANEL_VIEW_SCRIPT_PATH := "res://ui/views/screen_2d_glass_panel_view.gd"
 const HYBRID_PANEL_VIEW_SCRIPT_PATH := "res://ui/views/aero_ui_glass_panel_view.gd"
-const SCREEN_PANEL_YAML_PATH := "res://ui/presets/glass/panel/2d-glass-shader.default.yaml"
-const HYBRID_PANEL_YAML_PATH := "res://ui/presets/glass/panel/3d-glass-ui.default.yaml"
+const SCREEN_PANEL_YAML_PATH := "res://ui/presets/glass/panel/screen-2d/default.yaml"
+const HYBRID_PANEL_YAML_PATH := "res://ui/presets/glass/panel/hybrid-3d/default.yaml"
 const HYBRID_STATUS_TEXT := "Panel, badge, and primary button each target their authored YAML directly."
 const BASE_FORBIDDEN_TEXT_SNIPPETS := [
 	"Export or import an AeroUiGlass",

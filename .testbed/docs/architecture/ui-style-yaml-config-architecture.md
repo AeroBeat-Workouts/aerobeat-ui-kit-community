@@ -87,11 +87,11 @@ Why:
 **Rule:** preset files are lowercase and path-oriented, not class-oriented.
 
 Use names like:
-- `default.yaml`
-- `frosted.yaml`
-- `frosted.v2.yaml`
-- `cta.yaml`
-- `quiet.yaml`
+- `screen-2d/default.yaml`
+- `hybrid-3d/default.yaml`
+- `screen-2d/frosted.v2.yaml`
+- `hybrid-3d/cta.yaml`
+- `screen-2d/quiet.yaml`
 
 Why:
 - files should communicate authored variant identity, not duplicate code type names
@@ -121,36 +121,33 @@ ui/
   presets/
     glass/
       panel/
-        default.yaml
-        frosted.yaml
-        frosted.v2.yaml
-      badge/
-        default.yaml
-        status.yaml
-      button/
-        primary/
+        screen-2d/
           default.yaml
-          cta.yaml
-          cta.v2.yaml
+          badge.yaml
+          primary-button.yaml
+        hybrid-3d/
+          default.yaml
+          badge.yaml
+          primary-button.yaml
 ```
 
 ### Why this structure
 
-- `glass/` groups an effect family without forcing badge/button/panel into one schema
-- `panel/`, `badge/`, and `button/primary/` remain separate contracts
+- `glass/` groups an effect family without forcing everything into one schema
+- `panel/screen-2d/` and `panel/hybrid-3d/` make runtime ownership obvious at a glance
 - loaders/types/views live in code-land, presets live in authored-data land
 - future families like `solid/`, `neon/`, or `outline/` can be added without redesigning the tree
 
-### Optional target split when contracts truly diverge
+### Current target split
 
-If 2D and hybrid/world-space definitions become meaningfully different contracts, split under the component folder instead of polluting every class name:
+The live repo now uses an explicit target split under the panel component folder:
 
 ```text
-ui/presets/glass/panel/2d/default.yaml
-ui/presets/glass/panel/hybrid/default.yaml
+ui/presets/glass/panel/screen-2d/default.yaml
+ui/presets/glass/panel/hybrid-3d/default.yaml
 ```
 
-Only do this when the schema itself differs enough to justify separate loaders or config branches.
+That keeps plain `default.yaml` names family-owned instead of ambiguous.
 
 ---
 
@@ -382,7 +379,7 @@ states:
 
 ---
 
-## Mapping from the legacy `glass_shader_panel_source` world
+## Mapping from the earlier shared-panel world
 
 The runtime/view migration is now materially in place:
 
@@ -391,7 +388,6 @@ The runtime/view migration is now materially in place:
 - `.testbed/ui/views/aero_ui_glass_primary_button_view.gd` is the canonical primary-button runtime/view
 - `.testbed/scripts/aero_ui_glass_yaml_bundle_io.gd` is the active **YAML bundle import/export helper**
 - authored defaults and manual save/load now live in the YAML preset family under `res://ui/presets/glass/...`
-- `.testbed/scripts/glass_shader_panel_source.gd` and `.testbed/scenes/glass-shader-panel-source.tscn` now exist only as compatibility aliases over the canonical panel view
 
 ### Current mapping
 
@@ -399,9 +395,6 @@ The runtime/view migration is now materially in place:
 - `AeroUiGlassPanelView` owns panel runtime composition and YAML-backed config application
 - `AeroUiGlassBadgeView` owns badge rendering/state application
 - `AeroUiGlassPrimaryButtonView` owns primary-button rendering/state application
-
-#### Compatibility surface
-Keep the legacy `glass_shader_panel_source` script/scene path only for downstream references that have not been retired yet.
 
 #### Config composition
 The panel runtime can still compose separate authored data responsibilities into distinct config objects without collapsing them back into one legacy runtime surface.
@@ -477,12 +470,12 @@ But do not make that helper the public contract for all effect families. The pub
 
 The first live seam in this repo is intentionally narrower than the full target architecture:
 
-- the canonical runtime now lives under `ui/views/`, while `glass_shader_panel_source.gd` is retained only as a legacy compatibility script path
+- the canonical runtime now lives under `ui/views/`, with distinct screen-2d and hybrid-3d entrypoints
 - the panel YAML preset is the current bundle entrypoint and composes badge/button typed configs rather than making the compatibility layer the authored-style owner
 - the current YAML helper only supports the subset needed by these presets (mapping-root documents, nested mappings, inline arrays/dictionaries, scalar values, comments, and same-schema `extends`)
 - broader loader productization work is still deferred, including unknown-field rejection, deeper schema validation, migration helpers, and richer YAML feature support
 
-That is acceptable for the current seam because the main architectural rule already holds: canonical runtime composition, typed configs, schema-specific loaders, and authored preset files are separate concerns, and the remaining legacy path is compatibility-only rather than the conceptual owner.
+That is acceptable for the current seam because the main architectural rule already holds: canonical runtime composition, typed configs, schema-specific loaders, and authored preset files are separate concerns, and the live entrypoints are now explicit per shader family.
 
 ---
 
@@ -571,4 +564,4 @@ If the repo starts implementing this architecture, the safest defaults are:
 - shared helpers only where they are truly shared
 - composition allowed, universal schema not required
 
-That gives the project a durable path forward from the current `glass_shader_panel_source` setup without painting future UI effects into one giant schema corner.
+That gives the project a durable path forward from the current shader-family split without painting future UI effects into one giant schema corner.

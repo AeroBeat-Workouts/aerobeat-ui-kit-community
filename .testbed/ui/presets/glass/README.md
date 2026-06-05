@@ -1,14 +1,14 @@
 # Glass UI YAML seam notes
 
-This folder holds the first narrow YAML-backed seam for the glass UI family.
+This folder holds the active YAML-backed seam for the glass UI family.
 
 ## Current ownership split
 
-- `res://ui/views/aero_ui_glass_panel_view.gd` / `res://ui/views/aero_ui_glass_panel_view.tscn` remain the shared runtime owner, while the live 2D example now mounts its own dedicated screen-space source wrapper.
-- The canonical panel view composes and applies typed config objects into the existing scene/material tree.
-- `res://scripts/glass_shader_panel_source.gd` and `res://scenes/glass-shader-panel-source.tscn` remain only as transitional compatibility aliases over the dedicated screen-space source wrapper while older paths are retired.
-- Authored style ownership now lives in YAML preset files plus the schema-specific config loaders/types under `res://ui/configs/`.
-- Live example entrypoints now use shader-owned preset names: `res://ui/presets/glass/panel/2d-glass-shader.default.yaml` for the screen-space path and `res://ui/presets/glass/panel/3d-glass-ui.default.yaml` for the hybrid world-space path. The shared `default.yaml` bundle remains as the generic canonical runtime fallback.
+- `res://ui/views/screen_2d_glass_panel_view.gd` / `res://ui/views/screen_2d_glass_panel_view.tscn` are the dedicated 2D screen-space runtime entrypoints.
+- `res://ui/views/aero_ui_glass_panel_view.gd` / `res://ui/views/aero_ui_glass_panel_view.tscn` are the dedicated hybrid 3D runtime entrypoints.
+- The panel views compose and apply typed config objects into the existing scene/material tree.
+- Authored style ownership now lives in shader-family YAML preset folders plus the schema-specific config loaders/types under `res://ui/configs/`.
+- Live entrypoints are explicit by family: `res://ui/presets/glass/panel/screen-2d/default.yaml` for the 2D screen-space path and `res://ui/presets/glass/panel/hybrid-3d/default.yaml` for the hybrid 3D path.
 
 ## Current loader / YAML subset limits
 
@@ -38,7 +38,6 @@ Not supported yet:
 
 ## Explicitly deferred follow-up work
 
-- removing the remaining legacy `glass_shader_panel_source` compatibility wrapper/scene aliases once downstream callers no longer need them
 - broader loader hardening and migration helpers
 - layout metrics migration from `.tscn` into YAML
 - human visual/workflow review of the extracted panel/button/badge runtime stack
