@@ -10,9 +10,10 @@ extends Node3D
 #   aerobeat-spatial-ui-touch.
 # - The canonical interaction contract still belongs to aerobeat-input-core.
 const PANEL_VIEW_SCENE_PATH := "res://ui/views/aero_ui_glass_panel_view.tscn"
-const HYBRID_SHADER_PATH := "res://addons/aerobeat-ui-kit-community/assets/shaders/glass-panel-hybrid-3d.gdshader"
-const UI_OVERLAY_SHADER_PATH := "res://addons/aerobeat-ui-kit-community/assets/shaders/glass-panel-ui-overlay-3d.gdshader"
+const HYBRID_SHADER_PATH := "res://addons/aerobeat-ui-kit-community/assets/shaders/3d-glass-panel.gdshader"
+const UI_OVERLAY_SHADER_PATH := "res://addons/aerobeat-ui-kit-community/assets/shaders/3d-glass-ui.gdshader"
 const PANEL_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/panel"
+const HYBRID_PANEL_STYLE_BUNDLE_PATH := "res://ui/presets/glass/panel/3d-glass-ui.default.yaml"
 const BADGE_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/badge"
 const BUTTON_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/button/primary"
 const HYBRID_SURFACE_ID: StringName = &"hybrid_glass_panel"
@@ -1081,10 +1082,12 @@ func _instantiate_panel_view(target_viewport: SubViewport) -> AeroUiGlassPanelVi
 
 func _configure_panel_views_for_hybrid() -> void:
 	if is_instance_valid(_panel_ui):
+		_panel_ui.load_panel_style_bundle_from_path(HYBRID_PANEL_STYLE_BUNDLE_PATH)
 		_panel_ui.set_presentation_mode(PanelViewScript.PRESENTATION_MODE_HYBRID_WORLD_SPACE)
 		_panel_ui.set_background_mode(PanelViewScript.BACKGROUND_MODE_NONE)
 
 	if is_instance_valid(_mask_ui):
+		_mask_ui.load_panel_style_bundle_from_path(HYBRID_PANEL_STYLE_BUNDLE_PATH)
 		_mask_ui.set_presentation_mode(PanelViewScript.PRESENTATION_MODE_HYBRID_MASK)
 		_mask_ui.set_background_mode(PanelViewScript.BACKGROUND_MODE_NONE)
 
@@ -1506,11 +1509,11 @@ func _preset_directory_for_section(section_key: String) -> String:
 func _default_filename_for_section(section_key: String) -> String:
 	match section_key:
 		PRESET_SECTION_BADGE:
-			return "hybrid-badge.yaml"
+			return "3d-glass-ui.default.badge.yaml"
 		PRESET_SECTION_BUTTON:
-			return "hybrid-primary-button.yaml"
+			return "3d-glass-ui.default.button.yaml"
 		_:
-			return "hybrid-panel.yaml"
+			return "3d-glass-ui.default.yaml"
 
 
 func _export_dialog_title(section_key: String) -> String:

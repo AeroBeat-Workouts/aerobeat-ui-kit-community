@@ -1,0 +1,64 @@
+schema: aero.ui.glass_primary_button
+schema_version: 1
+variant: literal-badge
+version: v1
+button: { border_width: 2, radius_delta: 5 }
+tint:
+  background: { r: 0.9200000166893, g: 0.95999997854233, b: 1.0, a: 1.0 }
+  interaction: { r: 0.40000000596046, g: 0.81999999284744, b: 1.0, a: 1.0 }
+label: { alpha: 0.94 }
+meta: { alpha: 0.67 }
+states:
+  source_2d:
+    rest:
+      fill_delta: 0.13
+      border_delta: 0.38
+      shadow_alpha: 0.0
+      shadow_size: 0
+      tint_strength: 0.0
+      scale: 1.0
+    hover:
+      fill_delta: 0.17
+      border_delta: 0.46
+      shadow_alpha: 0.0
+      shadow_size: 0
+      tint_strength: 0.34
+      scale: 1.009
+    pressed:
+      fill_delta: 0.22
+      border_delta: 0.54
+      shadow_alpha: 0.0
+      shadow_size: 0
+      tint_strength: 0.72
+      scale: 0.988
+  hybrid_world:
+    rest:
+      fill_delta: 0.2
+      border_delta: 0.39
+      shadow_alpha: 0.18
+      shadow_size: 10
+      tint_strength: 0.0
+      scale: 1.0
+    hover:
+      fill_delta: 0.25
+      border_delta: 0.46
+      shadow_alpha: 0.24
+      shadow_size: 12
+      tint_strength: 0.34
+      scale: 1.012
+    pressed:
+      fill_delta: 0.31
+      border_delta: 0.5
+      shadow_alpha: 0.28
+      shadow_size: 12
+      tint_strength: 0.72
+      scale: 0.988
+interaction:
+  source_2d:
+    hover: { speed: 0.12, ease_type: smooth }
+    pressed: { speed: 0.09, ease_type: snappy }
+  hybrid_world:
+    hover: { speed: 0.12, ease_type: smooth }
+    pressed: { speed: 0.08, ease_type: snappy }
+presentation:
+  hybrid_world: { label_alpha: 0.98, meta_alpha: 0.7 }

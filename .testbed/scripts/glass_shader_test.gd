@@ -7,7 +7,7 @@ extends Control
 #   must not grow into a second contract owner.
 # - Phase 2 should extract only reusable bridge/provider logic into owning repos while
 #   leaving this scene as a consumer/example surface.
-const PANEL_VIEW_SCENE_PATH := "res://ui/views/aero_ui_glass_panel_view.tscn"
+const PANEL_VIEW_SCENE_PATH := "res://scenes/screen-2d-glass-panel-source.tscn"
 const PANEL_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/panel"
 const BADGE_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/badge"
 const BUTTON_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/button/primary"
@@ -870,11 +870,11 @@ func _preset_directory_for_section(section_key: String) -> String:
 func _default_filename_for_section(section_key: String) -> String:
 	match section_key:
 		PRESET_SECTION_BADGE:
-			return "screen-badge.yaml"
+			return "2d-glass-shader.default.badge.yaml"
 		PRESET_SECTION_BUTTON:
-			return "screen-primary-button.yaml"
+			return "2d-glass-shader.default.button.yaml"
 		_:
-			return "screen-panel.yaml"
+			return "2d-glass-shader.default.yaml"
 
 
 func _export_dialog_title(section_key: String) -> String:

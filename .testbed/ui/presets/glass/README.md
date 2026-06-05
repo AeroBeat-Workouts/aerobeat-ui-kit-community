@@ -4,11 +4,11 @@ This folder holds the first narrow YAML-backed seam for the glass UI family.
 
 ## Current ownership split
 
-- `res://ui/views/aero_ui_glass_panel_view.gd` / `res://ui/views/aero_ui_glass_panel_view.tscn` are now the canonical panel runtime/view owner described in the architecture docs.
+- `res://ui/views/aero_ui_glass_panel_view.gd` / `res://ui/views/aero_ui_glass_panel_view.tscn` remain the shared runtime owner, while the live 2D example now mounts its own dedicated screen-space source wrapper.
 - The canonical panel view composes and applies typed config objects into the existing scene/material tree.
-- `res://scripts/glass_shader_panel_source.gd` and `res://scenes/glass-shader-panel-source.tscn` remain only as transitional compatibility aliases over the canonical panel view while older paths are retired.
+- `res://scripts/glass_shader_panel_source.gd` and `res://scenes/glass-shader-panel-source.tscn` remain only as transitional compatibility aliases over the dedicated screen-space source wrapper while older paths are retired.
 - Authored style ownership now lives in YAML preset files plus the schema-specific config loaders/types under `res://ui/configs/`.
-- The panel preset at `res://ui/presets/glass/panel/default.yaml` is the current entrypoint and may reference badge and primary-button presets through `parts`.
+- Live example entrypoints now use shader-owned preset names: `res://ui/presets/glass/panel/2d-glass-shader.default.yaml` for the screen-space path and `res://ui/presets/glass/panel/3d-glass-ui.default.yaml` for the hybrid world-space path. The shared `default.yaml` bundle remains as the generic canonical runtime fallback.
 
 ## Current loader / YAML subset limits
 

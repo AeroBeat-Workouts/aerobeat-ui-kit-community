@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://by0pff8j3u2b5"]
+
+[ext_resource type="PackedScene" path="res://ui/views/screen_2d_glass_panel_view.tscn" id="1_panel_view"]
+[ext_resource type="Script" path="res://scripts/screen_2d_glass_panel_source.gd" id="2_script"]
+
+[node name="Screen2DGlassPanelSource" instance=ExtResource("1_panel_view")]
+script = ExtResource("2_script")

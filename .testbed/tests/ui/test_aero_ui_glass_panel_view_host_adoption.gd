@@ -2,8 +2,10 @@ extends GutTest
 
 const SCREEN_HOST_SCENE := preload("res://scenes/glass-shader-test.tscn")
 const HYBRID_HOST_SCENE := preload("res://scenes/glass-shader-gui-3d-test.tscn")
-const CANONICAL_PANEL_VIEW_SCRIPT_PATH := "res://ui/views/aero_ui_glass_panel_view.gd"
-const PANEL_YAML_PATH := "res://ui/presets/glass/panel/default.yaml"
+const SCREEN_PANEL_VIEW_SCRIPT_PATH := "res://scripts/screen_2d_glass_panel_source.gd"
+const HYBRID_PANEL_VIEW_SCRIPT_PATH := "res://ui/views/aero_ui_glass_panel_view.gd"
+const SCREEN_PANEL_YAML_PATH := "res://ui/presets/glass/panel/2d-glass-shader.default.yaml"
+const HYBRID_PANEL_YAML_PATH := "res://ui/presets/glass/panel/3d-glass-ui.default.yaml"
 const HYBRID_STATUS_TEXT := "Panel, badge, and primary button each target their authored YAML directly."
 const BASE_FORBIDDEN_TEXT_SNIPPETS := [
 	"Export or import an AeroUiGlass",
@@ -27,9 +29,9 @@ const SCREEN_ONLY_FORBIDDEN_TEXT_SNIPPETS := [
 ]
 
 
-func _assert_yaml_backed_panel_defaults(panel: AeroUiGlassPanelView) -> void:
+func _assert_yaml_backed_panel_defaults(panel: AeroUiGlassPanelView, expected_path: String) -> void:
 	assert_not_null(panel._panel_style_config)
-	assert_eq(panel._panel_style_config.source_path, PANEL_YAML_PATH)
+	assert_eq(panel._panel_style_config.source_path, expected_path)
 
 
 func _make_local_mouse_motion(local_position: Vector2) -> InputEventMouseMotion:
@@ -74,8 +76,8 @@ func test_screen_host_mounts_canonical_aeroui_glass_panel_view() -> void:
 
 	assert_not_null(host._panel_view)
 	assert_true(host._panel_view is AeroUiGlassPanelView)
-	assert_eq(host._panel_view.get_script().resource_path, CANONICAL_PANEL_VIEW_SCRIPT_PATH)
-	_assert_yaml_backed_panel_defaults(host._panel_view)
+	assert_eq(host._panel_view.get_script().resource_path, SCREEN_PANEL_VIEW_SCRIPT_PATH)
+	_assert_yaml_backed_panel_defaults(host._panel_view, SCREEN_PANEL_YAML_PATH)
 	assert_null(host._preset_status_label)
 	assert_not_null(host._contract_status_label)
 	assert_eq(host._contract_status_label.text, "Hovered target: none\nInteraction state: idle")
@@ -178,12 +180,12 @@ func test_hybrid_host_mounts_canonical_aeroui_glass_panel_view_in_both_subviewpo
 	assert_not_null(host._mask_ui)
 	assert_true(host._panel_ui is AeroUiGlassPanelView)
 	assert_true(host._mask_ui is AeroUiGlassPanelView)
-	assert_eq(host._panel_ui.get_script().resource_path, CANONICAL_PANEL_VIEW_SCRIPT_PATH)
-	assert_eq(host._mask_ui.get_script().resource_path, CANONICAL_PANEL_VIEW_SCRIPT_PATH)
+	assert_eq(host._panel_ui.get_script().resource_path, HYBRID_PANEL_VIEW_SCRIPT_PATH)
+	assert_eq(host._mask_ui.get_script().resource_path, HYBRID_PANEL_VIEW_SCRIPT_PATH)
 	assert_eq(host._panel_ui.get_presentation_mode(), host._panel_ui.PRESENTATION_MODE_HYBRID_WORLD_SPACE)
 	assert_eq(host._mask_ui.get_presentation_mode(), host._mask_ui.PRESENTATION_MODE_HYBRID_MASK)
-	_assert_yaml_backed_panel_defaults(host._panel_ui)
-	_assert_yaml_backed_panel_defaults(host._mask_ui)
+	_assert_yaml_backed_panel_defaults(host._panel_ui, HYBRID_PANEL_YAML_PATH)
+	_assert_yaml_backed_panel_defaults(host._mask_ui, HYBRID_PANEL_YAML_PATH)
 	assert_eq(host._preset_status_label.text, HYBRID_STATUS_TEXT)
 	_assert_forbidden_preset_copy_removed(host, BASE_FORBIDDEN_TEXT_SNIPPETS)
 

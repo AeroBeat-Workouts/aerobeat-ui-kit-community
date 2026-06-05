@@ -1,0 +1,21 @@
+schema: aero.ui.glass_panel
+schema_version: 1
+variant: 2d-glass-shader
+version: v1
+shader:
+  blur: 4.2
+  warp_intensity: 0.0
+  strength_x: 32.5
+  strength_y: 33.3
+  offset_x: 0.01
+  offset_y: 0.01
+  corner_radius: 0.24
+  edge_smoothness: 1.11
+  edge_width: 2.4
+  chromatic_strength: 2.2
+  tint: { r: 0.9200000166893, g: 0.95999997854233, b: 1.0, a: 0.21999999880791 }
+  edge_highlight: { r: 1.0, g: 1.0, b: 1.0, a: 0.62000000476837 }
+shell: { frame_alpha_boost: 0.18 }
+presentation:
+  hybrid_world: { inner_border_brightness: 1.0, inner_border_alpha: 0.312 }
+parts: { badge_preset: ./2d-glass-shader.default.badge.yaml, primary_button_preset: ./2d-glass-shader.default.button.yaml }

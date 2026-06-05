@@ -1,6 +1,6 @@
 extends Node3D
 
-const PANEL_VIEW_SCENE := preload("res://scenes/glass-shader-panel-source.tscn")
+const PANEL_VIEW_SCENE := preload("res://scenes/screen-2d-glass-panel-source.tscn")
 const BUS_SCRIPT := preload("res://addons/aerobeat-input-core/src/ui/ui_interaction_bus.gd")
 const ADAPTER_SCRIPT := preload("res://addons/aerobeat-input-core/src/ui/adapters/xr_ui_input_adapter.gd")
 const SURFACE_DESCRIPTOR_SCRIPT := preload("res://addons/aerobeat-spatial-ui-core/src/helpers/surfaces/aero_spatial_surface_descriptor.gd")
