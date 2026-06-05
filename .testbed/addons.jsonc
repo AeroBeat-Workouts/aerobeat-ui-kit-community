@@ -16,6 +16,56 @@
       "subfolder": "/",
       "source": "symlink"
     },
+    "aerobeat-environment-loader": {
+      "url": "../../aerobeat-environment-loader",
+      "subfolder": "/",
+      "source": "symlink"
+    },
+    "aerobeat-environment-core": {
+      "url": "../../aerobeat-environment-core",
+      "subfolder": "/",
+      "source": "symlink"
+    },
+    "aerobeat-tool-core": {
+      "url": "../../aerobeat-tool-core",
+      "subfolder": "/",
+      "source": "symlink"
+    },
+    "aerobeat-tool-video-player": {
+      "url": "../../aerobeat-tool-video-player",
+      "subfolder": "/",
+      "source": "symlink"
+    },
+    "aerobeat-vendor-godot-video": {
+      "url": "../../aerobeat-vendor-godot-video",
+      "subfolder": "/",
+      "source": "symlink"
+    },
+    "aerobeat-tool-image-loader": {
+      "url": "../../aerobeat-tool-image-loader",
+      "subfolder": "/",
+      "source": "symlink"
+    },
+    "aerobeat-vendor-godot-image": {
+      "url": "../../aerobeat-vendor-godot-image",
+      "subfolder": "/",
+      "source": "symlink"
+    },
+    "aerobeat-tool-gltf-loader": {
+      "url": "../../aerobeat-tool-gltf-loader",
+      "subfolder": "/",
+      "source": "symlink"
+    },
+    "aerobeat-tool-device-detection": {
+      "url": "../../aerobeat-tool-device-detection",
+      "subfolder": "/",
+      "source": "symlink"
+    },
+    "aerobeat-vendor-godot-gltf": {
+      "url": "../../aerobeat-vendor-godot-gltf",
+      "subfolder": "/",
+      "source": "symlink"
+    },
     "aerobeat-spatial-ui-core": {
       "url": "../../aerobeat-spatial-ui-core",
       "subfolder": "/",

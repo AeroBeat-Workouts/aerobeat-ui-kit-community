@@ -6,14 +6,13 @@ const SCREEN_PANEL_VIEW_SCRIPT_PATH := "res://ui/views/screen_2d_glass_panel_vie
 const HYBRID_PANEL_VIEW_SCRIPT_PATH := "res://ui/views/aero_ui_glass_panel_view.gd"
 const SCREEN_PANEL_YAML_PATH := "res://ui/presets/glass/panel/screen-2d/default.yaml"
 const HYBRID_PANEL_YAML_PATH := "res://ui/presets/glass/panel/hybrid-3d/default.yaml"
-const HYBRID_STATUS_TEXT := "Panel, badge, and primary button each target their authored YAML directly."
+const SCREEN_STATUS_TEXT := "Panel bundle export writes the root panel YAML plus linked badge/button sidecars. Component buttons still target their authored YAML directly."
+const HYBRID_STATUS_TEXT := SCREEN_STATUS_TEXT
 const BASE_FORBIDDEN_TEXT_SNIPPETS := [
 	"Export or import an AeroUiGlass",
 	"Startup is YAML-only",
-	"bundle",
 ]
 const SCREEN_ONLY_FORBIDDEN_TEXT_SNIPPETS := [
-	"yaml status",
 	"interaction status",
 	"Screen 2D Glass Panel / Input-Core Contract Proof",
 	"Source variant:",
@@ -78,7 +77,8 @@ func test_screen_host_mounts_canonical_aeroui_glass_panel_view() -> void:
 	assert_true(host._panel_view is AeroUiGlassPanelView)
 	assert_eq(host._panel_view.get_script().resource_path, SCREEN_PANEL_VIEW_SCRIPT_PATH)
 	_assert_yaml_backed_panel_defaults(host._panel_view, SCREEN_PANEL_YAML_PATH)
-	assert_null(host._preset_status_label)
+	assert_not_null(host._preset_status_label)
+	assert_eq(host._preset_status_label.text, SCREEN_STATUS_TEXT)
 	assert_not_null(host._contract_status_label)
 	assert_eq(host._contract_status_label.text, "Hovered target: none\nInteraction state: idle")
 	assert_gte(host.controls_panel.custom_minimum_size.x, host.INFO_PANEL_MIN_WIDTH)

@@ -30,6 +30,8 @@ const SpatialUiMouseProviderScript = preload("res://addons/aerobeat-spatial-ui-m
 const SpatialUiMouseProviderConfigScript = preload("res://addons/aerobeat-spatial-ui-mouse/src/providers/mouse/aero_spatial_ui_mouse_provider_config.gd")
 const SpatialUiTouchProviderScript = preload("res://addons/aerobeat-spatial-ui-touch/src/providers/touch/aero_spatial_ui_touch_provider.gd")
 const SpatialUiTouchProviderConfigScript = preload("res://addons/aerobeat-spatial-ui-touch/src/providers/touch/aero_spatial_ui_touch_provider_config.gd")
+const EnvironmentLoaderScript = preload("res://addons/aerobeat-environment-loader/src/AeroEnvironmentLoader.gd")
+const EnvironmentYamlRequestAdapterScript = preload("res://scripts/aero_environment_yaml_request_adapter.gd")
 
 const AUTO_YAW_AMPLITUDE_DEG := 26.0
 const AUTO_PITCH_AMPLITUDE_DEG := 10.0
@@ -388,11 +390,25 @@ const PARAMETER_ALIASES := {
 	"edge_width": {"target": "edge_width", "scale": 0.0075},
 }
 
+const PRESET_SECTION_WORLD_BACKGROUND := "world_background"
 const PRESET_SECTION_PANEL := "panel"
 const PRESET_SECTION_BADGE := "badge"
 const PRESET_SECTION_BUTTON := "button"
+const DEFAULT_WORLD_ENVIRONMENT_YAML := "/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-environment-loader/.testbed/fixtures/workout_yaml_valid_all_kinds/environments/ab-environment-image-demo.yaml"
 
 const PANEL_PRESENTATION_FLOAT_PARAMETER_NAMES := [
+	"hybrid_inner_border_brightness",
+	"hybrid_inner_border_alpha",
+]
+
+const UI_OVERLAY_FLOAT_PARAMETER_NAMES := [
+	"ui_alpha_gain",
+	"ui_brightness",
+	"ui_embed_strength",
+	"ui_overlay_alpha",
+	"ui_overlay_brightness",
+	"ui_overlay_shadow_strength",
+	"ui_overlay_tint_mix",
 	"hybrid_inner_border_brightness",
 	"hybrid_inner_border_alpha",
 ]
@@ -403,7 +419,7 @@ const BADGE_FLOAT_PARAMETER_NAMES := [
 	"hybrid_badge_label_alpha",
 ]
 
-const HYBRID_ONLY_FLOAT_PARAMETER_NAMES := [
+const HYBRID_BODY_FLOAT_PARAMETER_NAMES := [
 	"tint_strength",
 	"body_frost_strength",
 	"background_subdue",
@@ -414,16 +430,9 @@ const HYBRID_ONLY_FLOAT_PARAMETER_NAMES := [
 	"face_highlight",
 	"face_veil_strength",
 	"perimeter_frost_boost",
-	"ui_alpha_gain",
-	"ui_brightness",
-	"ui_embed_strength",
-	"ui_overlay_alpha",
-	"ui_overlay_brightness",
-	"ui_overlay_shadow_strength",
-	"ui_overlay_tint_mix",
 ]
 
-const HYBRID_ONLY_COLOR_PARAMETER_NAMES := [
+const UI_OVERLAY_COLOR_PARAMETER_NAMES := [
 	"ui_overlay_tint",
 ]
 
@@ -469,7 +478,7 @@ const BUTTON_EDITOR_OPTION_CONTROLS := [
 	{"name": "button_hybrid_pressed_ease_type", "label": "pressed_ease_type", "default": "snappy", "options": [{"label": "Smooth", "value": "smooth"}, {"label": "Linear", "value": "linear"}, {"label": "Snappy", "value": "snappy"}, {"label": "Soft", "value": "soft"}, {"label": "Crisp", "value": "crisp"}]},
 ]
 
-const SECTION_SPACER_HEIGHT := 56.0
+const SECTION_SPACER_HEIGHT := 72.0
 
 @export var auto_rotate := true
 @export_range(0.0, 90.0, 0.1) var auto_rotate_speed_deg := 36.0
@@ -488,6 +497,9 @@ const SECTION_SPACER_HEIGHT := 56.0
 
 var _panel_ui: AeroUiGlassPanelView
 var _mask_ui: AeroUiGlassPanelView
+var _environment_loader: Node
+var _environment_canvas_root: Control
+var _environment_world_root: Node3D
 var _panel_material: ShaderMaterial
 var _panel_ui_overlay_material: ShaderMaterial
 var _authored_glass_rect := Rect2(0.0, 0.0, 1.0, 1.0)
@@ -502,6 +514,7 @@ var _preset_status_label: Label
 var _contract_status_label: RichTextLabel
 var _save_dialog: FileDialog
 var _load_dialog: FileDialog
+var _environment_dialog: FileDialog
 var _pending_save_section := PRESET_SECTION_PANEL
 var _pending_load_section := PRESET_SECTION_PANEL
 var _spatial_surface_descriptor: AeroSpatialSurfaceDescriptor
@@ -1127,7 +1140,7 @@ func _build_controls() -> void:
 	for child in controls_list.get_children():
 		child.queue_free()
 
-	controls_list.add_theme_constant_override("separation", 24)
+	controls_list.add_theme_constant_override("separation", 32)
 	_float_sliders.clear()
 	_color_pickers.clear()
 	_option_selectors.clear()
@@ -1135,50 +1148,67 @@ func _build_controls() -> void:
 	_preset_status_label = null
 	_contract_status_label = null
 
-	_append_controls_section(_make_section_block("panel", [
-		_make_background_mode_control(),
-		_make_yaml_actions_block("", PRESET_SECTION_PANEL, "Root panel YAML with badge/button references."),
-		_make_parameter_section("live shader values", PanelViewScript.FLOAT_CONTROLS, PanelViewScript.COLOR_CONTROLS),
-		_make_filtered_parameter_section("hybrid presentation", HYBRID_FLOAT_CONTROLS, PANEL_PRESENTATION_FLOAT_PARAMETER_NAMES, [], []),
-		_make_filtered_parameter_section("3d panel material", HYBRID_FLOAT_CONTROLS, HYBRID_ONLY_FLOAT_PARAMETER_NAMES, HYBRID_COLOR_CONTROLS, HYBRID_ONLY_COLOR_PARAMETER_NAMES),
+	_append_controls_section(_make_section_block("World Background", "Load environment YAML into the proof host so the hybrid world can swap image, video, GLB, or splat backdrops.", [
+		_make_environment_yaml_block(PRESET_SECTION_WORLD_BACKGROUND, "Environment ownership lives in the proof host via AeroEnvironmentLoader, not in the panel view."),
 	], SECTION_SPACER_HEIGHT))
-	_append_controls_section(_make_section_block("badge", [
-		_make_yaml_actions_block("", PRESET_SECTION_BADGE, "Badge component YAML."),
-		_make_parameter_section("shared badge config", BADGE_EDITOR_BASE_CONTROLS, BADGE_EDITOR_COLOR_CONTROLS),
-		_make_float_parameter_section("hybrid presentation", BADGE_EDITOR_HYBRID_CONTROLS),
+	_append_controls_section(_make_section_block("3D Glass Body", "Tune the world-space glass body and material response that wraps the authored card.", [
+		_make_filtered_parameter_section("World-space body material", HYBRID_FLOAT_CONTROLS, HYBRID_BODY_FLOAT_PARAMETER_NAMES, HYBRID_COLOR_CONTROLS, []),
 	], SECTION_SPACER_HEIGHT))
-	_append_controls_section(_make_section_block("primary button", [
-		_make_yaml_actions_block("", PRESET_SECTION_BUTTON, "Primary button component YAML."),
-		_make_parameter_section("shared button config", BUTTON_EDITOR_BASE_CONTROLS, BUTTON_EDITOR_COLOR_CONTROLS),
-		_make_float_parameter_section("hybrid presentation + interaction", BUTTON_EDITOR_HYBRID_CONTROLS),
-	], SECTION_SPACER_HEIGHT))
-	_append_controls_section(_make_section_block("input debug", [
+	_append_controls_section(_make_section_block("2D Authored Card Source", "Load or export the authored card bundle before adjusting the live 2D shell inputs.", [
+		_make_yaml_actions_block("", PRESET_SECTION_PANEL, "Panel bundle YAML export writes the root panel plus badge/button sidecars."),
 		_make_preset_status_block(),
+		_make_parameter_section("Authored card shell values", PanelViewScript.FLOAT_CONTROLS, PanelViewScript.COLOR_CONTROLS),
+	], SECTION_SPACER_HEIGHT))
+	_append_controls_section(_make_section_block("UI Overlay Presentation", "Control the hybrid shell bridge and overlay presentation that maps the 2D card into the 3D body.", [
+		_make_filtered_parameter_section("Overlay + shell presentation", HYBRID_FLOAT_CONTROLS, UI_OVERLAY_FLOAT_PARAMETER_NAMES, HYBRID_COLOR_CONTROLS, UI_OVERLAY_COLOR_PARAMETER_NAMES),
+	], SECTION_SPACER_HEIGHT))
+	_append_controls_section(_make_section_block("Badge", "Load or export the authored badge YAML before adjusting the hybrid presentation values.", [
+		_make_yaml_actions_block("", PRESET_SECTION_BADGE, "Badge component YAML."),
+		_make_parameter_section("Shared badge config", BADGE_EDITOR_BASE_CONTROLS, BADGE_EDITOR_COLOR_CONTROLS),
+		_make_float_parameter_section("Hybrid presentation", BADGE_EDITOR_HYBRID_CONTROLS),
+	], SECTION_SPACER_HEIGHT))
+	_append_controls_section(_make_section_block("Primary Button", "Load or export the authored primary-button YAML before adjusting the hybrid interaction values.", [
+		_make_yaml_actions_block("", PRESET_SECTION_BUTTON, "Primary button component YAML."),
+		_make_parameter_section("Shared button config", BUTTON_EDITOR_BASE_CONTROLS, BUTTON_EDITOR_COLOR_CONTROLS),
+		_make_float_parameter_section("Hybrid presentation + interaction", BUTTON_EDITOR_HYBRID_CONTROLS),
+	], SECTION_SPACER_HEIGHT))
+	_append_controls_section(_make_section_block("Input Debug", "Inspect the packaged mouse/touch provider snapshot and current contract state.", [
 		_make_contract_status_block(),
 	], SECTION_SPACER_HEIGHT), false)
 
 	var tail_spacer := Control.new()
-	tail_spacer.custom_minimum_size = Vector2(0.0, 8.0)
+	tail_spacer.custom_minimum_size = Vector2(0.0, 12.0)
 	controls_list.add_child(tail_spacer)
 
 
-func _make_background_mode_control() -> Control:
+func _make_environment_yaml_block(section_key: String, subtitle_text: String) -> Control:
 	var wrapper := VBoxContainer.new()
 	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	wrapper.add_theme_constant_override("separation", 8)
 
-	var label := Label.new()
-	label.text = "preview background"
-	wrapper.add_child(label)
+	var subtitle := Label.new()
+	subtitle.text = subtitle_text
+	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	subtitle.modulate = Color(1.0, 1.0, 1.0, 0.68)
+	wrapper.add_child(subtitle)
 
-	var selector := OptionButton.new()
-	selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	selector.add_item("AeroBeat image", PanelViewScript.BACKGROUND_MODE_IMAGE)
-	selector.add_item("Debug pattern", PanelViewScript.BACKGROUND_MODE_DEBUG)
-	selector.add_item("Hybrid overlay", PanelViewScript.BACKGROUND_MODE_HYBRID)
-	selector.add_item("No background", PanelViewScript.BACKGROUND_MODE_NONE)
-	selector.item_selected.connect(_on_background_mode_selected.bind(selector))
-	wrapper.add_child(selector)
-	_background_mode_selector = selector
+	var button_row := HBoxContainer.new()
+	button_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button_row.add_theme_constant_override("separation", 8)
+	wrapper.add_child(button_row)
+
+	var load_button := Button.new()
+	load_button.text = "Load Environment YAML"
+	load_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	load_button.pressed.connect(_open_environment_dialog_for_section.bind(section_key))
+	button_row.add_child(load_button)
+
+	var clear_button := Button.new()
+	clear_button.text = "Clear World Background"
+	clear_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	clear_button.pressed.connect(_clear_loaded_environment.bind(section_key))
+	button_row.add_child(clear_button)
+
 	return wrapper
 
 
@@ -1230,7 +1260,7 @@ func _append_controls_section(section: Control, include_spacer: bool = true) -> 
 		controls_list.add_child(spacer)
 
 
-func _make_section_block(title_text: String, blocks: Array, block_spacer_height: float = 0.0) -> Control:
+func _make_section_block(title_text: String, purpose_text: String, blocks: Array, block_spacer_height: float = 0.0) -> Control:
 	var wrapper := VBoxContainer.new()
 	wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	wrapper.add_theme_constant_override("separation", 8)
@@ -1238,6 +1268,12 @@ func _make_section_block(title_text: String, blocks: Array, block_spacer_height:
 	var title := Label.new()
 	title.text = title_text
 	wrapper.add_child(title)
+
+	var purpose := Label.new()
+	purpose.text = purpose_text
+	purpose.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	purpose.modulate = Color(1.0, 1.0, 1.0, 0.72)
+	wrapper.add_child(purpose)
 
 	var visible_block_index := 0
 	for block in blocks:
@@ -1349,7 +1385,7 @@ func _make_preset_status_block() -> Control:
 	var status := Label.new()
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.modulate = Color(1.0, 1.0, 1.0, 0.6)
-	status.text = "Panel, badge, and primary button each target their authored YAML directly."
+	status.text = "Panel bundle export writes the root panel YAML plus linked badge/button sidecars. Component buttons still target their authored YAML directly."
 	wrapper.add_child(status)
 	_preset_status_label = status
 
@@ -1444,6 +1480,10 @@ func _setup_preset_dialogs() -> void:
 		_load_dialog = _create_preset_dialog(FileDialog.FILE_MODE_OPEN_FILE, "Load AeroUiGlass YAML")
 		_load_dialog.file_selected.connect(_on_load_dialog_file_selected)
 		add_child(_load_dialog)
+	if _environment_dialog == null:
+		_environment_dialog = _create_preset_dialog(FileDialog.FILE_MODE_OPEN_FILE, "Load Environment YAML")
+		_environment_dialog.file_selected.connect(_on_environment_dialog_file_selected)
+		add_child(_environment_dialog)
 
 
 func _create_preset_dialog(file_mode: FileDialog.FileMode, title_text: String) -> FileDialog:
@@ -1556,6 +1596,17 @@ func _on_load_dialog_file_selected(path: String) -> void:
 			_load_panel_yaml_from_path(path)
 
 
+func _open_environment_dialog_for_section(section_key: String) -> void:
+	_pending_load_section = section_key
+	_environment_dialog.title = "Load Environment YAML"
+	_environment_dialog.current_file = "environment.yaml"
+	_environment_dialog.popup_centered_ratio(0.7)
+
+
+func _on_environment_dialog_file_selected(path: String) -> void:
+	_load_environment_yaml_from_path(_pending_load_section, path)
+
+
 func _export_panel_yaml_to_path(path: String) -> void:
 	if not is_instance_valid(_panel_ui):
 		_set_preset_status("Hybrid panel is not ready for YAML export.", true)
@@ -1563,7 +1614,7 @@ func _export_panel_yaml_to_path(path: String) -> void:
 
 	var result := YamlBundleIO.export_panel_bundle(path, _build_panel_yaml_export())
 	if result.get("ok", false):
-		_set_preset_status("Saved panel YAML to %s" % result["path"], false)
+		_set_preset_status("Saved panel bundle YAML to %s with badge sidecar %s and button sidecar %s" % [result["path"], result.get("badge_path", ""), result.get("button_path", "")], false)
 	else:
 		_set_preset_status(str(result.get("error", "Failed to save panel YAML.")), true)
 
@@ -1579,7 +1630,7 @@ func _load_panel_yaml_from_path(path: String) -> void:
 		return
 
 	call_deferred("_sync_controls_from_panel")
-	_set_preset_status("Loaded panel YAML from %s" % result.get("path", path), false)
+	_set_preset_status("Loaded panel bundle YAML from %s" % result.get("path", path), false)
 
 
 func _build_panel_yaml_export() -> Dictionary:
@@ -1852,6 +1903,81 @@ func _set_live_control_value(parameter_name: String, value: Variant) -> void:
 		_:
 			set_panel_shader_parameter(parameter_name, value)
 
+
+
+
+func _ensure_environment_roots() -> void:
+	if is_instance_valid(_environment_world_root):
+		return
+	_environment_world_root = Node3D.new()
+	_environment_world_root.name = "EnvironmentWorldRoot"
+	add_child(_environment_world_root)
+	move_child(_environment_world_root, 4)
+
+	var canvas_layer := get_node_or_null("CanvasLayer") as CanvasLayer
+	if canvas_layer != null:
+		_environment_canvas_root = Control.new()
+		_environment_canvas_root.name = "EnvironmentCanvasRoot"
+		_environment_canvas_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_environment_canvas_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		canvas_layer.add_child(_environment_canvas_root)
+		canvas_layer.move_child(_environment_canvas_root, 0)
+
+
+func _configure_environment_loader() -> void:
+	if is_instance_valid(_environment_loader):
+		return
+	_environment_loader = EnvironmentLoaderScript.new()
+	_environment_loader.name = "AeroEnvironmentLoader"
+	_environment_loader.canvas_root_path = NodePath("../CanvasLayer/EnvironmentCanvasRoot")
+	_environment_loader.world_root_path = NodePath("../EnvironmentWorldRoot")
+	add_child(_environment_loader)
+	_environment_loader.environment_load_succeeded.connect(_on_environment_load_succeeded)
+	_environment_loader.environment_load_failed.connect(_on_environment_load_failed)
+	_environment_loader.environment_cleared.connect(_on_environment_cleared)
+
+
+func _load_default_world_environment() -> void:
+	if FileAccess.file_exists(DEFAULT_WORLD_ENVIRONMENT_YAML):
+		_load_environment_yaml_from_path(PRESET_SECTION_WORLD_BACKGROUND, DEFAULT_WORLD_ENVIRONMENT_YAML)
+
+
+func _load_environment_yaml_from_path(section_key: String, path: String) -> void:
+	if section_key != PRESET_SECTION_WORLD_BACKGROUND:
+		return
+	if not is_instance_valid(_environment_loader):
+		_set_preset_status("World environment loader is not ready.", true)
+		return
+	var request_result := EnvironmentYamlRequestAdapterScript.resolve_request(path, {
+		"request_id": "hybrid-world-background",
+		"fit_mode": "cover",
+		"context": {"source": "glass_shader_gui_3d_test"},
+	})
+	if not request_result.get("ok", false):
+		_set_preset_status(str(request_result.get("message", "Failed to resolve environment YAML.")), true)
+		return
+	_environment_loader.load_environment(Dictionary(request_result.get("request", {})))
+	_set_preset_status("Loading world background environment from %s" % path, false)
+
+
+func _clear_loaded_environment(section_key: String) -> void:
+	if section_key != PRESET_SECTION_WORLD_BACKGROUND:
+		return
+	if is_instance_valid(_environment_loader):
+		_environment_loader.clear_environment()
+	_set_preset_status("Cleared world background environment.", false)
+
+
+func _on_environment_load_succeeded(result: Dictionary) -> void:
+	_set_preset_status("Loaded world background environment: %s" % str(result.get("asset_path", "")), false)
+
+
+func _on_environment_load_failed(error: Dictionary) -> void:
+	_set_preset_status("World background environment load failed: %s" % str(error.get("message", "Unknown error.")), true)
+
+
+func _on_environment_cleared() -> void:
+	_set_preset_status("World background environment cleared.", false)
 
 func _set_preset_status(message: String, is_error: bool) -> void:
 	if not is_instance_valid(_preset_status_label):
