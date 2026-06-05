@@ -46,7 +46,7 @@ func test_canonical_panel_view_scene_loads_yaml_backed_style_bundle_on_startup()
 	assert_false(frame_border_before.border_color.is_equal_approx(panel.TOGGLE_ON_ACCENT))
 	assert_false(badge_border_before.border_color.is_equal_approx(panel.TOGGLE_ON_ACCENT))
 	assert_true(panel.primary_action_body.scale.x > 1.0)
-	var hover_scale := panel.primary_action_body.scale.x
+	var hover_scale: float = panel.primary_action_body.scale.x
 
 	panel._target_states[panel.TARGET_PRIMARY] = {
 		"hovered": true,
