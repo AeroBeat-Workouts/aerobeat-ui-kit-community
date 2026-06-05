@@ -12,6 +12,7 @@ var _action_style: StyleBoxFlat
 var _alpha_tween: Tween
 var _visual_tween: Tween
 var _last_visual_phase := "rest"
+var _last_is_hybrid_world := false
 var _has_applied_visual_state := false
 
 
@@ -36,7 +37,9 @@ func apply_visual_state(state: Dictionary, is_hybrid_world: bool, badge_tokens: 
 
 	var hovered := bool(state.get("hovered", false))
 	var is_pressed_state := bool(state.get("pressed", false))
+	var is_toggle_on := bool(state.get("toggle_on", false))
 	var visual_phase := _resolve_visual_phase(hovered, is_pressed_state)
+	var presentation_changed := _has_applied_visual_state and _last_is_hybrid_world != is_hybrid_world
 	var resolved_state := _button_state(button_style_config, is_hybrid_world, visual_phase)
 
 	var fill_alpha: float = float(badge_tokens["fill_alpha"]) + float(resolved_state.get("fill_delta", 0.0))
@@ -51,21 +54,23 @@ func apply_visual_state(state: Dictionary, is_hybrid_world: bool, badge_tokens: 
 	var resolved_border_tint := Color(1.0, 1.0, 1.0, 1.0).lerp(interaction_tint, tint_strength)
 	var label_alpha := button_style_config.get_label_alpha(is_hybrid_world) if button_style_config != null else (0.98 if is_hybrid_world else 0.95)
 	var meta_alpha := button_style_config.get_meta_alpha(is_hybrid_world) if button_style_config != null else (0.7 if is_hybrid_world else 0.66)
-	var label_tint := Color(1.0, 1.0, 1.0, 1.0).lerp(interaction_tint, tint_strength * (0.85 if visual_phase != "rest" else 0.0))
+	var is_active := visual_phase != "rest" or is_toggle_on
+	var label_tint := Color(1.0, 1.0, 1.0, 1.0).lerp(interaction_tint, tint_strength * (0.85 if is_active else 0.0))
 	var meta_tint := Color(1.0, 1.0, 1.0, 1.0).lerp(interaction_tint, tint_strength * 0.72)
 	var transition_profile := _resolve_transition_profile(button_style_config, is_hybrid_world, visual_phase)
 	var target_style := _build_action_stylebox(fill_alpha, resolved_fill_tint, resolved_border_tint, border_alpha, shadow_alpha, shadow_size, is_hybrid_world, badge_tokens, button_style_config, shell_tint)
-	var target_label_modulate := Color(label_tint.r, label_tint.g, label_tint.b, 0.99 if visual_phase != "rest" else label_alpha)
+	var target_label_modulate := Color(label_tint.r, label_tint.g, label_tint.b, 0.99 if is_active else label_alpha)
 	var target_meta_modulate := Color(meta_tint.r, meta_tint.g, meta_tint.b, meta_alpha)
 	var target_scale := Vector2.ONE * body_scale
 
 	scale = Vector2.ONE
-	if not _has_applied_visual_state:
+	if not _has_applied_visual_state or presentation_changed:
 		_apply_visual_snapshot(target_style, target_scale, target_label_modulate, target_meta_modulate)
 	else:
 		_tween_visual_snapshot(target_style, target_scale, target_label_modulate, target_meta_modulate, transition_profile)
 
 	_last_visual_phase = visual_phase
+	_last_is_hybrid_world = is_hybrid_world
 	_has_applied_visual_state = true
 
 

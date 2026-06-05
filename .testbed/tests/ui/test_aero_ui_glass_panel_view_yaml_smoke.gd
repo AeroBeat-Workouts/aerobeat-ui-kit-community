@@ -68,12 +68,12 @@ func test_canonical_panel_view_scene_loads_yaml_backed_style_bundle_on_startup()
 	await get_tree().create_timer(0.15).timeout
 	assert_almost_eq(panel.primary_action_body.scale.x, 1.0, 0.0001)
 
-	var tween_finished := false
+	var tween_state := {"finished": false}
 	panel.TweenAlphaChildren(0.35, 0.0, "linear", func() -> void:
-		tween_finished = true
+		tween_state["finished"] = true
 	)
 	await get_tree().process_frame
-	assert_true(tween_finished)
+	assert_true(bool(tween_state["finished"]))
 	assert_almost_eq(panel.badge_view.modulate.a, 0.35, 0.0001)
 	assert_almost_eq(panel.primary_button_view.modulate.a, 0.35, 0.0001)
 
