@@ -548,6 +548,7 @@ func _ready() -> void:
 	_apply_panel_materials()
 	_build_controls()
 	_setup_preset_dialogs()
+	_configure_environment_loader()
 	call_deferred("_sync_controls_from_panel")
 	call_deferred("_sync_authored_card_rect")
 	_apply_panel_rotation()
@@ -1749,6 +1750,7 @@ func _load_button_yaml_from_path(path: String) -> void:
 		_set_preset_status("Failed to load primary button YAML from %s" % path, true)
 		return
 	_apply_button_config_to_host_views(button_config)
+	_sync_controls_from_panel()
 	_set_preset_status("Loaded primary button YAML from %s" % button_config.source_path, false)
 
 

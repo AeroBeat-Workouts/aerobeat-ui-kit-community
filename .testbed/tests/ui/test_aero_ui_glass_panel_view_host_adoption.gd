@@ -6,6 +6,7 @@ const SCREEN_PANEL_VIEW_SCRIPT_PATH := "res://ui/views/screen_2d_glass_panel_vie
 const HYBRID_PANEL_VIEW_SCRIPT_PATH := "res://ui/views/aero_ui_glass_panel_view.gd"
 const SCREEN_PANEL_YAML_PATH := "res://ui/presets/glass/panel/screen-2d/default.yaml"
 const HYBRID_PANEL_YAML_PATH := "res://ui/presets/glass/panel/hybrid-3d/default.yaml"
+const HYBRID_BUTTON_RESYNC_YAML_PATH := "res://tests/fixtures/ui/hybrid-primary-button-resync.yaml"
 const SCREEN_STATUS_TEXT := "Panel bundle export writes the root panel YAML plus linked badge/button sidecars. Component buttons still target their authored YAML directly."
 const HYBRID_STATUS_TEXT := SCREEN_STATUS_TEXT
 const BASE_FORBIDDEN_TEXT_SNIPPETS := [
@@ -186,8 +187,32 @@ func test_hybrid_host_mounts_canonical_aeroui_glass_panel_view_in_both_subviewpo
 	assert_eq(host._mask_ui.get_presentation_mode(), host._mask_ui.PRESENTATION_MODE_HYBRID_MASK)
 	_assert_yaml_backed_panel_defaults(host._panel_ui, HYBRID_PANEL_YAML_PATH)
 	_assert_yaml_backed_panel_defaults(host._mask_ui, HYBRID_PANEL_YAML_PATH)
+	assert_not_null(host._environment_loader)
+	assert_eq(host._environment_loader.name, "AeroEnvironmentLoader")
 	assert_eq(host._preset_status_label.text, HYBRID_STATUS_TEXT)
 	_assert_forbidden_preset_copy_removed(host, BASE_FORBIDDEN_TEXT_SNIPPETS)
+
+
+func test_hybrid_button_yaml_load_resyncs_visible_controls() -> void:
+	var host = HYBRID_HOST_SCENE.instantiate()
+	add_child_autofree(host)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	var border_slider: HSlider = host._float_sliders.get("button_border_width") as HSlider
+	var label_slider: HSlider = host._float_sliders.get("button_hybrid_label_alpha") as HSlider
+	assert_not_null(border_slider)
+	assert_not_null(label_slider)
+	assert_eq(border_slider.value, 2.0)
+	assert_almost_eq(label_slider.value, 0.98, 0.0001)
+
+	host._load_button_yaml_from_path(HYBRID_BUTTON_RESYNC_YAML_PATH)
+	await get_tree().process_frame
+
+	assert_eq(host._panel_ui.get_primary_button_style_config().border_width, 6)
+	assert_almost_eq(host._panel_ui.get_primary_button_style_config().hybrid_label_alpha, 0.64, 0.0001)
+	assert_eq(border_slider.value, 6.0)
+	assert_almost_eq(label_slider.value, 0.64, 0.0001)
 
 
 func test_screen_host_release_outside_card_emits_hover_exit_and_returns_idle() -> void:
