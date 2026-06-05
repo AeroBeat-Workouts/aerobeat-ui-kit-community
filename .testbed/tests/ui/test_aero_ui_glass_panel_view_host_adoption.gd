@@ -8,7 +8,7 @@ const SCREEN_PANEL_YAML_PATH := "res://ui/presets/glass/panel/screen-2d/default.
 const HYBRID_PANEL_YAML_PATH := "res://ui/presets/glass/panel/hybrid-3d/default.yaml"
 const HYBRID_BUTTON_RESYNC_YAML_PATH := "res://tests/fixtures/ui/hybrid-primary-button-resync.yaml"
 const SCREEN_STATUS_TEXT := "Panel bundle export writes the root panel YAML plus linked badge/button sidecars. Component buttons still target their authored YAML directly."
-const HYBRID_STATUS_TEXT := SCREEN_STATUS_TEXT
+const HYBRID_STATUS_TEXT := "Panel bundle export writes the authored 2D panel YAML plus linked badge/button sidecars. 3D body material save/load lives in the 3D Glass Body section."
 const BASE_FORBIDDEN_TEXT_SNIPPETS := [
 	"Export or import an AeroUiGlass",
 	"Startup is YAML-only",
@@ -169,6 +169,20 @@ func test_screen_host_mouse_entered_publishes_explicit_hover_for_contract_bound_
 	assert_eq(host._panel_view.primary_button_view._last_visual_phase, "hover")
 	assert_eq(host._last_contract_phase, "hover_enter")
 	assert_string_contains(host._last_forwarded_panel_event, "synthetic hover enter")
+
+
+func test_hybrid_host_exposes_truthful_body_and_authored_card_ownership_copy() -> void:
+	var host = HYBRID_HOST_SCENE.instantiate()
+	add_child_autofree(host)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	var texts: Array[String] = []
+	_collect_visible_label_text(host, texts)
+	assert_true(texts.has("3D Glass Body"))
+	assert_true(texts.has("Save or load the hybrid world-space body material YAML for the proof host. This does not change the authored 2D card bundle."))
+	assert_true(texts.has("2D Authored Card Source"))
+	assert_true(texts.has("Load or export only the authored 2D card bundle (panel + badge + button). This does not own the 3D body material."))
 
 
 func test_hybrid_host_mounts_canonical_aeroui_glass_panel_view_in_both_subviewports() -> void:

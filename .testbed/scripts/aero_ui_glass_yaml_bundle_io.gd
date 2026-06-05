@@ -1,12 +1,13 @@
 extends RefCounted
 
 const PanelLoader := preload("res://ui/configs/loaders/aero_ui_glass_panel_config_loader.gd")
+const HybridBodyLoader := preload("res://ui/configs/loaders/aero_ui_glass_hybrid_body_config_loader.gd")
 const DocumentLoader := preload("res://ui/configs/loaders/aero_ui_yaml_config_document_loader.gd")
 const PanelConfig := preload("res://ui/configs/types/aero_ui_glass_panel_config.gd")
 const BadgeConfig := preload("res://ui/configs/types/aero_ui_glass_badge_config.gd")
 const ButtonConfig := preload("res://ui/configs/types/aero_ui_glass_primary_button_config.gd")
+const HybridBodyConfig := preload("res://ui/configs/types/aero_ui_glass_hybrid_body_config.gd")
 
-const HYBRID_SHADER_SECTION := "testbed_hybrid_shader"
 const YAML_EXTENSION := ".yaml"
 
 
@@ -33,7 +34,6 @@ static func load_panel_bundle(path: String) -> Dictionary:
 		"panel_config": panel_config,
 		"badge_config": panel_config.badge_config,
 		"button_config": panel_config.primary_button_config,
-		"hybrid_shader_parameters": _extract_hybrid_shader_parameters(document.get(HYBRID_SHADER_SECTION, {})),
 	}
 
 
@@ -65,10 +65,6 @@ static func export_panel_bundle(path: String, bundle: Dictionary) -> Dictionary:
 	var button_path := directory_path.path_join(button_filename)
 
 	var panel_document := _build_panel_document(panel_config, bundle.get("panel_shader_parameters", {}), bundle.get("panel_overrides", {}), "./%s" % badge_filename, "./%s" % button_filename)
-	var hybrid_shader_parameters: Dictionary = bundle.get("hybrid_shader_parameters", {}) as Dictionary
-	if not hybrid_shader_parameters.is_empty():
-		panel_document[HYBRID_SHADER_SECTION] = _deep_copy_dictionary(hybrid_shader_parameters)
-
 	var badge_document := _build_badge_document(badge_config, bundle.get("badge_overrides", {}))
 	var button_document := _build_button_document(button_config, bundle.get("button_overrides", {}))
 
@@ -91,6 +87,51 @@ static func export_panel_bundle(path: String, bundle: Dictionary) -> Dictionary:
 	}
 
 
+static func load_hybrid_body(path: String) -> Dictionary:
+	var normalized_path := _normalize_bundle_path(ensure_yaml_extension(path))
+	var body_config: HybridBodyConfig = HybridBodyLoader.load_from_path(normalized_path)
+	if body_config == null or body_config.source_path == "":
+		return {
+			"ok": false,
+			"error": "Failed to load AeroUiGlass hybrid body YAML: %s" % normalized_path,
+		}
+
+	return {
+		"ok": true,
+		"path": normalized_path,
+		"body_config": body_config,
+	}
+
+
+static func export_hybrid_body(path: String, body_config: HybridBodyConfig, body_overrides: Dictionary = {}) -> Dictionary:
+	var normalized_path := _normalize_bundle_path(ensure_yaml_extension(path))
+	if body_config == null:
+		return {
+			"ok": false,
+			"error": "Export body config is missing the AeroUiGlass hybrid body config object.",
+		}
+
+	var directory_path := normalized_path.get_base_dir()
+	if not directory_path.is_empty():
+		var mkdir_error := DirAccess.make_dir_recursive_absolute(directory_path)
+		if mkdir_error != OK:
+			return {
+				"ok": false,
+				"error": "Failed to create YAML preset directory: %s" % directory_path,
+				"code": mkdir_error,
+			}
+
+	var body_document := _build_hybrid_body_document(body_config, body_overrides)
+	var body_write := _write_yaml_document(normalized_path, body_document)
+	if not body_write.get("ok", false):
+		return body_write
+
+	return {
+		"ok": true,
+		"path": normalized_path,
+	}
+
+
 static func ensure_yaml_extension(path: String) -> String:
 	if path.get_extension().to_lower() in ["yaml", "yml"]:
 		return path
@@ -101,19 +142,6 @@ static func _normalize_bundle_path(path: String) -> String:
 	if path.begins_with("user://"):
 		return ProjectSettings.globalize_path(path)
 	return path
-
-
-static func _extract_hybrid_shader_parameters(section: Variant) -> Dictionary:
-	var source := section as Dictionary if section is Dictionary else {}
-	var extracted: Dictionary = {}
-	for key_variant in source.keys():
-		var key := str(key_variant)
-		var value: Variant = source[key_variant]
-		if _looks_like_color_dictionary(value):
-			extracted[key] = _dictionary_to_color(value)
-		elif value is float or value is int:
-			extracted[key] = float(value)
-	return extracted
 
 
 static func _build_panel_document(panel_config: PanelConfig, shader_parameters: Dictionary, panel_overrides: Dictionary, badge_reference: String, button_reference: String) -> Dictionary:
@@ -213,6 +241,20 @@ static func _build_button_document(button_config: ButtonConfig, button_overrides
 				"meta_alpha": float(button_overrides.get("hybrid_meta_alpha", button_config.hybrid_meta_alpha)),
 			},
 		},
+	}
+
+
+static func _build_hybrid_body_document(body_config: HybridBodyConfig, body_overrides: Dictionary) -> Dictionary:
+	var material_document: Dictionary = {}
+	for parameter_name in body_config.material_parameters.keys():
+		material_document[parameter_name] = float(body_overrides.get(parameter_name, body_config.material_parameters[parameter_name]))
+
+	return {
+		"schema": HybridBodyConfig.SCHEMA,
+		"schema_version": HybridBodyConfig.SCHEMA_VERSION,
+		"variant": str(body_overrides.get("variant", body_config.variant)),
+		"version": str(body_overrides.get("version", body_config.version)),
+		"material": material_document,
 	}
 
 
@@ -333,16 +375,6 @@ static func _color_to_document(value: Variant) -> Dictionary:
 		"b": color.b,
 		"a": color.a,
 	}
-
-
-static func _dictionary_to_color(value: Variant) -> Color:
-	var raw := value as Dictionary if value is Dictionary else {}
-	return Color(
-		float(raw.get("r", 1.0)),
-		float(raw.get("g", 1.0)),
-		float(raw.get("b", 1.0)),
-		float(raw.get("a", 1.0))
-	)
 
 
 static func _looks_like_color_dictionary(value: Variant) -> bool:

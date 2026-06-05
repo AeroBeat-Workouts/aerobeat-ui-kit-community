@@ -13,7 +13,9 @@ const PANEL_VIEW_SCENE_PATH := "res://ui/views/aero_ui_glass_panel_view.tscn"
 const HYBRID_SHADER_PATH := "res://addons/aerobeat-ui-kit-community/assets/shaders/3d-glass-panel.gdshader"
 const UI_OVERLAY_SHADER_PATH := "res://addons/aerobeat-ui-kit-community/assets/shaders/3d-glass-ui.gdshader"
 const PANEL_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/panel/hybrid-3d"
+const BODY_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/panel/hybrid-3d"
 const HYBRID_PANEL_STYLE_BUNDLE_PATH := "res://ui/presets/glass/panel/hybrid-3d/default.yaml"
+const HYBRID_BODY_STYLE_PATH := "res://ui/presets/glass/panel/hybrid-3d/body.yaml"
 const BADGE_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/panel/hybrid-3d"
 const BUTTON_PRESET_DIALOG_DIRECTORY := "res://ui/presets/glass/panel/hybrid-3d"
 const HYBRID_SURFACE_ID: StringName = &"hybrid_glass_panel"
@@ -21,6 +23,7 @@ const HYBRID_SURFACE_TYPE: StringName = AeroUiInteractionTypes.SURFACE_TYPE_HYBR
 const HYBRID_POINTER_MOUSE: StringName = &"mouse_0"
 const PanelViewScript = preload("res://ui/views/aero_ui_glass_panel_view.gd")
 const YamlBundleIO = preload("res://scripts/aero_ui_glass_yaml_bundle_io.gd")
+const HybridBodyConfig = preload("res://ui/configs/types/aero_ui_glass_hybrid_body_config.gd")
 const BadgeConfigLoader = preload("res://ui/configs/loaders/aero_ui_glass_badge_config_loader.gd")
 const ButtonConfigLoader = preload("res://ui/configs/loaders/aero_ui_glass_primary_button_config_loader.gd")
 const SpatialSurfaceDescriptorScript = preload("res://addons/aerobeat-spatial-ui-core/src/helpers/surfaces/aero_spatial_surface_descriptor.gd")
@@ -391,6 +394,7 @@ const PARAMETER_ALIASES := {
 }
 
 const PRESET_SECTION_WORLD_BACKGROUND := "world_background"
+const PRESET_SECTION_BODY := "body"
 const PRESET_SECTION_PANEL := "panel"
 const PRESET_SECTION_BADGE := "badge"
 const PRESET_SECTION_BUTTON := "button"
@@ -1153,10 +1157,11 @@ func _build_controls() -> void:
 		_make_environment_yaml_block(PRESET_SECTION_WORLD_BACKGROUND, "Environment ownership lives in the proof host via AeroEnvironmentLoader, not in the panel view."),
 	], SECTION_SPACER_HEIGHT))
 	_append_controls_section(_make_section_block("3D Glass Body", "Tune the world-space glass body and material response that wraps the authored card.", [
+		_make_yaml_actions_block("", PRESET_SECTION_BODY, "Save or load the hybrid world-space body material YAML for the proof host. This does not change the authored 2D card bundle."),
 		_make_filtered_parameter_section("World-space body material", HYBRID_FLOAT_CONTROLS, HYBRID_BODY_FLOAT_PARAMETER_NAMES, HYBRID_COLOR_CONTROLS, []),
 	], SECTION_SPACER_HEIGHT))
-	_append_controls_section(_make_section_block("2D Authored Card Source", "Load or export the authored card bundle before adjusting the live 2D shell inputs.", [
-		_make_yaml_actions_block("", PRESET_SECTION_PANEL, "Panel bundle YAML export writes the root panel plus badge/button sidecars."),
+	_append_controls_section(_make_section_block("2D Authored Card Source", "Load or export only the authored 2D card bundle (panel + badge + button). This does not own the 3D body material.", [
+		_make_yaml_actions_block("", PRESET_SECTION_PANEL, "Panel bundle YAML export writes the authored 2D panel YAML plus badge/button sidecars. 3D body material YAML is handled above."),
 		_make_preset_status_block(),
 		_make_parameter_section("Authored card shell values", PanelViewScript.FLOAT_CONTROLS, PanelViewScript.COLOR_CONTROLS),
 	], SECTION_SPACER_HEIGHT))
@@ -1386,7 +1391,7 @@ func _make_preset_status_block() -> Control:
 	var status := Label.new()
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.modulate = Color(1.0, 1.0, 1.0, 0.6)
-	status.text = "Panel bundle export writes the root panel YAML plus linked badge/button sidecars. Component buttons still target their authored YAML directly."
+	status.text = "Panel bundle export writes the authored 2D panel YAML plus linked badge/button sidecars. 3D body material save/load lives in the 3D Glass Body section."
 	wrapper.add_child(status)
 	_preset_status_label = status
 
@@ -1500,7 +1505,7 @@ func _create_preset_dialog(file_mode: FileDialog.FileMode, title_text: String) -
 
 
 func _ensure_preset_directory() -> void:
-	for directory in [PANEL_PRESET_DIALOG_DIRECTORY, BADGE_PRESET_DIALOG_DIRECTORY, BUTTON_PRESET_DIALOG_DIRECTORY]:
+	for directory in [PANEL_PRESET_DIALOG_DIRECTORY, BODY_PRESET_DIALOG_DIRECTORY, BADGE_PRESET_DIALOG_DIRECTORY, BUTTON_PRESET_DIALOG_DIRECTORY]:
 		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(directory))
 
 
@@ -1539,6 +1544,8 @@ func _open_load_dialog_for_section(section_key: String) -> void:
 
 func _preset_directory_for_section(section_key: String) -> String:
 	match section_key:
+		PRESET_SECTION_BODY:
+			return BODY_PRESET_DIALOG_DIRECTORY
 		PRESET_SECTION_BADGE:
 			return BADGE_PRESET_DIALOG_DIRECTORY
 		PRESET_SECTION_BUTTON:
@@ -1549,6 +1556,8 @@ func _preset_directory_for_section(section_key: String) -> String:
 
 func _default_filename_for_section(section_key: String) -> String:
 	match section_key:
+		PRESET_SECTION_BODY:
+			return "body.yaml"
 		PRESET_SECTION_BADGE:
 			return "badge.yaml"
 		PRESET_SECTION_BUTTON:
@@ -1559,6 +1568,8 @@ func _default_filename_for_section(section_key: String) -> String:
 
 func _export_dialog_title(section_key: String) -> String:
 	match section_key:
+		PRESET_SECTION_BODY:
+			return "Export Hybrid 3D Body YAML"
 		PRESET_SECTION_BADGE:
 			return "Export Hybrid 3D Badge YAML"
 		PRESET_SECTION_BUTTON:
@@ -1569,6 +1580,8 @@ func _export_dialog_title(section_key: String) -> String:
 
 func _load_dialog_title(section_key: String) -> String:
 	match section_key:
+		PRESET_SECTION_BODY:
+			return "Load Hybrid 3D Body YAML"
 		PRESET_SECTION_BADGE:
 			return "Load Hybrid 3D Badge YAML"
 		PRESET_SECTION_BUTTON:
@@ -1579,6 +1592,8 @@ func _load_dialog_title(section_key: String) -> String:
 
 func _on_save_dialog_file_selected(path: String) -> void:
 	match _pending_save_section:
+		PRESET_SECTION_BODY:
+			_export_hybrid_body_yaml_to_path(path)
 		PRESET_SECTION_BADGE:
 			_export_badge_yaml_to_path(path)
 		PRESET_SECTION_BUTTON:
@@ -1589,6 +1604,8 @@ func _on_save_dialog_file_selected(path: String) -> void:
 
 func _on_load_dialog_file_selected(path: String) -> void:
 	match _pending_load_section:
+		PRESET_SECTION_BODY:
+			_load_hybrid_body_yaml_from_path(path)
 		PRESET_SECTION_BADGE:
 			_load_badge_yaml_from_path(path)
 		PRESET_SECTION_BUTTON:
@@ -1634,6 +1651,36 @@ func _load_panel_yaml_from_path(path: String) -> void:
 	_set_preset_status("Loaded panel bundle YAML from %s" % result.get("path", path), false)
 
 
+func _export_hybrid_body_yaml_to_path(path: String) -> void:
+	var result := YamlBundleIO.export_hybrid_body(path, _build_hybrid_body_yaml_export())
+	if result.get("ok", false):
+		_set_preset_status("Saved hybrid body YAML to %s" % result["path"], false)
+	else:
+		_set_preset_status(str(result.get("error", "Failed to save hybrid body YAML.")), true)
+
+
+func _load_hybrid_body_yaml_from_path(path: String) -> void:
+	var result := YamlBundleIO.load_hybrid_body(path)
+	if not result.get("ok", false):
+		_set_preset_status(str(result.get("error", "Failed to load hybrid body YAML.")), true)
+		return
+
+	if not _apply_loaded_hybrid_body_yaml(result):
+		_set_preset_status("Failed to apply hybrid body YAML from %s" % path, true)
+		return
+
+	call_deferred("_sync_controls_from_panel")
+	_set_preset_status("Loaded hybrid body YAML from %s" % result.get("path", path), false)
+
+
+func _build_hybrid_body_yaml_export() -> HybridBodyConfig:
+	var body_config := HybridBodyConfig.new()
+	body_config.source_path = HYBRID_BODY_STYLE_PATH
+	for parameter_name in HYBRID_BODY_FLOAT_PARAMETER_NAMES:
+		body_config.material_parameters[parameter_name] = float(get_panel_shader_parameter(parameter_name))
+	return body_config
+
+
 func _build_panel_yaml_export() -> Dictionary:
 	var panel_style_config = null
 	var badge_style_config = null
@@ -1645,18 +1692,6 @@ func _build_panel_yaml_export() -> Dictionary:
 	var panel_shader_parameters: Dictionary = {}
 	for parameter_name in ["blur", "warp_intensity", "strength_x", "strength_y", "offset_x", "offset_y", "corner_radius", "edge_smoothness", "edge_width", "chromatic_strength", "tint", "edge_highlight"]:
 		panel_shader_parameters[parameter_name] = get_panel_shader_parameter(parameter_name)
-
-	var hybrid_shader_parameters: Dictionary = {}
-	for config in HYBRID_FLOAT_CONTROLS:
-		var parameter_name := str(config["name"])
-		if panel_shader_parameters.has(parameter_name) or parameter_name.begins_with("hybrid_"):
-			continue
-		hybrid_shader_parameters[parameter_name] = get_panel_shader_parameter(parameter_name)
-	for config in HYBRID_COLOR_CONTROLS:
-		var parameter_name := str(config["name"])
-		if panel_shader_parameters.has(parameter_name) or parameter_name == "edge_color":
-			continue
-		hybrid_shader_parameters[parameter_name] = get_panel_shader_parameter(parameter_name)
 
 	return {
 		"panel_config": panel_style_config,
@@ -1672,7 +1707,6 @@ func _build_panel_yaml_export() -> Dictionary:
 			"hybrid_border_alpha": get_panel_shader_parameter("hybrid_badge_border_alpha"),
 			"hybrid_label_alpha": get_panel_shader_parameter("hybrid_badge_label_alpha"),
 		},
-		"hybrid_shader_parameters": hybrid_shader_parameters,
 	}
 
 
@@ -1698,9 +1732,20 @@ func _apply_loaded_panel_yaml(bundle: Dictionary) -> bool:
 		set_panel_shader_parameter("hybrid_badge_border_alpha", badge_config.hybrid_border_alpha)
 		set_panel_shader_parameter("hybrid_badge_label_alpha", badge_config.hybrid_label_alpha)
 
-	var hybrid_shader_parameters: Dictionary = bundle.get("hybrid_shader_parameters", {}) as Dictionary
-	for parameter_name in hybrid_shader_parameters.keys():
-		set_panel_shader_parameter(str(parameter_name), hybrid_shader_parameters[parameter_name])
+	return true
+
+
+func _apply_loaded_hybrid_body_yaml(bundle: Dictionary) -> bool:
+	if not is_instance_valid(_panel_ui) or not is_instance_valid(_mask_ui):
+		return false
+
+	var body_config: HybridBodyConfig = bundle.get("body_config", null) as HybridBodyConfig
+	if body_config == null or body_config.source_path == "":
+		return false
+
+	for parameter_name in HYBRID_BODY_FLOAT_PARAMETER_NAMES:
+		if body_config.material_parameters.has(parameter_name):
+			set_panel_shader_parameter(parameter_name, float(body_config.material_parameters[parameter_name]))
 	return true
 
 

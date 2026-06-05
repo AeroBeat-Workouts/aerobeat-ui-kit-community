@@ -1,0 +1,15 @@
+schema: aero.ui.glass_hybrid_body
+schema_version: 1
+variant: hybrid-3d-body
+version: v1
+material:
+  tint_strength: 0.66
+  body_frost_strength: 0.85
+  background_subdue: 0.86
+  interior_chroma: 0.24
+  world_rim_refraction: 0.09
+  fresnel_power: 5.0
+  fresnel_strength: 0.04
+  face_highlight: 0.015
+  face_veil_strength: 0.18
+  perimeter_frost_boost: 0.08

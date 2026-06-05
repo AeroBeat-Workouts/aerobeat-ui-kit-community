@@ -2,6 +2,7 @@ extends GutTest
 
 const PanelLoader := preload("res://ui/configs/loaders/aero_ui_glass_panel_config_loader.gd")
 const BadgeLoader := preload("res://ui/configs/loaders/aero_ui_glass_badge_config_loader.gd")
+const HybridBodyLoader := preload("res://ui/configs/loaders/aero_ui_glass_hybrid_body_config_loader.gd")
 
 
 func test_panel_bundle_loader_materializes_typed_child_configs() -> void:
@@ -27,6 +28,24 @@ func test_panel_bundle_loader_materializes_typed_child_configs() -> void:
 	assert_eq(config.shader_parameters["tint"], Color(0.92, 0.96, 1.0, 0.22))
 	assert_almost_eq(config.frame_alpha_boost, 0.18, 0.0001)
 	assert_almost_eq(config.hybrid_inner_border_alpha, 0.312, 0.0001)
+
+
+func test_hybrid_body_loader_materializes_typed_body_float_config() -> void:
+	var config = HybridBodyLoader.load_from_path("res://ui/presets/glass/panel/hybrid-3d/body.yaml")
+
+	assert_eq(config.variant, "hybrid-3d-body")
+	assert_eq(config.version, "v1")
+	assert_eq(config.source_path, "res://ui/presets/glass/panel/hybrid-3d/body.yaml")
+	assert_almost_eq(float(config.material_parameters["tint_strength"]), 0.66, 0.0001)
+	assert_almost_eq(float(config.material_parameters["body_frost_strength"]), 0.85, 0.0001)
+	assert_almost_eq(float(config.material_parameters["background_subdue"]), 0.86, 0.0001)
+	assert_almost_eq(float(config.material_parameters["interior_chroma"]), 0.24, 0.0001)
+	assert_almost_eq(float(config.material_parameters["world_rim_refraction"]), 0.09, 0.0001)
+	assert_almost_eq(float(config.material_parameters["fresnel_power"]), 5.0, 0.0001)
+	assert_almost_eq(float(config.material_parameters["fresnel_strength"]), 0.04, 0.0001)
+	assert_almost_eq(float(config.material_parameters["face_highlight"]), 0.015, 0.0001)
+	assert_almost_eq(float(config.material_parameters["face_veil_strength"]), 0.18, 0.0001)
+	assert_almost_eq(float(config.material_parameters["perimeter_frost_boost"]), 0.08, 0.0001)
 
 
 func test_badge_loader_resolves_same_schema_extends_without_cross_schema_coupling() -> void:
