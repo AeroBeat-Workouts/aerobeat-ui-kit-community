@@ -1,9 +1,11 @@
 # AeroBeat UI Kit Community — Save/Load Ownership UI and Bug Fixes
 
 **Date:** 2026-06-05  
-**Status:** In Progress  
+**Status:** Stale
 **Last Updated:** 2026-06-05 13:13 EDT  
 **Blocked Reason:** None  
+
+**Stale Archive Note:** Marked stale and archived on 2026-08-03 during Byte workspace cleanup; newer AeroBeat work remains with Pico.
 **Agent:** `byte`
 
 ---
